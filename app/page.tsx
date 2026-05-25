@@ -13,13 +13,19 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap gap-4 mt-8">
-          <button className="border border-black px-5 py-3 font-mono hover:bg-black hover:text-white transition">
+          <a
+            href="/test"
+            className="border border-black px-5 py-3 font-mono hover:bg-black hover:text-white transition"
+          >
             Run a test
-          </button>
+          </a>
 
-          <button className="border border-neutral-300 px-5 py-3 font-mono hover:border-black transition">
+          <a
+            href="/cli"
+            className="border border-neutral-300 px-5 py-3 font-mono hover:border-black transition"
+          >
             Install CLI
-          </button>
+          </a>
         </div>
 
         <div className="mt-20 border border-neutral-200 p-6 font-mono text-sm bg-neutral-50 overflow-hidden">
@@ -28,7 +34,7 @@ export default function Home() {
           </div>
 
           <pre className="leading-7 whitespace-pre-wrap">
-{`Idle latency .......... 12ms
+            {`Idle latency .......... 12ms
 Download loaded ........ 214ms
 Upload loaded .......... 387ms
 
@@ -40,5 +46,5 @@ Upload queue congestion detected.`}
         </div>
       </div>
     </main>
-  )
+  );
 }
