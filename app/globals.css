@@ -24,3 +24,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.page-shell {
+  @apply mx-auto max-w-4xl px-6 py-20;
+}
+
+.eyebrow {
+  @apply font-mono text-sm text-neutral-500;
+}
+
+.page-title {
+  @apply mt-4 font-mono text-4xl font-bold tracking-tight md:text-6xl;
+}
+
+.page-copy {
+  @apply mt-6 max-w-2xl font-mono text-lg leading-relaxed text-neutral-700;
+}
+
+.terminal-card {
+  @apply mt-10 overflow-hidden border border-neutral-200 bg-neutral-50 p-6 font-mono text-sm;
+}
+
+.nav-link {
+  @apply transition hover:text-neutral-500;
+}
