@@ -10,109 +10,121 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function drift(target: number, spread: number) {
+  return `${Math.max(1, random(target - spread, target + spread))}ms`;
+}
+
+const idleMessages = [
+  "Measuring the quiet baseline.",
+  "Checking how quickly your line answers when nothing is competing.",
+  "Looking for the best-case latency your connection can deliver.",
+];
+
+const downloadMessages = [
+  "Adding download pressure, like a big update or video stream.",
+  "Checking whether browsing and calls would still feel smooth.",
+  "Watching for delay spikes while data flows toward you.",
+];
+
+const uploadMessages = [
+  "Adding upload pressure, like cloud backup or sending large files.",
+  "This is where many fast connections start to feel bad.",
+  "Checking whether games and calls still get a clear path out.",
+];
+
+const analysisMessages = [
+  "Comparing calm vs busy latency.",
+  "Separating raw speed from responsiveness.",
+  "Looking for the pattern humans feel as lag.",
+];
+
 export default function Page() {
   const [running, setRunning] = useState(false);
   const [finished, setFinished] = useState(false);
-
   const [progress, setProgress] = useState(0);
 
   const [idle, setIdle] = useState("—");
   const [download, setDownload] = useState("—");
   const [upload, setUpload] = useState("—");
 
-  const [phase, setPhase] = useState(
-    "This test checks whether your internet stays responsive while busy."
+  const [status, setStatus] = useState("ready");
+  const [message, setMessage] = useState(
+    "Check whether your internet stays smooth when the network gets busy."
   );
-
   const [grade, setGrade] = useState("D");
 
   useEffect(() => {
     if (!running) return;
 
     const interval = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 95) return p;
-        return p + Math.random() * 2.2;
-      });
-    }, 120);
+      setProgress((p) => (p >= 96 ? p : p + Math.random() * 1.5));
+    }, 140);
 
     return () => clearInterval(interval);
   }, [running]);
 
-  useEffect(() => {
-    if (!running) return;
+  function rotateMessages(messages: string[]) {
+    let index = 0;
+    setMessage(messages[0]);
 
-    const interval = setInterval(() => {
-      setIdle(`${random(8, 22)}ms`);
-
-      if (download !== "—") {
-        setDownload(`${random(120, 320)}ms`);
-      }
-
-      if (upload !== "—") {
-        setUpload(`${random(220, 520)}ms`);
-      }
-    }, 220);
-
-    return () => clearInterval(interval);
-  }, [running, download, upload]);
+    return setInterval(() => {
+      index = (index + 1) % messages.length;
+      setMessage(messages[index]);
+    }, 1700);
+  }
 
   async function runTest() {
     setRunning(true);
     setFinished(false);
-
     setProgress(0);
+    setGrade("D");
 
-    setIdle("measuring...");
+    setIdle("measuring");
     setDownload("—");
     setUpload("—");
 
-    setPhase(
-      "Checking how responsive your connection feels when nothing else is happening..."
-    );
-
-    await wait(5000);
+    setStatus("quiet line");
+    let rotator = rotateMessages(idleMessages);
+    await wait(4300);
+    clearInterval(rotator);
 
     const finalIdle = random(10, 18);
     setIdle(`${finalIdle}ms`);
 
-    setDownload("measuring...");
+    setDownload("measuring");
+    setStatus("download load");
+    rotator = rotateMessages(downloadMessages);
 
-    setPhase(
-      "Checking whether downloads make video calls, browsing, or gaming feel sluggish..."
-    );
+    for (let i = 0; i < 17; i++) {
+      setDownload(drift(220, 70));
+      await wait(330);
+    }
 
-    await wait(9000);
-
-    const finalDownload = random(180, 320);
+    clearInterval(rotator);
+    const finalDownload = random(180, 310);
     setDownload(`${finalDownload}ms`);
 
-    setUpload("measuring...");
+    setUpload("measuring");
+    setStatus("upload load");
+    rotator = rotateMessages(uploadMessages);
 
-    setPhase(
-      "Checking whether uploads from this or other devices make the whole connection unstable..."
-    );
+    for (let i = 0; i < 17; i++) {
+      setUpload(drift(410, 95));
+      await wait(330);
+    }
 
-    await wait(9000);
-
-    const finalUpload = random(320, 520);
+    clearInterval(rotator);
+    const finalUpload = random(330, 520);
     setUpload(`${finalUpload}ms`);
 
-    setPhase(
-      "Comparing quiet vs busy conditions to estimate connection stability..."
-    );
-
-    await wait(4000);
+    setStatus("analysis");
+    rotator = rotateMessages(analysisMessages);
+    await wait(2300);
+    clearInterval(rotator);
 
     setProgress(100);
 
-    const computedGrade =
-      finalUpload > 450
-        ? "D"
-        : finalUpload > 350
-          ? "C"
-          : "B";
-
+    const computedGrade = finalUpload > 450 ? "D" : finalUpload > 350 ? "C" : "B";
     setGrade(computedGrade);
 
     setRunning(false);
@@ -122,34 +134,30 @@ export default function Page() {
   const diagnosis = useMemo(() => {
     if (grade === "D") {
       return {
-        summary:
-          "Your connection becomes noticeably unstable when busy.",
+        summary: "Fast on paper, frustrating under pressure.",
         impact:
-          "Video calls could start breaking up if someone else is watching videos, backing up photos, or uploading files on the same network.",
+          "Your line responds well when quiet, then delay jumps when uploads or downloads start. That is why calls freeze, games lag, and pages hang even when speed tests look fine.",
         fix:
-          "Your router may be too old, or it may need traffic management features enabled. Modern routers with Smart Queue Management can often improve this dramatically.",
+          "Enable Smart Queue Management on your router. Look for SQM, CAKE, or fq_codel.",
       };
     }
 
     if (grade === "C") {
       return {
-        summary:
-          "Your connection slows down under stress, but remains usable most of the time.",
+        summary: "Usable, but fragile when busy.",
         impact:
-          "You may notice occasional lag spikes during heavy downloads or uploads.",
+          "You may notice stutters when another device backs up photos, uploads files, or downloads large updates.",
         fix:
-          "Router tuning or upgrading to a newer model could improve responsiveness.",
+          "Router-level traffic control should make the connection feel steadier.",
       };
     }
 
     return {
-      summary:
-        "Your connection stays reasonably stable even while busy.",
+      summary: "Stable under pressure.",
       impact:
-        "Most people on the network should be able to browse, stream, and call without major interruptions.",
-      fix:
-        "No major issues detected.",
-      };
+        "Your connection stays responsive while busy, which is what matters for calls, games, and everyday browsing.",
+      fix: "No major responsiveness issue detected.",
+    };
   }, [grade]);
 
   return (
@@ -159,27 +167,21 @@ export default function Page() {
       <h1 className="page-title">Run a bufferbloat test</h1>
 
       <p className="page-copy">
-        Check whether your internet stays smooth when the network becomes busy.
+        Find out if your internet stays responsive while the connection is busy.
       </p>
 
       {!running && !finished && (
         <div className="terminal-card">
-          <p className="mb-4 font-mono text-sm text-neutral-600">
-            For the most accurate result:
+          <p className="text-neutral-700">
+            Keep this tab visible and avoid switching apps during the test. This gives the browser enough priority to measure timing accurately.
           </p>
-
-          <ul className="space-y-2 font-mono text-sm text-neutral-700">
-            <li>• Keep this tab open and focused during the test</li>
-            <li>• Avoid downloads, cloud backups, or streaming</li>
-            <li>• Other active devices on the same Wi-Fi can affect the result</li>
-          </ul>
         </div>
       )}
 
       <button
         onClick={runTest}
         disabled={running}
-        className="mt-10 border border-black px-5 py-3 font-mono transition hover:bg-black hover:text-white disabled:opacity-40"
+        className="mt-6 border border-black px-5 py-3 font-mono transition hover:bg-black hover:text-white disabled:opacity-40"
       >
         {running ? "Testing..." : finished ? "Run again" : "Start test"}
       </button>
@@ -188,40 +190,33 @@ export default function Page() {
         <div className="terminal-card">
           {running && (
             <>
-              <div className="mb-5">
-                <div className="mb-2 flex items-center justify-between font-mono text-sm">
-                  <span>Test progress</span>
-                  <span>{Math.floor(progress)}%</span>
-                </div>
-
-                <div className="h-2 w-full overflow-hidden border border-black">
-                  <div
-                    className="h-full bg-black transition-all duration-200"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
+              <div className="mb-4 flex justify-between gap-4 font-mono text-sm">
+                <span>{status}</span>
+                <span>{Math.floor(progress)}%</span>
               </div>
 
-              <pre className="leading-8 whitespace-pre-wrap">{`Idle latency .......... ${idle}
-Busy download .......... ${download}
-Busy upload ............ ${upload}
-
-${phase}`}</pre>
-
-              <div className="mt-6 border-t border-neutral-200 pt-4 font-mono text-sm text-neutral-600">
-                Keep this tab visible during the test. Browsers slow down
-                measurements in background tabs, which can distort the result.
+              <div className="mb-5 h-2 w-full overflow-hidden border border-black">
+                <div
+                  className="h-full bg-black transition-all duration-200"
+                  style={{ width: `${progress}%` }}
+                />
               </div>
+
+              <pre className="mb-5 leading-7 whitespace-pre-wrap">{`Quiet .......... ${idle}
+Download load .. ${download}
+Upload load .... ${upload}`}</pre>
+
+              <p className="border-t border-neutral-200 pt-4 text-neutral-700">
+                {message}
+              </p>
             </>
           )}
 
           {finished && (
             <>
-              <div className="mb-6 flex items-center justify-between">
+              <div className="mb-5 flex items-center justify-between">
                 <div>
-                  <p className="font-mono text-sm text-neutral-500">
-                    overall grade
-                  </p>
+                  <p className="text-sm text-neutral-500">responsiveness grade</p>
 
                   <h2
                     className={`font-mono text-6xl font-bold ${
@@ -237,7 +232,7 @@ ${phase}`}</pre>
                 </div>
 
                 <div className="font-mono text-sm text-neutral-600">
-                  Idle: {idle}
+                  Quiet: {idle}
                   <br />
                   Download: {download}
                   <br />
@@ -245,48 +240,21 @@ ${phase}`}</pre>
                 </div>
               </div>
 
-              <div className="space-y-6 font-mono">
-                <div>
-                  <p className="mb-2 text-sm text-neutral-500">
-                    what this means
-                  </p>
-
+              <div className="space-y-5">
+                <section>
+                  <p className="mb-1 text-sm text-neutral-500">diagnosis</p>
                   <p>{diagnosis.summary}</p>
-                </div>
+                </section>
 
-                <div>
-                  <p className="mb-2 text-sm text-neutral-500">
-                    real-world impact
-                  </p>
-
+                <section>
+                  <p className="mb-1 text-sm text-neutral-500">what this feels like</p>
                   <p>{diagnosis.impact}</p>
-                </div>
+                </section>
 
-                <div>
-                  <p className="mb-2 text-sm text-neutral-500">
-                    possible fixes
-                  </p>
-
+                <section>
+                  <p className="mb-1 text-sm text-neutral-500">what to do next</p>
                   <p>{diagnosis.fix}</p>
-                </div>
-
-                <div className="border-t border-neutral-200 pt-6">
-                  <p className="mb-4 text-sm text-neutral-500">
-                    Want personalized fixes for your router?
-                  </p>
-
-                  <div className="flex flex-col gap-3 md:flex-row">
-                    <input
-                      type="email"
-                      placeholder="you@example.com"
-                      className="border border-black px-4 py-3 font-mono outline-none"
-                    />
-
-                    <button className="border border-black px-5 py-3 font-mono transition hover:bg-black hover:text-white">
-                      Send optimization guide
-                    </button>
-                  </div>
-                </div>
+                </section>
               </div>
             </>
           )}

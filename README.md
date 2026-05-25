@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# bufferbloat.org
 
-## Getting Started
+bufferbloat.org is an attempt to build a browser-based test for a problem most people experience but very few tools explain properly:
 
-First, run the development server:
+an internet connection that looks fast, but starts feeling terrible the moment it gets busy.
 
-```bash
+The project focuses on responsiveness under load rather than raw bandwidth numbers. The goal is not to build another speed test, but something closer to a diagnostic instrument that explains why video calls freeze, games lag, or pages stop responding while someone else is uploading photos or downloading updates.
+
+The frontend is built with Next.js and currently lives mostly under `/test`.
+
+Download pressure is generated using large incompressible binary payloads hosted on Cloudflare R2. Upload pressure is generated through a Cloudflare Worker endpoint that accepts and discards temporary upload data without storing anything.
+
+The current architecture looks roughly like this:
+
+```text
+browser
+  ↓
+latency sampling
+  ↓
+download pressure from R2
+  ↓
+upload pressure to Worker
+  ↓
+diagnosis
+
+The project intentionally tries to avoid a lot of the typical networking language around bufferbloat. Most users do not care about queue disciplines or shaping algorithms. They care that their connection feels unstable during normal use.
+
+The UI and wording try to explain the issue in terms of lived experience instead.
+
+The measurement side is still evolving. Browser-based testing has real limitations: background tab throttling, Wi-Fi instability, browser scheduling, other devices on the network, and timing precision all affect results. The goal is not laboratory-grade accuracy, but believable and operationally useful measurements.
+
+Current infrastructure:
+
+Next.js frontend on Vercel
+Cloudflare R2 for download payloads
+Cloudflare Workers for upload testing
+
+The upload endpoint currently includes:
+
+Origin validation
+upload size limits
+basic per-IP rate limiting
+no persistent storage
+
+The current R2 payload set:
+
+10mb.bin
+50mb.bin
+100mb.bin
+250mb.bin
+
+Local development:
+
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is still experimental and evolving quickly.
