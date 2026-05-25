@@ -3,9 +3,7 @@ export default function Page() {
     <main className="page-shell">
       <p className="eyebrow">education</p>
 
-      <h1 className="page-title">
-        Learn about bufferbloat
-      </h1>
+      <h1 className="page-title">Learn about bufferbloat</h1>
 
       <p className="page-copy">
         Bufferbloat is excessive network latency caused by overloaded queues
