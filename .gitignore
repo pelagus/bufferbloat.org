@@ -4,3 +4,5 @@ node_modules
 .DS_Store
 upload-sink/node_modules
 upload-sink/.wrangler
+bufferbloat-for-next-chat.zip
+*.zip
