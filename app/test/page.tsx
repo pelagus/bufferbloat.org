@@ -1,164 +1,66 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
+import { runBufferbloatTest } from "../../lib/bufferbloat-test";
+import {
+  diagnosisCopy,
+  initialTestMessage,
+  preTestInstruction,
+  type Grade,
+} from "../../lib/test-copy";
 
-function random(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+function format(value: number | null) {
+  return value === null ? "—" : `${Math.round(value)}ms`;
 }
-
-function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function drift(target: number, spread: number) {
-  return `${Math.max(1, random(target - spread, target + spread))}ms`;
-}
-
-const idleMessages = [
-  "Measuring the quiet baseline.",
-  "Checking how quickly your line answers when nothing is competing.",
-  "Looking for the best-case latency your connection can deliver.",
-];
-
-const downloadMessages = [
-  "Adding download pressure, like a big update or video stream.",
-  "Checking whether browsing and calls would still feel smooth.",
-  "Watching for delay spikes while data flows toward you.",
-];
-
-const uploadMessages = [
-  "Adding upload pressure, like cloud backup or sending large files.",
-  "This is where many fast connections start to feel bad.",
-  "Checking whether games and calls still get a clear path out.",
-];
-
-const analysisMessages = [
-  "Comparing calm vs busy latency.",
-  "Separating raw speed from responsiveness.",
-  "Looking for the pattern humans feel as lag.",
-];
 
 export default function Page() {
   const [running, setRunning] = useState(false);
   const [finished, setFinished] = useState(false);
   const [progress, setProgress] = useState(0);
-
-  const [idle, setIdle] = useState("—");
-  const [download, setDownload] = useState("—");
-  const [upload, setUpload] = useState("—");
-
+  const [idle, setIdle] = useState<number | null>(null);
+  const [download, setDownload] = useState<number | null>(null);
+  const [upload, setUpload] = useState<number | null>(null);
   const [status, setStatus] = useState("ready");
-  const [message, setMessage] = useState(
-    "Check whether your internet stays smooth when the network gets busy."
-  );
-  const [grade, setGrade] = useState("D");
-
-  useEffect(() => {
-    if (!running) return;
-
-    const interval = setInterval(() => {
-      setProgress((p) => (p >= 96 ? p : p + Math.random() * 1.5));
-    }, 140);
-
-    return () => clearInterval(interval);
-  }, [running]);
-
-  function rotateMessages(messages: string[]) {
-    let index = 0;
-    setMessage(messages[0]);
-
-    return setInterval(() => {
-      index = (index + 1) % messages.length;
-      setMessage(messages[index]);
-    }, 1700);
-  }
+  const [message, setMessage] = useState(initialTestMessage);
+  const [grade, setGrade] = useState<Grade>("—");
+  const [error, setError] = useState<string | null>(null);
 
   async function runTest() {
-    setRunning(true);
-    setFinished(false);
-    setProgress(0);
-    setGrade("D");
+    try {
+      setError(null);
+      setRunning(true);
+      setFinished(false);
+      setProgress(0);
+      setIdle(null);
+      setDownload(null);
+      setUpload(null);
+      setGrade("—");
+      setStatus("starting");
+      setMessage("Starting the measurement engine.");
 
-    setIdle("measuring");
-    setDownload("—");
-    setUpload("—");
+      const result = await runBufferbloatTest((update) => {
+        setStatus(update.status);
+        setMessage(update.message);
+        setProgress(update.progress);
+        setIdle(update.idle);
+        setDownload(update.download);
+        setUpload(update.upload);
+      });
 
-    setStatus("quiet line");
-    let rotator = rotateMessages(idleMessages);
-    await wait(4300);
-    clearInterval(rotator);
-
-    const finalIdle = random(10, 18);
-    setIdle(`${finalIdle}ms`);
-
-    setDownload("measuring");
-    setStatus("download load");
-    rotator = rotateMessages(downloadMessages);
-
-    for (let i = 0; i < 17; i++) {
-      setDownload(drift(220, 70));
-      await wait(330);
+      setIdle(result.idle);
+      setDownload(result.download);
+      setUpload(result.upload);
+      setGrade(result.grade);
+      setProgress(100);
+      setFinished(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown test error");
+    } finally {
+      setRunning(false);
     }
-
-    clearInterval(rotator);
-    const finalDownload = random(180, 310);
-    setDownload(`${finalDownload}ms`);
-
-    setUpload("measuring");
-    setStatus("upload load");
-    rotator = rotateMessages(uploadMessages);
-
-    for (let i = 0; i < 17; i++) {
-      setUpload(drift(410, 95));
-      await wait(330);
-    }
-
-    clearInterval(rotator);
-    const finalUpload = random(330, 520);
-    setUpload(`${finalUpload}ms`);
-
-    setStatus("analysis");
-    rotator = rotateMessages(analysisMessages);
-    await wait(2300);
-    clearInterval(rotator);
-
-    setProgress(100);
-
-    const computedGrade = finalUpload > 450 ? "D" : finalUpload > 350 ? "C" : "B";
-    setGrade(computedGrade);
-
-    setRunning(false);
-    setFinished(true);
   }
 
-  const diagnosis = useMemo(() => {
-    if (grade === "D") {
-      return {
-        summary: "Fast on paper, frustrating under pressure.",
-        impact:
-          "Your line responds well when quiet, then delay jumps when uploads or downloads start. That is why calls freeze, games lag, and pages hang even when speed tests look fine.",
-        fix:
-          "Enable Smart Queue Management on your router. Look for SQM, CAKE, or fq_codel.",
-      };
-    }
-
-    if (grade === "C") {
-      return {
-        summary: "Usable, but fragile when busy.",
-        impact:
-          "You may notice stutters when another device backs up photos, uploads files, or downloads large updates.",
-        fix:
-          "Router-level traffic control should make the connection feel steadier.",
-      };
-    }
-
-    return {
-      summary: "Stable under pressure.",
-      impact:
-        "Your connection stays responsive while busy, which is what matters for calls, games, and everyday browsing.",
-      fix: "No major responsiveness issue detected.",
-    };
-  }, [grade]);
+  const diagnosis = diagnosisCopy[grade];
 
   return (
     <main className="page-shell">
@@ -172,9 +74,13 @@ export default function Page() {
 
       {!running && !finished && (
         <div className="terminal-card">
-          <p className="text-neutral-700">
-            Keep this tab visible and avoid switching apps during the test. This gives the browser enough priority to measure timing accurately.
-          </p>
+          <p className="text-neutral-700">{preTestInstruction}</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="terminal-card border-red-600 text-red-700">
+          Test error: {error}
         </div>
       )}
 
@@ -202,9 +108,9 @@ export default function Page() {
                 />
               </div>
 
-              <pre className="mb-5 leading-7 whitespace-pre-wrap">{`Quiet .......... ${idle}
-Download load .. ${download}
-Upload load .... ${upload}`}</pre>
+              <pre className="mb-5 leading-7 whitespace-pre-wrap">{`Quiet .......... ${format(idle)}
+Download load .. ${format(download)}
+Upload load .... ${format(upload)}`}</pre>
 
               <p className="border-t border-neutral-200 pt-4 text-neutral-700">
                 {message}
@@ -232,11 +138,11 @@ Upload load .... ${upload}`}</pre>
                 </div>
 
                 <div className="font-mono text-sm text-neutral-600">
-                  Quiet: {idle}
+                  Quiet: {format(idle)}
                   <br />
-                  Download: {download}
+                  Download: {format(download)}
                   <br />
-                  Upload: {upload}
+                  Upload: {format(upload)}
                 </div>
               </div>
 
