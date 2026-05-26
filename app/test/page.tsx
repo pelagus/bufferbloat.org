@@ -393,8 +393,8 @@ function StagePanel({
           {speedLabel && (
             <div className="summary-speed">
               <span>{speedLabel}</span>
-              <Speedometer value={speed} />
-              <strong>{speed === null ? "—" : `${formatSpeed(speed)} Mb/s`}</strong>
+              <Speedometer value={speed ?? null} />
+              <strong>{speed == null ? "—" : `${formatSpeed(speed)} Mb/s`}</strong>
             </div>
           )}
         </div>

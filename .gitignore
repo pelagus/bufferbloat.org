@@ -6,3 +6,4 @@ upload-sink/node_modules
 upload-sink/.wrangler
 bufferbloat-for-next-chat.zip
 *.zip
+data/signups.json

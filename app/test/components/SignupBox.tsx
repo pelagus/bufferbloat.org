@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 
+type SignupResponse = {
+  ok?: boolean;
+  message?: string;
+};
+
 export default function SignupBox() {
   const [hidden, setHidden] = useState(true);
   const [email, setEmail] = useState("");
@@ -30,7 +35,7 @@ export default function SignupBox() {
       body: JSON.stringify({ email }),
     });
 
-    const data = await response.json();
+    const data = (await response.json()) as SignupResponse;
 
     if (!response.ok) {
       setState("error");
@@ -61,9 +66,7 @@ export default function SignupBox() {
 
         <div>
           <h2>You’re on the list</h2>
-          <p>
-            We’ll contact you when deeper personalised diagnostics become available.
-          </p>
+          <p>We’ll contact you when deeper personalised diagnostics become available.</p>
         </div>
       </section>
     );
@@ -75,7 +78,6 @@ export default function SignupBox() {
 
       <div>
         <h2>Get the full fix guide</h2>
-
         <p>
           Get notified when personalised bufferbloat diagnostics and
           connection-specific advice become available.
