@@ -48,3 +48,7 @@ body {
 .nav-link {
   @apply transition hover:text-neutral-500;
 }
+
+html {
+  color-scheme: light;
+}
