@@ -1,50 +1,94 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white text-black flex flex-col items-center justify-center px-6">
-      <div className="max-w-4xl w-full">
-        <div className="mb-8">
-          <div className="text-3xl md:text-5xl font-mono font-bold tracking-tight">
-            bufferbl(◉)at.org
-          </div>
+    <main className="page-shell">
+      <p className="eyebrow">bufferbloat.org</p>
 
-          <p className="mt-6 text-lg md:text-xl text-neutral-700 max-w-2xl leading-relaxed">
-            Diagnose bufferbloat. Understand your Internet. Fix what’s broken.
-          </p>
-        </div>
+      <h1 className="page-title">
+        Fast internet can still feel bad.
+      </h1>
 
-        <div className="flex flex-wrap gap-4 mt-8">
-          <a
-            href="/test"
-            className="border border-black px-5 py-3 font-mono hover:bg-black hover:text-white transition"
-          >
-            Run a test
-          </a>
+      <p className="page-copy">
+        Most speed tests tell you how much data your connection can move. This test checks whether it still responds quickly while busy.
+      </p>
 
-          <a
-            href="/cli"
-            className="border border-neutral-300 px-5 py-3 font-mono hover:border-black transition"
-          >
-            Install CLI
-          </a>
-        </div>
+      <div className="mt-8">
+        <Link
+          href="/test"
+          className="inline-block border border-black px-5 py-3 font-mono transition hover:bg-black hover:text-white"
+        >
+          Run the test
+        </Link>
+      </div>
 
-        <div className="mt-20 border border-neutral-200 p-6 font-mono text-sm bg-neutral-50 overflow-hidden">
-          <div className="mb-4 text-neutral-500">
-            simulated network test
-          </div>
+      <div className="terminal-card">
+        <div className="grid gap-3">
+          <ExplainerRow
+            step="1"
+            condition="Quiet connection"
+            what="Measure baseline latency before adding traffic."
+          />
 
-          <pre className="leading-7 whitespace-pre-wrap">
-            {`Idle latency .......... 12ms
-Download loaded ........ 214ms
-Upload loaded .......... 387ms
+          <ExplainerRow
+            step="2"
+            condition="During download"
+            what="Check if response time stays stable while receiving data."
+          />
 
-Bufferbloat grade ...... D
-
-Likely issue:
-Upload queue congestion detected.`}
-          </pre>
+          <ExplainerRow
+            step="3"
+            condition="During upload"
+            what="Check if response time spikes while sending data."
+          />
         </div>
       </div>
+
+      <section className="terminal-card">
+        <p className="mb-3 font-mono text-sm text-neutral-500">
+          why speed alone is misleading
+        </p>
+
+        <p className="text-neutral-700">
+          Speed is how much data moves. Latency is how quickly your connection reacts. Bufferbloat happens when latency rises sharply while the connection is busy, making calls freeze, games lag, and pages hang even on a fast line.
+        </p>
+      </section>
+
+      <section className="terminal-card">
+        <p className="mb-3 font-mono text-sm text-neutral-500">
+          what this test measures
+        </p>
+
+        <p className="text-neutral-700">
+          The test compares latency when the connection is quiet with latency during heavy download and upload traffic. It also shows measured throughput so the result does not hide the usual speed number.
+        </p>
+      </section>
     </main>
+  );
+}
+
+function ExplainerRow({
+  step,
+  condition,
+  what,
+}: {
+  step: string;
+  condition: string;
+  what: string;
+}) {
+  return (
+    <div className="grid grid-cols-[36px_1fr] gap-4 border border-neutral-200 p-4 md:grid-cols-[36px_180px_1fr]">
+      <div className="font-mono text-sm text-neutral-500">
+        {step}
+      </div>
+
+      <div className="font-mono text-sm">
+        {condition}
+      </div>
+
+      <div className="text-sm text-neutral-600">
+        {what}
+      </div>
+    </div>
   );
 }
