@@ -14,9 +14,33 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "bufferbloat.org",
+  title: {
+    default: "Bufferbloat Test | Check Internet Responsiveness Under Load",
+    template: "%s | Bufferbloat.org",
+  },
   description:
-    "Diagnose bufferbloat. Understand your Internet. Fix what’s broken.",
+    "Run a browser-based bufferbloat test to check whether your internet connection stays responsive while downloads and uploads are active.",
+  keywords: [
+    "bufferbloat test",
+    "internet responsiveness test",
+    "latency under load",
+    "ping test",
+    "upload latency",
+    "download latency",
+    "network latency test",
+    "internet lag test",
+  ],
+  openGraph: {
+    title: "Bufferbloat Test",
+    description:
+      "Check whether your internet connection stays responsive while busy.",
+    url: "https://bufferbloat.org",
+    siteName: "Bufferbloat.org",
+    type: "website",
+  },
+  alternates: {
+    canonical: "https://bufferbloat.org",
+  },
 };
 
 export default function RootLayout({
@@ -25,16 +49,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-
-		<body className="min-h-full flex flex-col">
-  		<Nav />
-  		{children}
-		</body>
-    
-		</html>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body>
+        <Nav />
+        {children}
+      </body>
+    </html>
   );
 }

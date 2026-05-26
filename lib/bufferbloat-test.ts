@@ -32,19 +32,38 @@ export type TestResult = {
 const DOWNLOAD_URL = "https://files.bufferbloat.org/100mb.bin";
 const PING_URL = "https://files.bufferbloat.org/ping.txt";
 const UPLOAD_URL = "https://upload-sink.pelagus-limited.workers.dev/";
-const UPLOAD_ESTIMATE_FACTOR = 0.7;
+
+const IDLE_DURATION_MS = 7000;
+const LOADED_DURATION_MS = 8500;
+const SAMPLE_DELAY_MS = 300;
+const FREEZE_FINAL_MS = 900;
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function percentile(values: number[], p: number) {
+function median(values: number[]) {
   if (!values.length) return null;
 
   const sorted = [...values].sort((a, b) => a - b);
-  const index = Math.ceil((p / 100) * sorted.length) - 1;
+  const middle = Math.floor(sorted.length / 2);
 
-  return sorted[Math.max(0, Math.min(index, sorted.length - 1))];
+  if (sorted.length % 2) return sorted[middle];
+
+  return (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+function trimmedMedian(values: number[]) {
+  if (!values.length) return null;
+
+  const sorted = [...values].sort((a, b) => a - b);
+
+  if (sorted.length >= 5) {
+    sorted.shift();
+    sorted.pop();
+  }
+
+  return median(sorted);
 }
 
 async function probeLatency() {
@@ -71,30 +90,24 @@ async function sampleLatency(
       onSample(sample);
     } catch {}
 
-    await wait(350);
+    await wait(SAMPLE_DELAY_MS);
   }
 
   return samples;
 }
 
-async function drainDownload(
-  onMbps: (mbps: number) => void
-) {
+async function drainDownload(onMbps: (mbps: number) => void) {
   try {
     const started = performance.now();
 
-    const response = await fetch(
-      `${DOWNLOAD_URL}?bloat=${crypto.randomUUID()}`,
-      {
-        cache: "no-store",
-        mode: "cors",
-      }
-    );
+    const response = await fetch(`${DOWNLOAD_URL}?bloat=${crypto.randomUUID()}`, {
+      cache: "no-store",
+      mode: "cors",
+    });
 
     if (!response.ok || !response.body) return;
 
     const reader = response.body.getReader();
-
     let bytes = 0;
 
     while (true) {
@@ -104,13 +117,11 @@ async function drainDownload(
 
       bytes += value.byteLength;
 
-      const elapsed =
-        (performance.now() - started) / 1000;
+      const elapsed = (performance.now() - started) / 1000;
 
-      const mbps =
-        (bytes * 8) / elapsed / 1_000_000;
-
-      onMbps(mbps);
+      if (elapsed > 0) {
+        onMbps((bytes * 8) / elapsed / 1_000_000);
+      }
     }
   } catch {}
 }
@@ -119,43 +130,25 @@ function randomPayload(size: number) {
   const payload = new Uint8Array(size);
   const chunk = 65536;
 
-  for (
-    let offset = 0;
-    offset < payload.length;
-    offset += chunk
-  ) {
+  for (let offset = 0; offset < payload.length; offset += chunk) {
     crypto.getRandomValues(
-      payload.subarray(
-        offset,
-        Math.min(offset + chunk, payload.length)
-      )
+      payload.subarray(offset, Math.min(offset + chunk, payload.length))
     );
   }
 
   return payload;
 }
 
-async function uploadPressure(
-  onMbps: (mbps: number) => void
-) {
+async function uploadPressure(onMbps: (mbps: number) => void) {
   try {
-    const payload = randomPayload(
-      32 * 1024 * 1024
-    );
-
+    const payload = randomPayload(32 * 1024 * 1024);
     const started = performance.now();
 
     const progress = window.setInterval(() => {
-      const elapsed =
-        (performance.now() - started) / 1000;
+      const elapsed = (performance.now() - started) / 1000;
 
       if (elapsed > 0) {
-        const estimatedMbps =
-          (payload.byteLength * 8) /
-          elapsed /
-          1_000_000;
-
-        onMbps(estimatedMbps * UPLOAD_ESTIMATE_FACTOR);
+        onMbps((payload.byteLength * 8) / elapsed / 1_000_000);
       }
     }, 500);
 
@@ -163,8 +156,7 @@ async function uploadPressure(
       await fetch(UPLOAD_URL, {
         method: "POST",
         headers: {
-          "Content-Type":
-            "application/octet-stream",
+          "Content-Type": "application/octet-stream",
         },
         body: payload,
       });
@@ -172,16 +164,17 @@ async function uploadPressure(
       window.clearInterval(progress);
     }
 
-    const elapsed =
-      (performance.now() - started) / 1000;
+    const elapsed = (performance.now() - started) / 1000;
 
-    const mbps =
-      (payload.byteLength * 8) /
-      elapsed /
-      1_000_000;
-
-    onMbps(mbps);
+    if (elapsed > 0) {
+      onMbps((payload.byteLength * 8) / elapsed / 1_000_000);
+    }
   } catch {}
+}
+
+function degradationPercent(base: number | null, loaded: number | null) {
+  if (!base || !loaded) return 0;
+  return ((loaded - base) / base) * 100;
 }
 
 function gradeResult(
@@ -189,23 +182,18 @@ function gradeResult(
   downloadLatency: number | null,
   uploadLatency: number | null
 ) {
-  const worstBusy = Math.max(
-    downloadLatency || 0,
-    uploadLatency || 0
+  const downloadDegradation = degradationPercent(idle, downloadLatency);
+  const uploadDegradation = degradationPercent(idle, uploadLatency);
+
+  const weightedWorst = Math.max(
+    downloadDegradation,
+    uploadDegradation * 1.15
   );
 
-  const increase = idle
-    ? worstBusy / idle
-    : 0;
-
-  if (worstBusy > 350 || increase > 12)
-    return "D";
-
-  if (worstBusy > 180 || increase > 6)
-    return "C";
-
-  if (worstBusy > 90 || increase > 3)
-    return "B";
+  if (weightedWorst > 300) return "D";
+  if (weightedWorst > 150) return "D";
+  if (weightedWorst > 60) return "C";
+  if (weightedWorst > 25) return "B";
 
   return "A";
 }
@@ -214,22 +202,17 @@ export async function runBufferbloatTest(
   onUpdate: (update: TestUpdate) => void
 ): Promise<TestResult> {
   let idle: number | null = null;
-
-  let downloadLatency: number | null =
-    null;
-
+  let downloadLatency: number | null = null;
   let uploadLatency: number | null = null;
 
   let downloadMbps: number | null = null;
-
   let uploadMbps: number | null = null;
 
   onUpdate({
     phase: "idle",
     status: "quiet line",
-    message:
-      "Measuring how quickly your internet responds before adding traffic.",
-    progress: 8,
+    message: "Measuring baseline response time.",
+    progress: 6,
     idle,
     downloadLatency,
     uploadLatency,
@@ -237,31 +220,28 @@ export async function runBufferbloatTest(
     uploadMbps,
   });
 
-  const idleSamples =
-    await sampleLatency(4500, (sample) => {
-      idle = sample;
+  const idleSamples = await sampleLatency(IDLE_DURATION_MS, (sample) => {
+    idle = sample;
 
-      onUpdate({
-        phase: "idle",
-        status: "quiet line",
-        message:
-          "Checking the baseline response time of the connection.",
-        progress: 24,
-        idle,
-        downloadLatency,
-        uploadLatency,
-        downloadMbps,
-        uploadMbps,
-      });
+    onUpdate({
+      phase: "idle",
+      status: "quiet line",
+      message: "Sampling quiet-line ping.",
+      progress: 22,
+      idle,
+      downloadLatency,
+      uploadLatency,
+      downloadMbps,
+      uploadMbps,
     });
+  });
 
-  idle = percentile(idleSamples, 95);
+  idle = trimmedMedian(idleSamples);
 
   onUpdate({
     phase: "download",
     status: "latency during download",
-    message:
-      "Downloading a large incompressible file while checking whether response time stays stable.",
+    message: "Measuring ping while download pressure is active.",
     progress: 34,
     idle,
     downloadLatency,
@@ -270,45 +250,34 @@ export async function runBufferbloatTest(
     uploadMbps,
   });
 
-  const downloadLoad = drainDownload(
-    (mbps) => {
-      downloadMbps = mbps;
-    }
-  );
+  const downloadLoad = drainDownload((mbps) => {
+    downloadMbps = mbps;
+  });
 
-  const downloadSamples =
-    await sampleLatency(6500, (sample) => {
-      downloadLatency = sample;
+  const downloadSamples = await sampleLatency(LOADED_DURATION_MS, (sample) => {
+    downloadLatency = sample;
 
-      onUpdate({
-        phase: "download",
-        status: "latency during download",
-        message:
-          "Fast downloads are good. The important part is whether the connection still reacts quickly while busy.",
-        progress: 58,
-        idle,
-        downloadLatency,
-        uploadLatency,
-        downloadMbps,
-        uploadMbps,
-      });
+    onUpdate({
+      phase: "download",
+      status: "latency during download",
+      message: "Sampling ping under download pressure.",
+      progress: 58,
+      idle,
+      downloadLatency,
+      uploadLatency,
+      downloadMbps,
+      uploadMbps,
     });
+  });
 
-  await Promise.race([
-    downloadLoad,
-    wait(1000),
-  ]);
+  await Promise.race([downloadLoad, wait(1200)]);
 
-  downloadLatency = percentile(
-    downloadSamples,
-    95
-  );
+  downloadLatency = trimmedMedian(downloadSamples);
 
   onUpdate({
     phase: "upload",
     status: "latency during upload",
-    message:
-      "Uploads are where many connections become unstable for calls and games.",
+    message: "Measuring ping while upload pressure is active.",
     progress: 68,
     idle,
     downloadLatency,
@@ -317,45 +286,34 @@ export async function runBufferbloatTest(
     uploadMbps,
   });
 
-  const uploadLoad = uploadPressure(
-    (mbps) => {
-      uploadMbps = mbps;
-    }
-  );
+  const uploadLoad = uploadPressure((mbps) => {
+    uploadMbps = mbps;
+  });
 
-  const uploadSamples =
-    await sampleLatency(6500, (sample) => {
-      uploadLatency = sample;
+  const uploadSamples = await sampleLatency(LOADED_DURATION_MS, (sample) => {
+    uploadLatency = sample;
 
-      onUpdate({
-        phase: "upload",
-        status: "latency during upload",
-        message:
-          "Checking whether response time spikes while the line is sending data.",
-        progress: 88,
-        idle,
-        downloadLatency,
-        uploadLatency,
-        downloadMbps,
-        uploadMbps,
-      });
+    onUpdate({
+      phase: "upload",
+      status: "latency during upload",
+      message: "Sampling ping under upload pressure.",
+      progress: 88,
+      idle,
+      downloadLatency,
+      uploadLatency,
+      downloadMbps,
+      uploadMbps,
     });
+  });
 
-  await Promise.race([
-    uploadLoad,
-    wait(1000),
-  ]);
+  await Promise.race([uploadLoad, wait(1200)]);
 
-  uploadLatency = percentile(
-    uploadSamples,
-    95
-  );
+  uploadLatency = trimmedMedian(uploadSamples);
 
   onUpdate({
     phase: "analysis",
     status: "analysis",
-    message:
-      "Comparing quiet response time with busy response time.",
+    message: "Computing diagnosis from stable median samples.",
     progress: 96,
     idle,
     downloadLatency,
@@ -364,7 +322,7 @@ export async function runBufferbloatTest(
     uploadMbps,
   });
 
-  await wait(1200);
+  await wait(FREEZE_FINAL_MS);
 
   return {
     idle,
@@ -372,10 +330,6 @@ export async function runBufferbloatTest(
     uploadLatency,
     downloadMbps,
     uploadMbps,
-    grade: gradeResult(
-      idle,
-      downloadLatency,
-      uploadLatency
-    ),
+    grade: gradeResult(idle, downloadLatency, uploadLatency),
   };
 }

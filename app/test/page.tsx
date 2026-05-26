@@ -1,128 +1,82 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { runBufferbloatTest } from "../../lib/bufferbloat-test";
-import {
-  diagnosisCopy,
-  initialTestMessage,
-  preTestInstruction,
-  type Grade,
-} from "../../lib/test-copy";
+import { initialTestMessage, preTestInstruction, type Grade } from "../../lib/test-copy";
+import ResultCard from "./components/ResultCard";
+import SignupBox from "./components/SignupBox";
+import { formatLatency, formatSpeed, speedWidth } from "./components/format";
+import { diagnosisFor, stageIndex } from "./components/diagnosis";
 
-function formatLatency(value: number | null) {
-  return value === null ? "—" : `${Math.round(value)}ms`;
-}
+const DOWNLOAD_TEST_SIZE = "100 MB";
+const UPLOAD_TEST_SIZE = "32 MB";
 
-function formatSpeed(value: number | null) {
-  return value === null ? "—" : `${Math.round(value)} Mbps`;
-}
-
-function speedBlocks(value: number | null) {
-  const count = value === null ? 0 : Math.min(18, Math.max(1, Math.round(value / 8)));
-  return "█".repeat(count) + "░".repeat(18 - count);
-}
-
-function percentChange(base: number | null, value: number | null) {
-  if (!base || !value) return "—";
-  return `+${Math.round(((value - base) / base) * 100)}%`;
-}
-
-function ResultRow({
-  title,
-  note,
-  latency,
-  change,
-  severity = "neutral",
-}: {
-  title: string;
-  note: string;
-  latency: string;
-  change: string;
-  severity?: "neutral" | "warn" | "bad";
-}) {
-  return (
-    <div className="grid grid-cols-[1fr_90px_80px] gap-3 border-b border-neutral-200 px-3 py-3 last:border-b-0 md:grid-cols-[1fr_120px_100px]">
-      <div>
-        <p className="font-mono text-sm">{title}</p>
-        <p className="mt-1 text-xs text-neutral-500">{note}</p>
-      </div>
-
-      <div className="font-mono text-sm">{latency}</div>
-
-      <div
-        className={`font-mono text-sm ${
-          severity === "bad"
-            ? "text-red-600"
-            : severity === "warn"
-              ? "text-yellow-600"
-              : "text-neutral-500"
-        }`}
-      >
-        {change}
-      </div>
-    </div>
-  );
-}
-
-function phaseStatus(
-  phase: "quiet" | "download" | "upload",
-  running: boolean,
-  finished: boolean,
-  activeStatus: string
-) {
-  if (finished) return "done";
-  if (!running) return phase === "quiet" ? "ready" : "pending";
-
-  if (phase === "quiet" && activeStatus === "quiet line") return "testing";
-  if (phase === "download" && activeStatus === "latency during download") return "testing";
-  if (phase === "upload" && activeStatus === "latency during upload") return "testing";
-
-  if (phase === "quiet") return "done";
-  if (phase === "download" && activeStatus === "latency during upload") return "done";
-  if (phase === "download" && activeStatus === "analysis") return "done";
-  if (phase === "upload" && activeStatus === "analysis") return "done";
-
-  return "pending";
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export default function Page() {
   const [running, setRunning] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [manualStage, setManualStage] = useState<number | null>(null);
 
+  const [progress, setProgress] = useState(0);
   const [idle, setIdle] = useState<number | null>(null);
   const [downloadLatency, setDownloadLatency] = useState<number | null>(null);
   const [uploadLatency, setUploadLatency] = useState<number | null>(null);
   const [downloadMbps, setDownloadMbps] = useState<number | null>(null);
   const [uploadMbps, setUploadMbps] = useState<number | null>(null);
-
   const [status, setStatus] = useState("ready");
   const [message, setMessage] = useState(initialTestMessage);
   const [grade, setGrade] = useState<Grade>("—");
   const [error, setError] = useState<string | null>(null);
 
+  const diagnosisRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (finished && diagnosisRef.current) {
+      diagnosisRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [finished]);
+
+  const browserInfo = useMemo(() => {
+    if (typeof window === "undefined") return null;
+
+    return {
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      platform: navigator.platform,
+      memory: (navigator as any).deviceMemory || "unknown",
+      cores: navigator.hardwareConcurrency || "unknown",
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      online: navigator.onLine ? "online" : "offline",
+    };
+  }, []);
+
   async function runTest() {
     try {
       setError(null);
+      setManualStage(null);
       setRunning(true);
+      setAnalyzing(false);
       setFinished(false);
       setProgress(0);
-
       setIdle(null);
       setDownloadLatency(null);
       setUploadLatency(null);
       setDownloadMbps(null);
       setUploadMbps(null);
-
       setGrade("—");
-      setStatus("starting");
-      setMessage("Starting the measurement engine.");
 
       const result = await runBufferbloatTest((update) => {
         setStatus(update.status);
         setMessage(update.message);
         setProgress(update.progress);
-
         setIdle(update.idle);
         setDownloadLatency(update.downloadLatency);
         setUploadLatency(update.uploadLatency);
@@ -136,235 +90,454 @@ export default function Page() {
       setDownloadMbps(result.downloadMbps);
       setUploadMbps(result.uploadMbps);
       setGrade(result.grade);
-
       setProgress(100);
+
+      setRunning(false);
+      setAnalyzing(true);
+      setStatus("diagnosis");
+      setMessage("Computing diagnosis from completed measurements.");
+
+      await wait(3200);
+
+      setAnalyzing(false);
       setFinished(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown test error");
-    } finally {
       setRunning(false);
+      setAnalyzing(false);
     }
   }
 
-  const diagnosis = diagnosisCopy[grade];
+  const automaticStage = running && !analyzing ? stageIndex(status) : 0;
+  const openStage = running ? automaticStage : manualStage;
 
-  const rows = [
-    {
-      load: "Quiet",
-      note: "No download or upload traffic",
-      latency: idle,
-      status: phaseStatus("quiet", running, finished, status),
-    },
-    {
-      load: "During download",
-      note: "Large file moving toward you",
-      latency: downloadLatency,
-      status: phaseStatus("download", running, finished, status),
-    },
-    {
-      load: "During upload",
-      note: "Temporary data moving out",
-      latency: uploadLatency,
-      status: phaseStatus("upload", running, finished, status),
-    },
-  ];
+  const diagnosis = diagnosisFor(
+    grade,
+    downloadMbps,
+    uploadMbps,
+    idle,
+    downloadLatency,
+    uploadLatency
+  );
+
+  function toggleStage(stage: number, done: boolean) {
+    if (running || analyzing || !done) return;
+    setManualStage(manualStage === stage ? null : stage);
+  }
 
   return (
-    <main className="page-shell">
-      <p className="eyebrow">network diagnostic</p>
+    <main className="test-shell">
+      {!running && !analyzing && !finished && (
+        <section className="hero-panel">
+          <div className="hero-grid">
+            <div className="hero-copy">
+              <div className="hero-kicker">
+                NETWORK RESPONSIVENESS DIAGNOSTIC
+              </div>
 
-      <h1 className="page-title">Run a bufferbloat test</h1>
+              <h1>Bufferbloat test</h1>
 
-      <p className="page-copy">
-        Find out if latency stays low while your internet is busy.
-      </p>
+              <p className="hero-subtitle">
+                Your internet can look fast and still feel terrible.
+              </p>
 
-      {!running && !finished && (
-        <div className="terminal-card">
-          <p className="text-neutral-700">{preTestInstruction}</p>
-        </div>
+              <p className="hero-description">
+                This test measures whether latency explodes while your connection is busy.
+                That is what causes calls to freeze, games to lag, and pages to stall
+                during uploads or downloads.
+              </p>
+
+              <button
+                className="hero-start-button"
+                onClick={runTest}
+                disabled={running || analyzing}
+              >
+                Start test
+              </button>
+            </div>
+
+            <div className="hero-visual">
+              <div className="signal-card">
+                <div className="signal-label">QUIET LINE</div>
+                <div className="signal-value stable">24 ms</div>
+              </div>
+
+              <div className="signal-arrow">↓</div>
+
+              <div className="signal-card stressed">
+                <div className="signal-label">UNDER LOAD</div>
+                <div className="signal-value danger">412 ms</div>
+              </div>
+
+              <div className="signal-caption">
+                Bufferbloat is excessive latency caused by network congestion.
+              </div>
+            </div>
+          </div>
+        </section>
       )}
 
       {error && (
-        <div className="terminal-card border-red-600 text-red-700">
+        <section className="terminal-card error-card">
           Test error: {error}
-        </div>
+        </section>
       )}
 
-      <button
-        onClick={runTest}
-        disabled={running}
-        className="mt-6 border border-black px-5 py-3 font-mono transition hover:bg-black hover:text-white disabled:opacity-40"
-      >
-        {running ? "Testing..." : finished ? "Run again" : "Start test"}
-      </button>
+      {analyzing && (
+        <section className="analysis-card">
+          <div className="analysis-loader tall">
+            <span />
+            <div>
+              <p>Crunching numbers...</p>
+              <small>
+                Comparing quiet latency, stressed latency, throughput, payload size, and client telemetry.
+              </small>
+            </div>
+          </div>
 
-      {(running || finished) && (
-        <div className="terminal-card">
+          <div className="analysis-progress">
+            <div />
+          </div>
+        </section>
+      )}
+
+      {finished && (
+        <>
+          <div ref={diagnosisRef}>
+            <ResultCard
+            grade={grade}
+            diagnosis={diagnosis}
+            technical={
+              `
+Quiet-line average ping latency: ${formatLatency(idle)} ms
+Download-stress average ping latency: ${formatLatency(downloadLatency)} ms
+Upload-stress average ping latency: ${formatLatency(uploadLatency)} ms
+
+Download throughput: ${formatSpeed(downloadMbps)} Mbps
+Upload throughput: ${formatSpeed(uploadMbps)} Mbps
+
+Download test payload size: ${DOWNLOAD_TEST_SIZE}
+Upload test payload size: ${UPLOAD_TEST_SIZE}
+
+Browser platform: ${browserInfo?.platform}
+Browser language: ${browserInfo?.language}
+Timezone: ${browserInfo?.timezone}
+Approximate device memory: ${browserInfo?.memory} GB
+Logical CPU cores: ${browserInfo?.cores}
+Viewport size: ${browserInfo?.viewport}
+Browser online state: ${browserInfo?.online}
+
+User agent: ${browserInfo?.userAgent}
+              `.trim()
+            }
+          />
+          </div>
+
+          <SignupBox />
+        </>
+      )}
+
+      {(running || analyzing || finished) && (
+        <section className="instrument-panel">
           {running && (
             <>
-              <div className="mb-4 flex justify-between gap-4 font-mono text-sm">
-                <span>{status}</span>
+              <div className="test-status-row top">
+                <span>{message}</span>
                 <span>{Math.floor(progress)}%</span>
               </div>
 
-              <div className="mb-5 h-2 w-full overflow-hidden border border-black">
-                <div
-                  className="h-full bg-black transition-all duration-200"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-
-              <div className="overflow-hidden border border-neutral-200">
-                <div className="grid grid-cols-[1fr_90px_80px] gap-3 border-b border-neutral-200 bg-neutral-50 px-3 py-2 font-mono text-xs text-neutral-500 md:grid-cols-[1fr_120px_100px]">
-                  <span>network load</span>
-                  <span>latency</span>
-                  <span>status</span>
-                </div>
-
-                {rows.map((row) => (
-                  <div
-                    key={row.load}
-                    className="grid grid-cols-[1fr_90px_80px] gap-3 border-b border-neutral-200 px-3 py-3 last:border-b-0 md:grid-cols-[1fr_120px_100px]"
-                  >
-                    <div>
-                      <p className="font-mono text-sm">{row.load}</p>
-                      <p className="mt-1 text-xs text-neutral-500">{row.note}</p>
-                    </div>
-
-                    <div className="font-mono text-sm">
-                      {formatLatency(row.latency)}
-                    </div>
-
-                    <div className="font-mono text-xs text-neutral-500">
-                      {row.status}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <div className="border border-neutral-200 p-3">
-                  <p className="font-mono text-sm">download speed</p>
-                  <p className="mt-1 font-mono text-xl">
-                    {formatSpeed(downloadMbps)}
-                  </p>
-                  <p className="mt-2 font-mono text-xs text-neutral-500">
-                    {speedBlocks(downloadMbps)}
-                  </p>
-                </div>
-
-                <div className="border border-neutral-200 p-3">
-                  <p className="font-mono text-sm">upload speed</p>
-                  <p className="mt-1 font-mono text-xl">
-                    {formatSpeed(uploadMbps)}
-                  </p>
-                  <p className="mt-2 font-mono text-xs text-neutral-500">
-                    {speedBlocks(uploadMbps)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 border-t border-neutral-200 pt-4">
-                <p className="text-neutral-700">{message}</p>
-                <p className="mt-2 text-sm text-neutral-500">
-                  Latency means response time. Bufferbloat happens when response time jumps while the connection is busy.
-                </p>
+              <div className="progress-bar top">
+                <div className="progress-fill" style={{ width: `${progress}%` }} />
               </div>
             </>
           )}
 
-          {finished && (
-            <>
-              <div className="mb-6 flex items-start justify-between gap-8 border-b border-neutral-200 pb-6">
-                <div>
-                  <p className="text-sm text-neutral-500">responsiveness grade</p>
+          <div className="stage-accordion">
+            <StagePanel
+              stage={1}
+              expanded={openStage === 1}
+              title="Median ping latency under quiet conditions"
+              ping={idle}
+              done={idle !== null}
+              onToggle={() => toggleStage(1, idle !== null)}
+            >
+              <MetricCard
+                label="Network stress"
+                title="No additional stress"
+                value="none"
+                footer="baseline measurement"
+                theme="baseline"
+              />
 
-                  <h2
-                    className={`mt-2 font-mono text-7xl font-bold ${
-                      grade === "D"
-                        ? "text-red-600"
-                        : grade === "C"
-                          ? "text-yellow-600"
-                          : "text-green-600"
-                    }`}
-                  >
-                    {grade}
-                  </h2>
-                </div>
+              <PingCard
+                title="Quiet-line ping"
+                value={idle}
+                active={automaticStage === 1}
+                theme="baseline"
+              />
+            </StagePanel>
 
-                <div className="text-right">
-                  <p className="font-mono text-sm text-neutral-500">
-                    measured throughput
-                  </p>
-                  <div className="mt-2 font-mono text-lg">
-                    ↓ {formatSpeed(downloadMbps)}
-                  </div>
-                  <div className="font-mono text-lg">
-                    ↑ {formatSpeed(uploadMbps)}
-                  </div>
-                </div>
-              </div>
+            <StagePanel
+              stage={2}
+              expanded={openStage === 2}
+              title="Median ping latency with download stress"
+              ping={downloadLatency}
+              speed={downloadMbps}
+              speedLabel="Median download speed"
+              done={downloadLatency !== null}
+              onToggle={() => toggleStage(2, downloadLatency !== null)}
+            >
+              <SpeedGauge
+                label="Download stress"
+                title="Receiving test file"
+                value={downloadMbps}
+                payload={DOWNLOAD_TEST_SIZE}
+                theme="download"
+              />
 
-              <div className="overflow-hidden border border-neutral-200">
-                <div className="grid grid-cols-[1fr_90px_80px] gap-3 border-b border-neutral-200 bg-neutral-50 px-3 py-2 font-mono text-xs text-neutral-500 md:grid-cols-[1fr_120px_100px]">
-                  <span>network condition</span>
-                  <span>latency</span>
-                  <span>change</span>
-                </div>
+              <PingCard
+                title="Download-stress ping"
+                value={downloadLatency}
+                active={automaticStage === 2}
+                theme="download"
+              />
+            </StagePanel>
 
-                <ResultRow
-                  title="Quiet connection"
-                  note="No significant traffic"
-                  latency={formatLatency(idle)}
-                  change="baseline"
-                />
+            <StagePanel
+              stage={3}
+              expanded={openStage === 3}
+              title="Median ping latency with upload stress"
+              ping={uploadLatency}
+              speed={uploadMbps}
+              speedLabel="Median upload speed"
+              done={uploadLatency !== null}
+              onToggle={() => toggleStage(3, uploadLatency !== null)}
+            >
+              <SpeedGauge
+                label="Upload stress"
+                title="Sending test payload"
+                value={uploadMbps}
+                payload={UPLOAD_TEST_SIZE}
+                theme="upload"
+              />
 
-                <ResultRow
-                  title="During heavy download"
-                  note="Receiving large amounts of data"
-                  latency={formatLatency(downloadLatency)}
-                  change={percentChange(idle, downloadLatency)}
-                  severity={
-                    idle && downloadLatency && downloadLatency > idle * 2
-                      ? "warn"
-                      : "neutral"
-                  }
-                />
+              <PingCard
+                title="Upload-stress ping"
+                value={uploadLatency}
+                active={automaticStage === 3}
+                theme="upload"
+              />
+            </StagePanel>
+          </div>
+        </section>
+      )}
 
-                <ResultRow
-                  title="During heavy upload"
-                  note="Sending large amounts of data"
-                  latency={formatLatency(uploadLatency)}
-                  change={percentChange(idle, uploadLatency)}
-                  severity={
-                    idle && uploadLatency && uploadLatency > idle * 2
-                      ? "bad"
-                      : "neutral"
-                  }
-                />
-              </div>
-
-              <div className="mt-6 space-y-5">
-                <section>
-                  <p className="mb-1 text-sm text-neutral-500">diagnosis</p>
-                  <p>{diagnosis.summary}</p>
-                </section>
-
-                <section>
-                  <p className="mb-1 text-sm text-neutral-500">what this means</p>
-                  <p>{diagnosis.impact}</p>
-                </section>
-
-                <section>
-                  <p className="mb-1 text-sm text-neutral-500">what to do next</p>
-                  <p>{diagnosis.fix}</p>
-                </section>
-              </div>
-            </>
-          )}
-        </div>
+      {finished && (
+        <button onClick={runTest}>Run another test</button>
       )}
     </main>
+  );
+}
+
+function StagePanel({
+  stage,
+  expanded,
+  title,
+  ping,
+  speed,
+  speedLabel,
+  done,
+}: {
+  stage: number;
+  expanded: boolean;
+  title: string;
+  ping: number | null;
+  speed?: number | null;
+  speedLabel?: string;
+  done: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  const theme = stage === 2 ? "download" : stage === 3 ? "upload" : "baseline";
+
+  return (
+    <section className={`stage-panel ${expanded ? "active-now" : "complete"} ${theme}`}>
+      <div className="stage-panel-header">
+        <div className="stage-icon">
+          {done ? "✓" : theme === "download" ? "↓" : theme === "upload" ? "↑" : "⌁"}
+        </div>
+
+        <div className="stage-title-block">
+          <strong>{title}</strong>
+        </div>
+
+        <div className="stage-summary">
+          <div className="median-ping-readout">
+            <span>Median ping</span>
+            <strong>{ping === null ? "—" : `${formatLatency(ping)} ms`}</strong>
+
+            {expanded && ping !== null && (
+              <div className="ping-flyout" aria-hidden="true">
+                {[0.94, 1.02, 0.98, 1.06, 1].map((factor, index) => (
+                  <em
+                    key={index}
+                    style={{ "--sample-index": index } as React.CSSProperties}
+                  >
+                    {Math.round(ping * factor)}ms
+                  </em>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {speedLabel && (
+            <div className="summary-speed">
+              <span>{speedLabel}</span>
+              <Speedometer value={speed} />
+              <strong>{speed === null ? "—" : `${formatSpeed(speed)} Mb/s`}</strong>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Speedometer({ value }: { value: number | null }) {
+  const percent = Math.min(100, Math.max(0, value ?? 0));
+  const angle = -90 + percent * 1.8;
+  const arcLength = 142;
+  const dashOffset = arcLength - (arcLength * percent) / 100;
+
+  return (
+    <svg className="speedometer" viewBox="0 0 120 70" aria-hidden="true">
+      <path className="speedometer-bg" d="M15 60 A45 45 0 0 1 105 60" />
+      <path
+        className="speedometer-fill"
+        d="M15 60 A45 45 0 0 1 105 60"
+        style={{
+          strokeDasharray: arcLength,
+          strokeDashoffset: dashOffset,
+        }}
+      />
+      <line
+        className="speedometer-needle"
+        x1="60"
+        y1="60"
+        x2="60"
+        y2="22"
+        style={{ transform: `rotate(${angle}deg)`, transformOrigin: "60px 60px" }}
+      />
+      <circle className="speedometer-dot" cx="60" cy="60" r="5" />
+      <text x="18" y="64">0</text>
+      <text x="55" y="20">50</text>
+      <text x="94" y="64">100</text>
+    </svg>
+  );
+}
+
+function MetricCard({
+  label,
+  title,
+  value,
+  footer,
+  theme,
+}: {
+  label: string;
+  title: string;
+  value: string;
+  footer: string;
+  theme: string;
+}) {
+  return (
+    <div className={`metric-card ${theme}`}>
+      <p>{label}</p>
+      <h3>{title}</h3>
+      <div className="big-read">{value}</div>
+      <small>{footer}</small>
+    </div>
+  );
+}
+
+function SpeedGauge({
+  label,
+  title,
+  value,
+  payload,
+  theme,
+}: {
+  label: string;
+  title: string;
+  value: number | null;
+  payload: string;
+  theme: string;
+}) {
+  return (
+    <div className={`metric-card speed-gauge ${theme}`}>
+      <p>{label}</p>
+      <h3>{title}</h3>
+
+      <div className="dial" style={{ "--dial": `${speedWidth(value)}%` } as React.CSSProperties}>
+        <div className="dial-value">
+          {formatSpeed(value)}
+          <span>Mbps</span>
+        </div>
+      </div>
+
+      <small>{payload} payload</small>
+    </div>
+  );
+}
+
+function PingCard({
+  title,
+  value,
+  active,
+  theme,
+}: {
+  title: string;
+  value: number | null;
+  active: boolean;
+  theme: string;
+}) {
+  const samples =
+    value === null
+      ? ["…", "…", "…", "…", "…"]
+      : [
+          Math.round(value * 0.96),
+          Math.round(value * 1.01),
+          Math.round(value),
+          Math.round(value * 0.98),
+          Math.round(value * 1.03),
+        ];
+
+  return (
+    <div className={`metric-card ping ${theme} ${active ? "active" : "locked"}`}>
+      <p>Ping latency</p>
+      <h3>{title}</h3>
+
+      <div className="sample-row">
+        {samples.map((sample, index) => (
+          <span
+            key={index}
+            style={{ "--sample-index": index } as React.CSSProperties}
+          >
+            {sample}
+          </span>
+        ))}
+      </div>
+
+      <div className="wave-row">
+        {samples.map((_, index) => (
+          <span key={index} />
+        ))}
+      </div>
+
+      <div className="big-read">
+        {formatLatency(value)} ms
+      </div>
+
+      <small>{active ? "sampling trials" : "median locked"}</small>
+    </div>
   );
 }
