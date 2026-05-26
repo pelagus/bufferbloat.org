@@ -9,17 +9,93 @@ import {
   type Grade,
 } from "../../lib/test-copy";
 
-function format(value: number | null) {
+function formatLatency(value: number | null) {
   return value === null ? "—" : `${Math.round(value)}ms`;
+}
+
+function formatSpeed(value: number | null) {
+  return value === null ? "—" : `${Math.round(value)} Mbps`;
+}
+
+function speedBlocks(value: number | null) {
+  const count = value === null ? 0 : Math.min(18, Math.max(1, Math.round(value / 8)));
+  return "█".repeat(count) + "░".repeat(18 - count);
+}
+
+function percentChange(base: number | null, value: number | null) {
+  if (!base || !value) return "—";
+  return `+${Math.round(((value - base) / base) * 100)}%`;
+}
+
+function ResultRow({
+  title,
+  note,
+  latency,
+  change,
+  severity = "neutral",
+}: {
+  title: string;
+  note: string;
+  latency: string;
+  change: string;
+  severity?: "neutral" | "warn" | "bad";
+}) {
+  return (
+    <div className="grid grid-cols-[1fr_90px_80px] gap-3 border-b border-neutral-200 px-3 py-3 last:border-b-0 md:grid-cols-[1fr_120px_100px]">
+      <div>
+        <p className="font-mono text-sm">{title}</p>
+        <p className="mt-1 text-xs text-neutral-500">{note}</p>
+      </div>
+
+      <div className="font-mono text-sm">{latency}</div>
+
+      <div
+        className={`font-mono text-sm ${
+          severity === "bad"
+            ? "text-red-600"
+            : severity === "warn"
+              ? "text-yellow-600"
+              : "text-neutral-500"
+        }`}
+      >
+        {change}
+      </div>
+    </div>
+  );
+}
+
+function phaseStatus(
+  phase: "quiet" | "download" | "upload",
+  running: boolean,
+  finished: boolean,
+  activeStatus: string
+) {
+  if (finished) return "done";
+  if (!running) return phase === "quiet" ? "ready" : "pending";
+
+  if (phase === "quiet" && activeStatus === "quiet line") return "testing";
+  if (phase === "download" && activeStatus === "latency during download") return "testing";
+  if (phase === "upload" && activeStatus === "latency during upload") return "testing";
+
+  if (phase === "quiet") return "done";
+  if (phase === "download" && activeStatus === "latency during upload") return "done";
+  if (phase === "download" && activeStatus === "analysis") return "done";
+  if (phase === "upload" && activeStatus === "analysis") return "done";
+
+  return "pending";
 }
 
 export default function Page() {
   const [running, setRunning] = useState(false);
   const [finished, setFinished] = useState(false);
   const [progress, setProgress] = useState(0);
+
   const [idle, setIdle] = useState<number | null>(null);
-  const [download, setDownload] = useState<number | null>(null);
-  const [upload, setUpload] = useState<number | null>(null);
+  const [downloadLatency, setDownloadLatency] = useState<number | null>(null);
+  const [uploadLatency, setUploadLatency] = useState<number | null>(null);
+  const [downloadMbps, setDownloadMbps] = useState<number | null>(null);
+  const [uploadMbps, setUploadMbps] = useState<number | null>(null);
+
   const [status, setStatus] = useState("ready");
   const [message, setMessage] = useState(initialTestMessage);
   const [grade, setGrade] = useState<Grade>("—");
@@ -31,9 +107,13 @@ export default function Page() {
       setRunning(true);
       setFinished(false);
       setProgress(0);
+
       setIdle(null);
-      setDownload(null);
-      setUpload(null);
+      setDownloadLatency(null);
+      setUploadLatency(null);
+      setDownloadMbps(null);
+      setUploadMbps(null);
+
       setGrade("—");
       setStatus("starting");
       setMessage("Starting the measurement engine.");
@@ -42,15 +122,21 @@ export default function Page() {
         setStatus(update.status);
         setMessage(update.message);
         setProgress(update.progress);
+
         setIdle(update.idle);
-        setDownload(update.download);
-        setUpload(update.upload);
+        setDownloadLatency(update.downloadLatency);
+        setUploadLatency(update.uploadLatency);
+        setDownloadMbps(update.downloadMbps);
+        setUploadMbps(update.uploadMbps);
       });
 
       setIdle(result.idle);
-      setDownload(result.download);
-      setUpload(result.upload);
+      setDownloadLatency(result.downloadLatency);
+      setUploadLatency(result.uploadLatency);
+      setDownloadMbps(result.downloadMbps);
+      setUploadMbps(result.uploadMbps);
       setGrade(result.grade);
+
       setProgress(100);
       setFinished(true);
     } catch (err) {
@@ -62,6 +148,27 @@ export default function Page() {
 
   const diagnosis = diagnosisCopy[grade];
 
+  const rows = [
+    {
+      load: "Quiet",
+      note: "No download or upload traffic",
+      latency: idle,
+      status: phaseStatus("quiet", running, finished, status),
+    },
+    {
+      load: "During download",
+      note: "Large file moving toward you",
+      latency: downloadLatency,
+      status: phaseStatus("download", running, finished, status),
+    },
+    {
+      load: "During upload",
+      note: "Temporary data moving out",
+      latency: uploadLatency,
+      status: phaseStatus("upload", running, finished, status),
+    },
+  ];
+
   return (
     <main className="page-shell">
       <p className="eyebrow">network diagnostic</p>
@@ -69,7 +176,7 @@ export default function Page() {
       <h1 className="page-title">Run a bufferbloat test</h1>
 
       <p className="page-copy">
-        Find out if your internet stays responsive while the connection is busy.
+        Find out if latency stays low while your internet is busy.
       </p>
 
       {!running && !finished && (
@@ -108,24 +215,73 @@ export default function Page() {
                 />
               </div>
 
-              <pre className="mb-5 leading-7 whitespace-pre-wrap">{`Quiet .......... ${format(idle)}
-Download load .. ${format(download)}
-Upload load .... ${format(upload)}`}</pre>
+              <div className="overflow-hidden border border-neutral-200">
+                <div className="grid grid-cols-[1fr_90px_80px] gap-3 border-b border-neutral-200 bg-neutral-50 px-3 py-2 font-mono text-xs text-neutral-500 md:grid-cols-[1fr_120px_100px]">
+                  <span>network load</span>
+                  <span>latency</span>
+                  <span>status</span>
+                </div>
 
-              <p className="border-t border-neutral-200 pt-4 text-neutral-700">
-                {message}
-              </p>
+                {rows.map((row) => (
+                  <div
+                    key={row.load}
+                    className="grid grid-cols-[1fr_90px_80px] gap-3 border-b border-neutral-200 px-3 py-3 last:border-b-0 md:grid-cols-[1fr_120px_100px]"
+                  >
+                    <div>
+                      <p className="font-mono text-sm">{row.load}</p>
+                      <p className="mt-1 text-xs text-neutral-500">{row.note}</p>
+                    </div>
+
+                    <div className="font-mono text-sm">
+                      {formatLatency(row.latency)}
+                    </div>
+
+                    <div className="font-mono text-xs text-neutral-500">
+                      {row.status}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="border border-neutral-200 p-3">
+                  <p className="font-mono text-sm">download speed</p>
+                  <p className="mt-1 font-mono text-xl">
+                    {formatSpeed(downloadMbps)}
+                  </p>
+                  <p className="mt-2 font-mono text-xs text-neutral-500">
+                    {speedBlocks(downloadMbps)}
+                  </p>
+                </div>
+
+                <div className="border border-neutral-200 p-3">
+                  <p className="font-mono text-sm">upload speed</p>
+                  <p className="mt-1 font-mono text-xl">
+                    {formatSpeed(uploadMbps)}
+                  </p>
+                  <p className="mt-2 font-mono text-xs text-neutral-500">
+                    {speedBlocks(uploadMbps)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 border-t border-neutral-200 pt-4">
+                <p className="text-neutral-700">{message}</p>
+                <p className="mt-2 text-sm text-neutral-500">
+                  Latency means response time. Bufferbloat happens when response time jumps while the connection is busy.
+                </p>
+              </div>
             </>
           )}
 
           {finished && (
             <>
-              <div className="mb-5 flex items-center justify-between">
+              <div className="mb-6 flex items-start justify-between gap-8 border-b border-neutral-200 pb-6">
                 <div>
                   <p className="text-sm text-neutral-500">responsiveness grade</p>
 
                   <h2
-                    className={`font-mono text-6xl font-bold ${
+                    className={`mt-2 font-mono text-7xl font-bold ${
                       grade === "D"
                         ? "text-red-600"
                         : grade === "C"
@@ -137,23 +293,66 @@ Upload load .... ${format(upload)}`}</pre>
                   </h2>
                 </div>
 
-                <div className="font-mono text-sm text-neutral-600">
-                  Quiet: {format(idle)}
-                  <br />
-                  Download: {format(download)}
-                  <br />
-                  Upload: {format(upload)}
+                <div className="text-right">
+                  <p className="font-mono text-sm text-neutral-500">
+                    measured throughput
+                  </p>
+                  <div className="mt-2 font-mono text-lg">
+                    ↓ {formatSpeed(downloadMbps)}
+                  </div>
+                  <div className="font-mono text-lg">
+                    ↑ {formatSpeed(uploadMbps)}
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-5">
+              <div className="overflow-hidden border border-neutral-200">
+                <div className="grid grid-cols-[1fr_90px_80px] gap-3 border-b border-neutral-200 bg-neutral-50 px-3 py-2 font-mono text-xs text-neutral-500 md:grid-cols-[1fr_120px_100px]">
+                  <span>network condition</span>
+                  <span>latency</span>
+                  <span>change</span>
+                </div>
+
+                <ResultRow
+                  title="Quiet connection"
+                  note="No significant traffic"
+                  latency={formatLatency(idle)}
+                  change="baseline"
+                />
+
+                <ResultRow
+                  title="During heavy download"
+                  note="Receiving large amounts of data"
+                  latency={formatLatency(downloadLatency)}
+                  change={percentChange(idle, downloadLatency)}
+                  severity={
+                    idle && downloadLatency && downloadLatency > idle * 2
+                      ? "warn"
+                      : "neutral"
+                  }
+                />
+
+                <ResultRow
+                  title="During heavy upload"
+                  note="Sending large amounts of data"
+                  latency={formatLatency(uploadLatency)}
+                  change={percentChange(idle, uploadLatency)}
+                  severity={
+                    idle && uploadLatency && uploadLatency > idle * 2
+                      ? "bad"
+                      : "neutral"
+                  }
+                />
+              </div>
+
+              <div className="mt-6 space-y-5">
                 <section>
                   <p className="mb-1 text-sm text-neutral-500">diagnosis</p>
                   <p>{diagnosis.summary}</p>
                 </section>
 
                 <section>
-                  <p className="mb-1 text-sm text-neutral-500">what this feels like</p>
+                  <p className="mb-1 text-sm text-neutral-500">what this means</p>
                   <p>{diagnosis.impact}</p>
                 </section>
 
