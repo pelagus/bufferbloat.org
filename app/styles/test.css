@@ -1,0 +1,392 @@
+.test-shell {
+  width: min(980px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-top: 28px;
+}
+
+.hero-panel {
+  margin: 28px 0;
+  padding: 42px;
+}
+
+.hero-panel h1 {
+  font-size: clamp(58px, 7.5vw, 96px);
+}
+
+.result-card {
+  margin-top: 20px;
+}
+
+.instrument-panel {
+  margin-top: 24px;
+}
+
+@media (max-width: 767px) {
+  .test-shell {
+    width: calc(100% - 24px);
+    padding-top: 18px;
+  }
+
+  .hero-panel {
+    margin: 22px 0;
+    padding: 24px;
+  }
+
+  .hero-panel h1 {
+    font-size: clamp(46px, 15vw, 64px);
+  }
+
+  .instrument-panel {
+    padding: 12px;
+  }
+}
+
+.stage-panel.active-now.baseline {
+  color: var(--good);
+  border-color: var(--good);
+}
+
+.stage-panel.active-now.baseline .stage-title-block strong,
+.stage-panel.active-now.baseline .stage-summary strong {
+  color: var(--good);
+}
+
+/* MOBILE TEST CARD COMPACTION */
+
+@media (max-width: 640px) {
+  .test-phase-card {
+    padding: 1.1rem;
+    min-height: unset;
+  }
+
+  .test-phase-header {
+    gap: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .test-phase-title {
+    font-size: 0.98rem;
+    line-height: 1.08;
+  }
+
+  .test-phase-divider {
+    margin: 0.9rem 0;
+  }
+
+  .test-phase-metric {
+    gap: 0.45rem;
+  }
+
+  .test-phase-metric-value {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .test-phase-speed {
+    margin-top: 1rem;
+  }
+
+  .test-progress-bar {
+    height: 12px;
+  }
+
+  .live-ping-samples {
+    min-height: 20px;
+    margin-bottom: 0.35rem;
+    overflow: hidden;
+  }
+
+  .live-ping-sample {
+    font-size: 0.72rem;
+    opacity: 0.75;
+  }
+}
+
+/* BASELINE ACTIVE STATE */
+
+.phase-idle.phase-active {
+  border-color: #eab308;
+}
+
+.phase-idle.phase-active .test-phase-title,
+.phase-idle.phase-active .test-phase-icon,
+.phase-idle.phase-active .test-phase-metric-value,
+.phase-idle.phase-active .live-ping-sample {
+  color: #eab308;
+}
+
+.phase-idle.phase-active .test-phase-icon {
+  border-color: #eab308;
+}
+
+
+/* Active baseline must be yellow, not neutral */
+
+.stage-panel.active-now.baseline {
+  color: #eab308;
+  border-color: #eab308;
+}
+
+.stage-panel.active-now.baseline .stage-icon {
+  color: #eab308;
+  border-color: #eab308;
+}
+
+.stage-panel.active-now.baseline .stage-title-block strong,
+.stage-panel.active-now.baseline .stage-summary span,
+.stage-panel.active-now.baseline .stage-summary strong,
+.stage-panel.active-now.baseline .ping-flyout em {
+  color: #eab308;
+}
+
+/* Keep completed cards neutral */
+
+.stage-panel.complete.baseline,
+.stage-panel.complete.download,
+.stage-panel.complete.upload {
+  color: var(--fg);
+  border-color: var(--line);
+}
+
+/* Visible live ping samples */
+
+.ping-flyout {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 34px;
+  height: 32px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ping-flyout em {
+  position: absolute;
+  left: calc(var(--sample-index) * 44px);
+  font-style: normal;
+  font-size: 13px;
+  opacity: 0;
+  animation: visiblePingFly 1250ms ease-in-out infinite;
+  animation-delay: calc(var(--sample-index) * 120ms);
+}
+
+@keyframes visiblePingFly {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  25% {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+
+  75% {
+    opacity: 0.45;
+    transform: translateY(-12px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+
+@media (max-width: 767px) {
+  .median-ping-readout {
+    position: relative;
+    min-height: 92px;
+    overflow: hidden;
+  }
+
+  .median-ping-readout strong {
+    display: block;
+    margin-top: 34px;
+  }
+
+  .stage-panel-header {
+    min-height: 138px;
+  }
+
+  .stage-summary {
+    min-height: 76px;
+  }
+}
+
+.test-explainer {
+  margin: 22px 0 26px;
+  display: grid;
+  gap: 14px;
+}
+
+.test-explainer .signal-card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.test-explainer .signal-label {
+  margin-bottom: 10px;
+}
+
+.test-explainer .signal-value {
+  font-size: clamp(42px, 8vw, 64px);
+  font-weight: 700;
+  line-height: 0.95;
+}
+
+@media (min-width: 768px) {
+  .test-explainer {
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+  }
+
+  .test-explainer .signal-arrow {
+    margin: 0;
+  }
+}
+
+.test-measures-mini {
+  margin: 24px 0;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 18px;
+}
+
+.test-measures-mini h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+}
+
+.test-measures-mini > div {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.test-measures-mini article {
+  border: 1px solid var(--line);
+  padding: 14px;
+}
+
+.test-measures-mini span {
+  display: block;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.test-measures-mini strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.test-measures-mini p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+@media (max-width: 767px) {
+  .test-measures-mini > div {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Measurement cards visually map to the 3 live test phases */
+
+.test-measures-mini article:nth-child(1) {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 214, 10, 0.10),
+      rgba(255, 214, 10, 0.03)
+    );
+  border-color: rgba(255, 214, 10, 0.28);
+}
+
+.test-measures-mini article:nth-child(2) {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.10),
+      rgba(59, 130, 246, 0.03)
+    );
+  border-color: rgba(59, 130, 246, 0.28);
+}
+
+.test-measures-mini article:nth-child(3) {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(168, 85, 247, 0.10),
+      rgba(168, 85, 247, 0.03)
+    );
+  border-color: rgba(168, 85, 247, 0.28);
+}
+
+.test-measures-mini article {
+  position: relative;
+  overflow: hidden;
+}
+
+.test-measures-mini article::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(255,255,255,0.28),
+      transparent 42%
+    );
+  pointer-events: none;
+}
+
+.test-measures-mini article strong {
+  position: relative;
+  z-index: 1;
+}
+
+.test-measures-mini article p {
+  position: relative;
+  z-index: 1;
+}
+
+.test-measures-mini article span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Stronger phase colours */
+
+.test-measures-mini article:nth-child(1) {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 214, 10, 0.22),
+      rgba(255, 214, 10, 0.08)
+    ) !important;
+  border-color: rgba(255, 214, 10, 0.55) !important;
+}
+
+.test-measures-mini article:nth-child(2) {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.22),
+      rgba(59, 130, 246, 0.08)
+    ) !important;
+  border-color: rgba(59, 130, 246, 0.55) !important;
+}
+
+.test-measures-mini article:nth-child(3) {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(168, 85, 247, 0.22),
+      rgba(168, 85, 247, 0.08)
+    ) !important;
+  border-color: rgba(168, 85, 247, 0.55) !important;
+}

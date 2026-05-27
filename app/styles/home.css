@@ -1,0 +1,164 @@
+.home-shell {
+  width: min(980px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-top: 28px;
+}
+
+.home-hero {
+  padding-top: 42px;
+  padding-bottom: 44px;
+}
+
+.home-hero h1 {
+  max-width: 780px;
+  font-size: clamp(52px, 7.2vw, 92px);
+}
+
+.home-lede {
+  max-width: 720px;
+}
+
+@media (max-width: 767px) {
+  .home-shell {
+    width: calc(100% - 24px);
+    padding-top: 18px;
+  }
+
+  .home-hero {
+    padding-top: 28px;
+    padding-bottom: 30px;
+  }
+
+  .home-hero h1 {
+    font-size: clamp(42px, 13vw, 58px);
+    line-height: 0.95;
+  }
+
+  .home-lede {
+    font-size: 17px;
+    line-height: 1.45;
+  }
+}
+
+.home-as-test {
+  margin-top: 28px;
+}
+
+.home-as-test .hero-start-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+@media (max-width: 767px) {
+  .home-as-test .hero-visual {
+    display: none;
+  }
+}
+
+.signal-explainer {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.signal-explainer-row {
+  display: grid;
+  grid-template-columns: 10px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.signal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-top: 5px;
+}
+
+.signal-dot.stable {
+  background: #22c55e;
+}
+
+.signal-dot.danger {
+  background: #ff5a5a;
+}
+
+.signal-explainer p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(0,0,0,0.58);
+}
+
+@media (max-width: 767px) {
+  .signal-explainer {
+    margin-top: 14px;
+  }
+
+  .signal-explainer p {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+}
+
+@media (max-width: 767px) {
+  .signal-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 14px;
+    align-items: end;
+  }
+
+  .signal-card::after {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    line-height: 1.35;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .signal-card:not(.stressed)::after {
+    content: "Good: the line answers quickly when quiet.";
+  }
+
+  .signal-card.stressed::after {
+    content: "Bad: latency can spike when the line is busy.";
+  }
+
+  .signal-explainer,
+  .signal-caption {
+    display: none !important;
+  }
+
+  .signal-arrow {
+    margin: 8px 0;
+  }
+
+  .hero-panel {
+    padding-bottom: 16px !important;
+  }
+}
+
+.home-latency-demo {
+  margin-top: 18px;
+}
+
+.home-latency-demo .signal-card {
+  background: var(--bg);
+}
+
+.home-latency-demo .signal-caption {
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 18px;
+}
+
+@media (max-width: 767px) {
+  .home-latency-demo .signal-caption {
+    display: block !important;
+    font-size: 15px;
+  }
+}

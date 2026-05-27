@@ -4,7 +4,7 @@ export default function Nav() {
   return (
     <nav className="site-nav">
       <Link href="/" className="site-logo">
-        bufferbl(◉)at
+        bufferbloat.org
       </Link>
 
       <div className="site-links">

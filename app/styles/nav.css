@@ -1,0 +1,21 @@
+.site-nav {
+  width: min(980px, calc(100% - 32px));
+  padding: 12px 0;
+}
+
+.site-logo {
+  max-width: 155px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.site-links {
+  gap: 9px;
+}
+
+@media (max-width: 767px) {
+  .site-nav {
+    width: calc(100% - 24px);
+    font-size: 13px;
+  }
+}

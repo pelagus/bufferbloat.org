@@ -1,7 +1,7 @@
 import type { Grade } from "../../../lib/test-copy";
 
 export function stageIndex(status: string) {
-  if (status.includes("idle") || status.includes("baseline")) return 1;
+  if (status.includes("idle") || status.includes("baseline") || status.includes("quiet")) return 1;
   if (status.includes("download")) return 2;
   if (status.includes("upload")) return 3;
   return 0;
@@ -25,14 +25,10 @@ export function diagnosisFor(
   const weakThroughput = (down ?? 0) < 3 || (up ?? 0) < 1;
 
   const downloadDelta =
-    idle && downloadLatency
-      ? ((downloadLatency - idle) / idle) * 100
-      : 0;
+    idle && downloadLatency ? ((downloadLatency - idle) / idle) * 100 : 0;
 
   const uploadDelta =
-    idle && uploadLatency
-      ? ((uploadLatency - idle) / idle) * 100
-      : 0;
+    idle && uploadLatency ? ((uploadLatency - idle) / idle) * 100 : 0;
 
   const uploadWorse = uploadDelta > downloadDelta * 1.25;
   const downloadWorse = downloadDelta > uploadDelta * 1.25;

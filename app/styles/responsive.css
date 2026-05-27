@@ -1,0 +1,901 @@
+/* Desktop */
+
+@media (min-width: 1100px) {
+  .home-shell,
+  .test-shell,
+  .page-shell,
+  .site-nav {
+    width: min(1040px, calc(100% - 48px));
+  }
+
+  .hero-panel {
+    padding: 44px;
+  }
+
+  .home-hero {
+    padding-top: 46px;
+  }
+}
+
+/* Tablet */
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .home-shell,
+  .test-shell,
+  .page-shell,
+  .site-nav {
+    width: min(760px, calc(100% - 32px));
+  }
+
+  .hero-panel {
+    padding: 34px;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .hero-visual {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-left: 0;
+    padding-top: 28px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 767px) {
+  .primary-button,
+  .home-cta,
+  .hero-start-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .home-panel,
+  .home-steps article,
+  .home-grid article {
+    padding: 18px;
+  }
+
+  .hero-subtitle {
+    font-size: 24px;
+  }
+
+  .hero-description {
+    font-size: 16px;
+  }
+
+  .signal-card {
+    padding: 18px;
+  }
+
+  .signal-value {
+    font-size: 44px;
+  }
+
+  .result-layout {
+    gap: 18px;
+  }
+
+  .result-card h2 {
+    font-size: 28px;
+  }
+
+  .diagnosis-list li {
+    font-size: 17px;
+  }
+
+  .signup-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .signup-icon {
+    width: 58px;
+    height: 58px;
+    font-size: 28px;
+  }
+
+  .signup-card form {
+    grid-template-columns: 1fr;
+  }
+
+  .signup-card input,
+  .signup-card button {
+    width: 100%;
+    height: 56px;
+  }
+
+  .stage-panel-header {
+    grid-template-columns: 44px 1fr;
+    padding: 16px;
+  }
+
+  .stage-title-block strong {
+    font-size: 19px;
+  }
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+  }
+
+  .summary-speed {
+    grid-template-columns: 110px 1fr;
+  }
+
+  .speedometer {
+    width: 110px;
+  }
+}
+
+/* Mobile test-page fit and stability */
+
+@media (max-width: 767px) {
+  .hero-panel {
+    padding: 18px;
+    margin: 16px 0;
+  }
+
+  .hero-grid {
+    gap: 18px;
+  }
+
+  .hero-kicker {
+    margin-bottom: 12px;
+    font-size: 10px;
+  }
+
+  .hero-panel h1 {
+    font-size: clamp(38px, 13vw, 52px);
+    line-height: 0.92;
+    margin-bottom: 18px;
+  }
+
+  .hero-subtitle {
+    font-size: 21px;
+    line-height: 1.12;
+    margin-bottom: 14px;
+  }
+
+  .hero-description {
+    font-size: 15px;
+    line-height: 1.42;
+    margin-bottom: 20px;
+  }
+
+  .hero-start-button {
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .hero-visual {
+    padding-top: 18px;
+  }
+
+  .signal-card {
+    padding: 14px 16px;
+  }
+
+  .signal-label {
+    font-size: 10px;
+    margin-bottom: 8px;
+  }
+
+  .signal-value {
+    font-size: 40px;
+  }
+
+  .signal-arrow {
+    font-size: 26px;
+    margin: 6px 0;
+  }
+
+  .signal-caption {
+    font-size: 13px;
+    margin-top: 12px;
+  }
+
+  .instrument-panel {
+    margin-top: 16px;
+    padding: 10px;
+  }
+
+  .stage-accordion {
+    gap: 10px;
+  }
+
+  .stage-panel-header {
+    min-height: 178px;
+    align-content: start;
+  }
+
+  .stage-title-block strong {
+    font-size: 22px;
+    line-height: 1.12;
+  }
+
+  .stage-summary {
+    min-height: 96px;
+  }
+
+  .median-ping-readout {
+    min-height: 72px;
+  }
+
+  .summary-speed {
+    min-height: 112px;
+  }
+
+  .speedometer {
+    width: 112px;
+    height: 72px;
+  }
+
+  .summary-speed strong {
+    font-size: 38px;
+    line-height: 1;
+  }
+
+  .test-status-row {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .progress-bar {
+    height: 12px;
+  }
+}
+
+/* Mobile test-page fit and stability */
+
+@media (max-width: 767px) {
+  .hero-panel {
+    padding: 18px;
+    margin: 16px 0;
+  }
+
+  .hero-grid {
+    gap: 18px;
+  }
+
+  .hero-kicker {
+    margin-bottom: 12px;
+    font-size: 10px;
+  }
+
+  .hero-panel h1 {
+    font-size: clamp(38px, 13vw, 52px);
+    line-height: 0.92;
+    margin-bottom: 18px;
+  }
+
+  .hero-subtitle {
+    font-size: 21px;
+    line-height: 1.12;
+    margin-bottom: 14px;
+  }
+
+  .hero-description {
+    font-size: 15px;
+    line-height: 1.42;
+    margin-bottom: 20px;
+  }
+
+  .hero-start-button {
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .hero-visual {
+    padding-top: 18px;
+  }
+
+  .signal-card {
+    padding: 14px 16px;
+  }
+
+  .signal-label {
+    font-size: 10px;
+    margin-bottom: 8px;
+  }
+
+  .signal-value {
+    font-size: 40px;
+  }
+
+  .signal-arrow {
+    font-size: 26px;
+    margin: 6px 0;
+  }
+
+  .signal-caption {
+    font-size: 13px;
+    margin-top: 12px;
+  }
+
+  .instrument-panel {
+    margin-top: 16px;
+    padding: 10px;
+  }
+
+  .stage-accordion {
+    gap: 10px;
+  }
+
+  .stage-panel-header {
+    min-height: 178px;
+    align-content: start;
+  }
+
+  .stage-title-block strong {
+    font-size: 22px;
+    line-height: 1.12;
+  }
+
+  .stage-summary {
+    min-height: 96px;
+  }
+
+  .median-ping-readout {
+    min-height: 72px;
+  }
+
+  .summary-speed {
+    min-height: 112px;
+  }
+
+  .speedometer {
+    width: 112px;
+    height: 72px;
+  }
+
+  .summary-speed strong {
+    font-size: 38px;
+    line-height: 1;
+  }
+
+  .test-status-row {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .progress-bar {
+    height: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .median-ping-readout {
+    position: relative;
+    overflow: hidden;
+    min-height: 118px;
+  }
+
+  .median-ping-readout strong {
+    position: relative;
+    z-index: 2;
+    display: block;
+    margin-top: 38px;
+  }
+
+  .ping-flyout {
+    top: 34px;
+    height: 34px;
+    overflow: hidden;
+  }
+
+  .ping-flyout em {
+    font-size: 13px;
+  }
+}
+
+/* FIX oversized mobile cards */
+
+@media (max-width: 767px) {
+
+  .stage-panel-header {
+    min-height: 0 !important;
+    padding: 14px !important;
+  }
+
+  .stage-summary {
+    min-height: 0 !important;
+    gap: 10px;
+    padding-top: 10px;
+  }
+
+  .median-ping-readout {
+    min-height: 0 !important;
+  }
+
+  .summary-speed {
+    min-height: 0 !important;
+  }
+
+  .median-ping-readout strong {
+    margin-top: 0 !important;
+    font-size: 32px;
+  }
+
+  .summary-speed strong {
+    font-size: 32px;
+  }
+}
+
+/* Baseline active state */
+
+.stage-panel.active-now.baseline {
+  border-color: #eab308 !important;
+  color: #eab308 !important;
+}
+
+.stage-panel.active-now.baseline .stage-icon,
+.stage-panel.active-now.baseline .stage-title-block strong,
+.stage-panel.active-now.baseline .stage-summary span,
+.stage-panel.active-now.baseline .stage-summary strong,
+.stage-panel.active-now.baseline .ping-flyout em {
+  color: #eab308 !important;
+  border-color: #eab308 !important;
+}
+
+/* Keep progress bar black */
+
+.progress-fill {
+  background: #111 !important;
+}
+
+/* Baseline active colour and mobile compactness */
+
+:root {
+  --baseline: #d49a00;
+}
+
+.stage-panel.active-now.baseline,
+.stage-panel.active-now.baseline * {
+  color: var(--baseline) !important;
+  border-color: var(--baseline) !important;
+}
+
+.stage-panel.complete.baseline,
+.stage-panel.complete.baseline * {
+  color: var(--fg);
+}
+
+@media (max-width: 767px) {
+  .stage-panel-header {
+    min-height: 0 !important;
+    padding: 13px !important;
+  }
+
+  .stage-summary {
+    min-height: 0 !important;
+    padding-top: 10px !important;
+    gap: 8px !important;
+  }
+
+  .median-ping-readout {
+    min-height: 0 !important;
+    overflow: hidden;
+  }
+
+  .median-ping-readout strong {
+    margin-top: 0 !important;
+    font-size: 30px !important;
+  }
+
+  .ping-flyout {
+    position: relative !important;
+    top: auto !important;
+    height: 22px !important;
+    margin: 4px 0 !important;
+  }
+
+  .summary-speed {
+    min-height: 0 !important;
+  }
+}
+
+/* Ping sample layer: visible without overlapping median */
+
+@media (max-width: 767px) {
+  .median-ping-readout {
+    display: grid;
+    grid-template-rows: auto 26px auto;
+    row-gap: 4px;
+  }
+
+  .median-ping-readout > span {
+    grid-row: 1;
+  }
+
+  .median-ping-readout .ping-flyout {
+    grid-row: 2;
+    position: relative !important;
+    height: 26px !important;
+    margin: 0 !important;
+    overflow: hidden;
+  }
+
+  .median-ping-readout strong {
+    grid-row: 3;
+    margin-top: 0 !important;
+  }
+}
+
+/* Final active phase colours and ping sample positioning */
+
+:root {
+  --baseline: #d49a00;
+}
+
+.stage-panel.active-now.baseline {
+  border-color: var(--baseline) !important;
+  color: var(--baseline) !important;
+}
+
+.stage-panel.active-now.baseline .stage-icon,
+.stage-panel.active-now.baseline .stage-title-block strong,
+.stage-panel.active-now.baseline .stage-summary span,
+.stage-panel.active-now.baseline .stage-summary strong,
+.stage-panel.active-now.baseline .ping-flyout em {
+  color: var(--baseline) !important;
+  border-color: var(--baseline) !important;
+}
+
+.stage-panel.active-now.download {
+  border-color: var(--blue) !important;
+  color: var(--blue) !important;
+}
+
+.stage-panel.active-now.upload {
+  border-color: var(--purple) !important;
+  color: var(--purple) !important;
+}
+
+.median-ping-readout {
+  display: grid !important;
+  grid-template-rows: auto 24px auto !important;
+  row-gap: 4px !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.ping-flyout {
+  position: relative !important;
+  top: auto !important;
+  height: 24px !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+.ping-flyout em {
+  position: static !important;
+  display: inline-block !important;
+  margin-right: 14px !important;
+  font-style: normal !important;
+  font-size: 13px !important;
+  animation: visiblePingFly 1250ms ease-in-out infinite !important;
+  animation-delay: calc(var(--sample-index) * 120ms) !important;
+}
+
+.median-ping-readout strong {
+  margin-top: 0 !important;
+}
+
+.progress-fill {
+  background: #111 !important;
+}
+
+.progress-bar {
+  height: 14px !important;
+}
+
+/* Mobile: keep live samples visible without making cards taller */
+
+@media (max-width: 767px) {
+  .median-ping-readout {
+    display: grid !important;
+    grid-template-columns: 1fr 1.25fr;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 4px;
+    align-items: end;
+  }
+
+  .median-ping-readout > span {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .median-ping-readout strong {
+    grid-column: 1;
+    grid-row: 2;
+    font-size: 30px !important;
+  }
+
+  .ping-flyout {
+    grid-column: 2;
+    grid-row: 2;
+    height: 34px !important;
+    display: flex;
+    align-items: end;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .ping-flyout em {
+    margin-right: 0 !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+  }
+
+  .stage-panel-header {
+    padding: 12px !important;
+  }
+
+  .stage-title-block strong {
+    font-size: 17px !important;
+  }
+
+  .summary-speed {
+    grid-template-columns: 92px 1fr;
+  }
+
+  .speedometer {
+    width: 90px;
+  }
+
+  .summary-speed strong {
+    font-size: 30px !important;
+  }
+}
+
+/* Mobile pre-test hero: fit above fold */
+
+@media (max-width: 767px) {
+  .hero-panel {
+    padding: 18px !important;
+    margin: 14px 0 !important;
+  }
+
+  .hero-grid {
+    gap: 14px !important;
+  }
+
+  .hero-kicker {
+    font-size: 10px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .hero-panel h1 {
+    font-size: clamp(40px, 13vw, 54px) !important;
+    line-height: 0.88 !important;
+    margin-bottom: 18px !important;
+  }
+
+  .hero-subtitle {
+    font-size: 22px !important;
+    line-height: 1.08 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .hero-description {
+    font-size: 15px !important;
+    line-height: 1.35 !important;
+    margin-bottom: 18px !important;
+  }
+
+  .hero-start-button {
+    height: 56px !important;
+    background: #111 !important;
+    border-color: #111 !important;
+    color: #fff !important;
+    font-size: 20px !important;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.12);
+  }
+
+  .hero-visual {
+    padding-top: 14px !important;
+  }
+
+  .signal-card {
+    padding: 12px 14px !important;
+  }
+
+  .signal-value {
+    font-size: 36px !important;
+  }
+
+  .signal-caption {
+    display: none;
+  }
+}
+
+/* Mobile running-test: compact stable phase cards */
+
+@media (max-width: 767px) {
+  .test-status-row {
+    min-height: 48px;
+    align-items: start;
+  }
+
+  .test-status-row span:first-child {
+    max-width: 72%;
+  }
+
+  .stage-panel-header {
+    grid-template-columns: 40px 1fr;
+    gap: 10px;
+    padding: 11px !important;
+    min-height: 0 !important;
+  }
+
+  .stage-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .stage-title-block strong {
+    font-size: 16px !important;
+    line-height: 1.08 !important;
+  }
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px !important;
+    padding-top: 9px !important;
+    min-height: 0 !important;
+  }
+
+  .stage-panel.baseline .stage-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .median-ping-readout {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 20px auto;
+    min-height: 0 !important;
+    row-gap: 2px !important;
+  }
+
+  .median-ping-readout > span,
+  .summary-speed > span {
+    font-size: 12px !important;
+  }
+
+  .ping-flyout {
+    height: 20px !important;
+    display: flex !important;
+    gap: 6px !important;
+    overflow: hidden !important;
+  }
+
+  .ping-flyout em {
+    font-size: 10px !important;
+    margin-right: 0 !important;
+  }
+
+  .median-ping-readout strong {
+    font-size: 27px !important;
+    line-height: 1 !important;
+  }
+
+  .summary-speed {
+    display: grid !important;
+    grid-template-columns: 76px 1fr;
+    grid-template-rows: auto auto;
+    gap: 4px 10px !important;
+    align-items: center;
+    min-height: 0 !important;
+  }
+
+  .summary-speed span {
+    grid-column: 1 / -1;
+  }
+
+  .speedometer {
+    width: 76px !important;
+    height: 48px !important;
+  }
+
+  .summary-speed strong {
+    font-size: 26px !important;
+    line-height: 1 !important;
+  }
+
+  .stage-panel {
+    margin: 0 !important;
+  }
+
+  .stage-accordion {
+    gap: 7px !important;
+  }
+}
+
+/* Mobile: clean live samples row, no side-push */
+
+@media (max-width: 767px) {
+  .median-ping-readout {
+    display: block !important;
+    min-height: 0 !important;
+  }
+
+  .ping-flyout {
+    display: flex !important;
+    gap: 8px !important;
+    height: 18px !important;
+    margin: 2px 0 6px !important;
+    overflow: hidden !important;
+    white-space: nowrap;
+  }
+
+  .ping-flyout em {
+    position: relative !important;
+    display: inline-block !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+    opacity: 0.65;
+    margin: 0 !important;
+  }
+
+  .median-ping-readout strong {
+    display: block !important;
+    font-size: 31px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+  }
+
+  .stage-summary {
+    grid-template-columns: 1fr !important;
+  }
+
+  .summary-speed {
+    grid-template-columns: 78px 1fr !important;
+  }
+
+  .instrument-panel {
+    padding-bottom: 10px !important;
+  }
+}
+
+/* Keep ping sample row stable to avoid layout jumps */
+
+.ping-flyout {
+  min-height: 18px !important;
+  opacity: 1;
+  transition: opacity 180ms ease;
+}
+
+.stage-panel.complete .ping-flyout {
+  opacity: 0.22;
+}
+
+.stage-panel.complete .ping-flyout em {
+  animation: none !important;
+}
+
+.ping-flyout {
+  display: flex !important;
+  min-height: 18px !important;
+  height: 18px !important;
+  visibility: visible !important;
+}
+
+.ping-flyout .empty-sample {
+  visibility: hidden !important;
+  animation: none !important;
+}
+
+.stage-panel.complete .ping-flyout em:not(.empty-sample) {
+  opacity: 0.22;
+  animation: none !important;
+}

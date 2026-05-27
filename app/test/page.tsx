@@ -28,6 +28,7 @@ export default function Page() {
   const [downloadMbps, setDownloadMbps] = useState<number | null>(null);
   const [uploadMbps, setUploadMbps] = useState<number | null>(null);
   const [status, setStatus] = useState("ready");
+  const [recentLatencySamples, setRecentLatencySamples] = useState<number[]>([]);
   const [message, setMessage] = useState(initialTestMessage);
   const [grade, setGrade] = useState<Grade>("—");
   const [error, setError] = useState<string | null>(null);
@@ -72,6 +73,7 @@ export default function Page() {
       setDownloadMbps(null);
       setUploadMbps(null);
       setGrade("—");
+      setRecentLatencySamples([]);
 
       const result = await runBufferbloatTest((update) => {
         setStatus(update.status);
@@ -82,6 +84,7 @@ export default function Page() {
         setUploadLatency(update.uploadLatency);
         setDownloadMbps(update.downloadMbps);
         setUploadMbps(update.uploadMbps);
+        setRecentLatencySamples(update.recentLatencySamples);
       });
 
       setIdle(result.idle);
@@ -138,14 +141,36 @@ export default function Page() {
               <h1>Bufferbloat test</h1>
 
               <p className="hero-subtitle">
-                Your internet can look fast and still feel terrible.
+                We’ll measure quiet ping latency, then repeat the measurement while your connection is under download and upload pressure.
               </p>
 
               <p className="hero-description">
-                This test measures whether latency explodes while your connection is busy.
-                That is what causes calls to freeze, games to lag, and pages to stall
-                during uploads or downloads.
+                Keep this tab visible during the test.
               </p>
+
+              <section className="test-measures-mini">
+                <h2>What this test measures</h2>
+
+                <div>
+                  <article>
+                    <span>01</span>
+                    <strong>Quiet ping latency</strong>
+                    <p>Baseline response time before adding traffic.</p>
+                  </article>
+
+                  <article>
+                    <span>02</span>
+                    <strong>Download latency</strong>
+                    <p>Whether ping rises while receiving data.</p>
+                  </article>
+
+                  <article>
+                    <span>03</span>
+                    <strong>Upload latency</strong>
+                    <p>Whether ping rises while sending data.</p>
+                  </article>
+                </div>
+              </section>
 
               <button
                 className="hero-start-button"
@@ -156,23 +181,7 @@ export default function Page() {
               </button>
             </div>
 
-            <div className="hero-visual">
-              <div className="signal-card">
-                <div className="signal-label">QUIET LINE</div>
-                <div className="signal-value stable">24 ms</div>
-              </div>
 
-              <div className="signal-arrow">↓</div>
-
-              <div className="signal-card stressed">
-                <div className="signal-label">UNDER LOAD</div>
-                <div className="signal-value danger">412 ms</div>
-              </div>
-
-              <div className="signal-caption">
-                Bufferbloat is excessive latency caused by network congestion.
-              </div>
-            </div>
           </div>
         </section>
       )}
@@ -258,6 +267,7 @@ User agent: ${browserInfo?.userAgent}
               expanded={openStage === 1}
               title="Median ping latency under quiet conditions"
               ping={idle}
+              samples={openStage === 1 ? recentLatencySamples : []}
               done={idle !== null}
               onToggle={() => toggleStage(1, idle !== null)}
             >
@@ -282,6 +292,7 @@ User agent: ${browserInfo?.userAgent}
               expanded={openStage === 2}
               title="Median ping latency with download stress"
               ping={downloadLatency}
+              samples={openStage === 2 ? recentLatencySamples : []}
               speed={downloadMbps}
               speedLabel="Median download speed"
               done={downloadLatency !== null}
@@ -308,6 +319,7 @@ User agent: ${browserInfo?.userAgent}
               expanded={openStage === 3}
               title="Median ping latency with upload stress"
               ping={uploadLatency}
+              samples={openStage === 3 ? recentLatencySamples : []}
               speed={uploadMbps}
               speedLabel="Median upload speed"
               done={uploadLatency !== null}
@@ -344,6 +356,7 @@ function StagePanel({
   expanded,
   title,
   ping,
+  samples,
   speed,
   speedLabel,
   done,
@@ -352,6 +365,7 @@ function StagePanel({
   expanded: boolean;
   title: string;
   ping: number | null;
+  samples: number[];
   speed?: number | null;
   speedLabel?: string;
   done: boolean;
@@ -376,18 +390,17 @@ function StagePanel({
             <span>Median ping</span>
             <strong>{ping === null ? "—" : `${formatLatency(ping)} ms`}</strong>
 
-            {expanded && ping !== null && (
-              <div className="ping-flyout" aria-hidden="true">
-                {[0.94, 1.02, 0.98, 1.06, 1].map((factor, index) => (
-                  <em
-                    key={index}
-                    style={{ "--sample-index": index } as React.CSSProperties}
-                  >
-                    {Math.round(ping * factor)}ms
-                  </em>
-                ))}
-              </div>
-            )}
+            <div className="ping-flyout" aria-hidden="true">
+              {(samples.length > 0 ? samples : [null, null, null, null, null]).map((sample, index) => (
+                <em
+                  key={sample === null ? `empty-${index}` : `${sample}-${index}`}
+                  className={sample === null ? "empty-sample" : undefined}
+                  style={{ "--sample-index": index } as React.CSSProperties}
+                >
+                  {sample === null ? "00ms" : `${Math.round(sample)}ms`}
+                </em>
+              ))}
+            </div>
           </div>
 
           {speedLabel && (

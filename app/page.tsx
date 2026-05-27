@@ -3,42 +3,20 @@ import Link from "next/link";
 export default function Home() {
   return (
     <main className="home-shell">
-      <section className="home-hero">
-        <p className="home-kicker">bufferbloat test</p>
+      <section className="hero-panel home-as-test">
+        <div className="hero-copy">
+          <div className="hero-kicker">BUFFERBLOAT TEST</div>
 
-        <h1>Test your internet responsiveness under load</h1>
+          <h1>Fast internet can still feel bad.</h1>
 
-        <p className="home-lede">
-          Most speed tests only measure bandwidth. Bufferbloat.org checks whether
-          your connection stays responsive while downloads and uploads are active.
-        </p>
+          <p className="hero-subtitle">
+            Most speed tests measure bandwidth. Bufferbloat.org measures whether
+            your connection stays responsive while busy.
+          </p>
 
-        <Link href="/test" className="primary-button">
-          Run the bufferbloat test
-        </Link>
-      </section>
-
-      <section className="home-panel">
-        <h2>What this test measures</h2>
-
-        <div className="home-steps">
-          <article>
-            <span>01</span>
-            <h3>Quiet ping latency</h3>
-            <p>Measures baseline response time before adding traffic.</p>
-          </article>
-
-          <article>
-            <span>02</span>
-            <h3>Download latency</h3>
-            <p>Checks whether ping rises while receiving data.</p>
-          </article>
-
-          <article>
-            <span>03</span>
-            <h3>Upload latency</h3>
-            <p>Checks whether ping rises while sending data.</p>
-          </article>
+          <Link href="/test" className="hero-start-button">
+            Run the bufferbloat test
+          </Link>
         </div>
       </section>
 
@@ -59,6 +37,24 @@ export default function Home() {
             quiet latency with latency during download and upload pressure.
           </p>
         </article>
+      </section>
+
+      <section className="home-panel home-latency-demo">
+        <div className="signal-card">
+          <div className="signal-label">BASELINE RESPONSE</div>
+          <div className="signal-value stable">24 ms</div>
+        </div>
+
+        <div className="signal-arrow">↓</div>
+
+        <div className="signal-card stressed">
+          <div className="signal-label">RESPONSE UNDER PRESSURE</div>
+          <div className="signal-value danger">412 ms</div>
+        </div>
+
+        <p className="signal-caption">
+          Bufferbloat is excessive latency caused by network congestion.
+        </p>
       </section>
     </main>
   );
