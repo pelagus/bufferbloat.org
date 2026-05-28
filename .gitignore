@@ -6,7 +6,6 @@ upload-sink/node_modules
 upload-sink/.wrangler
 *.zip
 data/signups.json
-AI_CODING_INSTRUCTIONS.md
 UX_PRINCIPLES.md
 codebase.zip
 PROJECT_CONTEXT.md
