@@ -1,0 +1,579 @@
+/* measurement results UI */
+
+/* Measurement UI subsystem */
+
+
+
+.terminal-card,
+.instrument-panel,
+.result-card {
+  margin-top: 28px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  padding: 18px;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+
+
+
+
+.result-layout {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 24px;
+}
+
+
+
+
+
+.result-grade {
+  border-right: 1px solid var(--line);
+  padding-right: 20px;
+}
+
+
+
+
+
+.result-grade p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+
+
+
+
+.result-grade strong {
+  display: block;
+  font-size: 76px;
+  line-height: 0.9;
+}
+
+
+
+
+
+.result-grade span {
+  display: inline-block;
+  margin-top: 10px;
+  border: 1px solid currentColor;
+  padding: 4px 10px;
+}
+
+
+
+
+
+.result-card h2 {
+  margin: 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(22px, 3vw, 32px);
+  line-height: 1.2;
+}
+
+
+
+
+
+.result-card:has(.warn) {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, #b88600 10%, transparent), transparent 55%),
+    var(--soft);
+}
+
+
+
+
+
+.result-card {
+  border-color: color-mix(in srgb, currentColor 35%, var(--line));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, currentColor 7%, transparent), transparent 70%),
+    var(--soft);
+}
+
+
+
+
+
+.result-card .bad {
+  color: #dc2626;
+}
+
+
+
+
+
+.result-card .warn {
+  color: #b45309;
+}
+
+
+
+
+
+.result-card {
+  margin-top: 20px;
+}
+
+
+
+/* migrated from legacy.css */
+
+.terminal-card,
+  .result-card {
+    padding: 12px;
+  }
+
+
+
+.terminal-card,
+  .instrument-panel,
+  .result-card,
+  .signup-card {
+    background: #f5f5f5;
+  }
+
+
+
+.result-grade {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding-right: 0;
+    padding-bottom: 16px;
+  }
+
+
+
+/* migrated result and live metric UI from legacy.css */
+
+
+
+.progress-bar {
+  height: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+
+
+
+
+.technical-details summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+
+
+
+
+  .instrument-panel,
+  
+
+  .stage-panel-content,
+  .result-layout {
+    grid-template-columns: 1fr;
+  }
+
+
+
+
+
+.stage-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-left: 1px solid var(--line);
+}
+
+
+
+
+
+.stage-summary div {
+  padding-left: 24px;
+  border-right: 1px solid var(--line);
+}
+
+
+
+
+
+.stage-summary div:last-child {
+  border-right: 0;
+}
+
+
+
+
+
+.stage-summary span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+
+
+
+
+.stage-summary strong {
+  color: currentColor;
+  font-size: 28px;
+  line-height: 1;
+}
+
+
+
+
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+
+
+
+
+
+  .stage-summary div {
+    padding-left: 0;
+    border-right: 0;
+    margin-bottom: 10px;
+  }
+
+
+
+
+
+.stage-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-left: 1px solid var(--line);
+}
+
+
+
+
+
+.stage-summary div {
+  padding-left: 22px;
+}
+
+
+
+
+
+.stage-summary span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+
+
+
+
+.stage-summary strong {
+  color: currentColor;
+  font-size: 28px;
+}
+
+
+
+
+
+.stage-panel.baseline .stage-summary {
+  grid-template-columns: 1fr;
+}
+
+
+
+
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+
+
+
+
+
+  .stage-summary div {
+    padding-left: 0;
+  }
+
+
+
+
+  .result-card:has(.warn) {
+    background:
+      linear-gradient(90deg, color-mix(in srgb, #facc15 9%, transparent), transparent 55%),
+      var(--soft);
+  }
+
+
+
+
+
+.summary-gauge .mini-gauge {
+  height: 8px;
+  border: 1px solid var(--line);
+  margin-top: 8px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+
+
+
+
+.summary-gauge .mini-gauge div {
+  height: 100%;
+  background: currentColor;
+}
+
+
+
+
+  .result-card .warn {
+    color: #facc15;
+  }
+
+
+
+
+
+.summary-gauge {
+  display: grid;
+  grid-template-columns: 120px 72px;
+  gap: 16px;
+  align-items: center;
+}
+
+
+
+
+
+.summary-gauge .mini-gauge {
+  width: 120px;
+  height: 64px;
+  margin: 0;
+  border: 0;
+  background:
+    radial-gradient(circle at 50% 100%, var(--bg) 0 44%, transparent 45%),
+    conic-gradient(from 270deg at 50% 100%, currentColor 0 var(--gauge-width, 30%), color-mix(in srgb, currentColor 25%, var(--line)) var(--gauge-width, 30%) 50%, transparent 50% 100%);
+}
+
+
+
+
+
+.summary-gauge .mini-gauge div {
+  display: none;
+}
+
+
+
+
+
+.stage-summary {
+  grid-template-columns: minmax(120px, .7fr) minmax(220px, 1fr);
+}
+
+
+
+
+
+.stage-summary strong {
+  font-size: 30px;
+}
+
+
+
+
+
+  .summary-gauge {
+    grid-template-columns: 1fr;
+  }
+
+
+
+
+
+  .summary-gauge .mini-gauge {
+    width: 100%;
+  }
+
+
+
+
+
+.summary-gauge .mini-gauge {
+  display: none;
+}
+
+
+
+
+
+.summary-gauge {
+  grid-template-columns: 1fr;
+}
+
+
+
+
+
+.summary-speed {
+  display: grid;
+  grid-template-columns: 140px 72px;
+  gap: 4px 16px;
+  align-items: center;
+}
+
+
+
+
+
+.summary-speed span {
+  grid-column: 1 / -1;
+}
+
+
+
+
+
+.summary-speed strong {
+  font-size: 32px;
+}
+
+
+
+
+
+.summary-speed em {
+  color: var(--fg);
+  font-style: normal;
+}
+
+
+
+
+
+  .summary-speed {
+    grid-template-columns: 120px 1fr;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.summary-speed em {
+  display: none;
+}
+
+
+
+
+
+.summary-speed strong {
+  font-weight: 400;
+}
+
+
+
+
+
+  .result-layout {
+    gap: 18px;
+  }
+
+
+
+
+
+  .result-card h2 {
+    font-size: 28px;
+  }
+
+
+
+
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+  }
+
+
+
+
+
+  .summary-speed {
+    grid-template-columns: 110px 1fr;
+  }
+
+
+
+  .result-layout {
+    gap: 18px;
+  }
+
+
+
+  .result-card h2 {
+    font-size: 28px;
+  }
+
+
+
+  .diagnosis-list li {
+    font-size: 17px;
+  }
+
+
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    min-height: 0 !important;
+    padding-top: 10px !important;
+    gap: 8px !important;
+  }
+
+
+
+  .summary-speed {
+    grid-template-columns: 110px 1fr;
+    min-height: 0 !important;
+  }
+
+
+
+

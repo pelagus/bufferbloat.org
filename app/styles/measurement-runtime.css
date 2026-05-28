@@ -1,0 +1,1074 @@
+/* measurement runtime UI */
+
+/* Measurement UI subsystem */
+
+
+
+.terminal-card,
+.instrument-panel,
+
+
+
+
+
+
+.metric-card.download,
+.stage-panel.expanded:has(.download) {
+  color: var(--blue);
+}
+
+
+
+
+
+.metric-card.upload,
+.stage-panel.expanded:has(.upload) {
+  color: var(--purple);
+}
+
+
+
+
+
+.stage-panel.download {
+  color: var(--blue);
+}
+
+
+
+
+
+.stage-panel.upload {
+  color: var(--purple);
+}
+
+
+
+
+
+.stage-panel.download,
+.stage-panel.download .stage-panel-header {
+  color: var(--blue);
+}
+
+
+
+
+
+.stage-panel.upload,
+.stage-panel.upload .stage-panel-header {
+  color: var(--purple);
+}
+
+
+
+
+
+.stage-panel.baseline .stage-title-block strong,
+.stage-panel.download .stage-title-block strong,
+.stage-panel.upload .stage-title-block strong {
+  color: var(--fg);
+}
+
+
+
+
+
+.speedometer {
+  width: 140px;
+  height: 78px;
+  color: currentColor;
+}
+
+
+
+
+
+.speedometer-bg,
+.speedometer-fill {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+
+
+
+
+.speedometer-bg {
+  stroke: color-mix(in srgb, currentColor 22%, var(--line));
+}
+
+
+
+
+
+.speedometer-fill {
+  stroke: currentColor;
+  stroke-dasharray: 95 200;
+}
+
+
+
+
+
+.speedometer-needle {
+  stroke: var(--fg);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+
+
+
+
+.speedometer-dot {
+  fill: var(--fg);
+}
+
+
+
+
+
+.speedometer text {
+  fill: var(--muted);
+  font-size: 9px;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+
+
+
+
+.stage-panel.complete .speedometer {
+  color: var(--fg);
+  opacity: 0.8;
+}
+
+
+
+
+
+.stage-panel.active-now.download {
+  color: var(--blue);
+}
+
+
+
+
+
+.stage-panel.active-now.upload {
+  color: var(--purple);
+}
+
+
+
+
+
+.ping.active .sample-row span {
+  animation: pingSampleFly 1100ms ease-in-out infinite;
+  animation-delay: calc(var(--sample-index) * 110ms);
+}
+
+
+
+
+
+.ping.locked .sample-row span {
+  opacity: 0;
+  animation: none;
+}
+
+
+
+
+
+.ping.active .big-read {
+  animation: medianRecalc 900ms ease-in-out infinite alternate;
+}
+
+
+
+
+
+.ping.locked .big-read {
+  animation: medianLock 260ms ease-out;
+}
+
+
+
+
+
+.median-ping-readout {
+  position: relative;
+  min-height: 64px;
+}
+
+
+
+
+
+.ping-flyout {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 34px;
+  height: 34px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+
+
+
+
+.ping-flyout em {
+  position: absolute;
+  left: calc(var(--sample-index) * 42px);
+  color: currentColor;
+  font-style: normal;
+  font-size: 13px;
+  opacity: 0;
+  animation: visiblePingFly 1250ms ease-in-out infinite;
+  animation-delay: calc(var(--sample-index) * 120ms);
+}
+
+
+
+
+
+.stage-panel.active-now .median-ping-readout strong {
+  animation: medianRecalc 850ms ease-in-out infinite alternate;
+}
+
+
+
+
+
+.stage-panel.complete .ping-flyout {
+  display: none;
+}
+
+
+
+
+
+.stage-panel.complete .median-ping-readout .ping-flyout {
+  display: block;
+}
+
+
+
+
+
+.stage-panel.complete:not(.active-now) .ping-flyout em {
+  animation: none;
+  opacity: 0;
+}
+
+
+
+
+
+.stage-panel.active-now .ping-flyout em {
+  animation: visiblePingFly 1250ms ease-in-out infinite;
+  animation-delay: calc(var(--sample-index) * 120ms);
+}
+
+
+
+
+
+.speedometer-fill {
+  transition: stroke-dashoffset 260ms ease-out;
+}
+
+
+
+
+
+.stage-panel.active-now.baseline .ping-flyout em,
+.stage-panel.active-now.download .ping-flyout em,
+.stage-panel.active-now.upload .ping-flyout em {
+  animation: visiblePingFly 1250ms ease-in-out infinite;
+  animation-delay: calc(var(--sample-index) * 120ms);
+}
+
+
+
+/* migrated result and live metric UI from legacy.css */
+
+
+
+.progress-bar {
+  height: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+
+
+
+
+.progress-bar.top {
+  margin-bottom: 16px;
+}
+
+
+
+
+
+.progress-fill {
+  height: 100%;
+  background: var(--good);
+  transition: width 180ms linear;
+}
+
+
+
+
+
+  .instrument-panel,
+  
+
+  .stage-panel-content,
+  
+
+
+
+
+
+.progress-bar {
+  height: 14px;
+  border-color: var(--line-strong);
+}
+
+
+
+
+
+.progress-fill {
+  background: var(--fg);
+}
+
+
+
+
+
+.metric-card.baseline,
+.stage-panel.expanded:has(.baseline) {
+  color: var(--good);
+}
+
+
+
+
+
+.stage-panel.baseline {
+  color: var(--good);
+}
+
+
+
+
+
+.stage-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-left: 1px solid var(--line);
+}
+
+
+
+
+
+.stage-summary div {
+  padding-left: 24px;
+  border-right: 1px solid var(--line);
+}
+
+
+
+
+
+.stage-summary div:last-child {
+  border-right: 0;
+}
+
+
+
+
+
+.stage-summary span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+
+
+
+
+.stage-summary strong {
+  color: currentColor;
+  font-size: 28px;
+  line-height: 1;
+}
+
+
+
+
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+
+
+
+
+
+  .stage-summary div {
+    padding-left: 0;
+    border-right: 0;
+    margin-bottom: 10px;
+  }
+
+
+
+
+
+.stage-panel.baseline,
+.stage-panel.baseline .stage-panel-header {
+  color: var(--good);
+}
+
+
+
+
+
+.stage-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-left: 1px solid var(--line);
+}
+
+
+
+
+
+.stage-summary div {
+  padding-left: 22px;
+}
+
+
+
+
+
+.stage-summary span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+
+
+
+
+.stage-summary strong {
+  color: currentColor;
+  font-size: 28px;
+}
+
+
+
+
+
+.stage-panel.baseline .stage-summary {
+  grid-template-columns: 1fr;
+}
+
+
+
+
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+
+
+
+
+
+  .stage-summary div {
+    padding-left: 0;
+  }
+
+
+
+
+
+  
+
+  .stage-panel,
+  .metric-card,
+  .signup-card input {
+    background: #ffffff;
+  }
+
+
+
+
+
+.analysis-progress {
+  height: 12px;
+  margin-top: 18px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+
+
+
+
+.analysis-progress div {
+  height: 100%;
+  width: 72%;
+  background: var(--muted);
+  animation: computeSweep 1400ms ease-in-out infinite alternate;
+}
+
+
+
+
+
+.stage-summary {
+  grid-template-columns: minmax(120px, .7fr) minmax(220px, 1fr);
+}
+
+
+
+
+
+.stage-summary strong {
+  font-size: 30px;
+}
+
+
+
+
+
+.stage-panel.complete .stage-title-block strong,
+.stage-panel.complete .stage-summary strong,
+.stage-panel.complete .summary-speed em {
+  color: var(--fg);
+}
+
+
+
+
+
+.stage-panel.active-now.baseline {
+  color: var(--good);
+}
+
+
+
+
+
+.stage-panel.active-now .stage-title-block strong,
+.stage-panel.active-now .stage-summary strong,
+.stage-panel.active-now .summary-speed em {
+  color: currentColor;
+}
+
+
+
+
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+  }
+
+
+
+/* migrated measurement state and visualization UI from legacy.css */
+
+
+
+.test-status-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+}
+
+
+
+
+
+.stage-panel.expanded {
+  border-color: var(--good);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--good) 16%, transparent);
+}
+
+
+
+
+
+.stage-panel.collapsed .stage-panel-header {
+  opacity: 0.75;
+}
+
+
+
+
+
+.stage-panel.collapsed .stage-panel-header {
+  opacity: 0.9;
+}
+
+
+
+
+
+.stage-panel.collapsed .stage-panel-header {
+  opacity: 1;
+}
+
+
+
+
+
+.stage-panel.collapsed {
+  background: var(--bg);
+}
+
+
+
+
+
+.stage-panel.collapsed .stage-panel-header {
+  opacity: 1;
+}
+
+
+
+
+
+.stage-panel.expanded {
+  border-color: currentColor;
+}
+
+
+
+
+
+.stage-panel.complete {
+  color: var(--fg);
+  border-color: var(--line);
+}
+
+
+
+
+
+.stage-panel.complete .stage-icon {
+  color: var(--fg);
+  border-color: var(--line);
+}
+
+
+
+
+
+.stage-panel.active-now {
+  border-color: currentColor;
+}
+
+
+
+/* migrated diagnostic measurement UI from legacy.css */
+
+
+
+.stage-accordion {
+  display: grid;
+  gap: 10px;
+}
+
+
+
+
+
+.stage-panel {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+
+
+
+
+.stage-panel-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+}
+
+
+
+
+
+.stage-panel-header strong,
+.stage-panel-header p {
+  margin: 0;
+}
+
+
+
+
+
+.stage-panel-header p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+
+
+
+
+.stage-dot {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--good);
+  border-radius: 999px;
+  color: var(--good);
+  flex: 0 0 auto;
+}
+
+
+
+
+
+.stage-panel-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 0 14px 14px;
+}
+
+
+
+
+
+.stage-panel-header {
+  justify-content: flex-start;
+}
+
+
+
+
+
+.stage-panel-header strong {
+  line-height: 1.25;
+}
+
+
+
+
+
+.stage-panel-header p {
+  margin-top: 3px;
+}
+
+
+
+
+
+.stage-panel-header {
+  display: grid;
+  grid-template-columns: 72px minmax(220px, 1fr) minmax(320px, 1.2fr) 32px;
+  gap: 20px;
+  align-items: center;
+}
+
+
+
+
+
+.stage-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: currentColor;
+  font-size: 26px;
+}
+
+
+
+
+
+.stage-title-block strong {
+  color: var(--fg);
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+
+
+
+
+.stage-chevron {
+  color: currentColor;
+  font-size: 28px;
+  text-align: right;
+}
+
+
+
+
+  .stage-panel-header {
+    grid-template-columns: 44px 1fr;
+    gap: 12px;
+  }
+
+
+
+
+
+  .stage-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+
+
+
+
+
+  .stage-chevron {
+    display: none;
+  }
+
+
+
+
+
+.stage-panel-header {
+  display: grid;
+  grid-template-columns: 56px 1fr 420px 32px;
+  gap: 20px;
+  align-items: center;
+  padding: 18px;
+  color: inherit;
+}
+
+
+
+
+
+.stage-panel-header:hover {
+  background: color-mix(in srgb, currentColor 6%, transparent);
+}
+
+
+
+
+  .stage-panel-header {
+    grid-template-columns: 44px 1fr;
+  }
+
+
+
+
+
+.stage-panel {
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--fg) 5%, transparent);
+}
+
+
+
+
+
+.stage-panel-content {
+  display: none;
+}
+
+
+
+
+
+.stage-panel-header {
+  cursor: default;
+}
+
+
+
+
+
+.stage-chevron {
+  display: none;
+}
+
+
+
+
+
+  .stage-panel-header {
+    grid-template-columns: 44px 1fr;
+    padding: 16px;
+  }
+
+
+
+
+
+  .stage-title-block strong {
+    font-size: 19px;
+  }
+
+
+  .signal-card {
+    padding: 18px;
+  }
+
+
+
+  .signal-value {
+    font-size: 44px;
+  }
+
+
+
+  .stage-panel-header {
+    min-height: 0 !important;
+    grid-template-columns: 44px 1fr;
+    padding: 13px !important;
+  }
+
+
+
+  .stage-title-block strong {
+    font-size: 19px;
+  }
+
+
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    min-height: 0 !important;
+    padding-top: 10px !important;
+    gap: 8px !important;
+  }
+
+
+
+  .speedometer {
+    width: 110px;
+  }
+
+
+
+  .median-ping-readout {
+    display: grid !important;
+    grid-template-rows: auto 26px auto;
+    row-gap: 4px;
+    min-height: 0 !important;
+    overflow: hidden;
+  }
+
+
+
+  .median-ping-readout > span {
+    grid-row: 1;
+  }
+
+
+
+  .median-ping-readout .ping-flyout {
+    grid-row: 2;
+    position: relative !important;
+    top: auto !important;
+    height: 26px !important;
+    margin: 0 !important;
+    overflow: hidden;
+  }
+
+
+
+  .median-ping-readout strong {
+    grid-row: 3;
+    margin-top: 0 !important;
+    font-size: 30px !important;
+  }
+
+
+
+  .ping-flyout {
+    position: relative !important;
+    top: auto !important;
+    height: 24px !important;
+  }
+
+
+
+.stage-panel.active-now.baseline {
+  border-color: var(--baseline) !important;
+  color: var(--baseline) !important;
+}
+
+
+
+.stage-panel.active-now.baseline .stage-icon,
+.stage-panel.active-now.baseline .stage-title-block strong,
+.stage-panel.active-now.baseline .stage-summary span,
+.stage-panel.active-now.baseline .stage-summary strong,
+.stage-panel.active-now.baseline .ping-flyout em {
+  color: var(--baseline) !important;
+  border-color: var(--baseline) !important;
+}
+
+
+
+.stage-panel.complete.baseline,
+.stage-panel.complete.baseline * {
+  color: var(--fg);
+}
+
+
+
+.stage-panel.active-now.download {
+  border-color: var(--blue) !important;
+  color: var(--blue) !important;
+}
+
+
+
+.stage-panel.active-now.upload {
+  border-color: var(--purple) !important;
+  color: var(--purple) !important;
+}
+
+
+
+.progress-fill {
+  background: #111 !important;
+}
