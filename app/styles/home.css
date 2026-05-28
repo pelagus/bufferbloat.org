@@ -162,3 +162,36 @@
     font-size: 15px;
   }
 }
+
+/* =========================================================
+   HOME RESPONSIVE
+========================================================= */
+
+@media (min-width: 1100px) {
+  .home-shell {
+    width: min(1040px, calc(100% - 48px));
+  }
+
+  .home-hero {
+    padding-top: 46px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .home-shell {
+    width: min(760px, calc(100% - 32px));
+  }
+}
+
+@media (max-width: 767px) {
+  .home-cta {
+    width: 100%;
+    text-align: center;
+  }
+
+  .home-panel,
+  .home-steps article,
+  .home-grid article {
+    padding: 18px;
+  }
+}
