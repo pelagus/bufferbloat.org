@@ -1,12 +1,4 @@
-node_modules
-.next
-.env
-.DS_Store
-upload-sink/node_modules
-upload-sink/.wrangler
-*.zip
-data/signups.json
-UX_PRINCIPLES.md
-PROJECT_CONTEXT.md
-CODING_GUIDELINES.md
-EXPORT_CODEBASE.md
+node_modules\n.next\n.env\n.DS_Store\nupload-sink/node_modules\nupload-sink/.wrangler\n*.zip\ndata/signups.json\nUX_PRINCIPLES.md\nPROJECT_CONTEXT.md\nCODING_GUIDELINES.md\nEXPORT_CODEBASE.md\n.env.local\n.env*.local\n.vercel\n
+.vercel
+.env*
+\n.env.local\n.env*.local\n

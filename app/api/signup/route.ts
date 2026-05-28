@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 
 export const runtime = "nodejs";
-
-const DATA_DIR = path.join(process.cwd(), "data");
-const SIGNUPS_FILE = path.join(DATA_DIR, "signups.json");
 
 type SignupBody = {
   email?: unknown;
@@ -15,33 +10,71 @@ function isEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+async function storeSignup(email: string, userAgent: string) {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const databaseId = process.env.CLOUDFLARE_D1_DATABASE_ID;
+  const apiToken = process.env.CLOUDFLARE_D1_API_TOKEN;
+
+  if (!accountId || !databaseId || !apiToken) {
+    throw new Error("Missing D1 configuration");
+  }
+
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sql: `
+          INSERT INTO signups (email, created_at, user_agent)
+          VALUES (?, ?, ?)
+          ON CONFLICT(email) DO NOTHING
+        `,
+        params: [
+          email,
+          new Date().toISOString(),
+          userAgent,
+        ],
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("D1 write failed");
+  }
+}
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as SignupBody | null;
   const email = String(body?.email || "").trim().toLowerCase();
 
   if (!isEmail(email)) {
     return NextResponse.json(
-      { ok: false, message: "Enter a valid email." },
+      { ok: false, message: "Invalid email address." },
       { status: 400 }
     );
   }
 
-  await fs.mkdir(DATA_DIR, { recursive: true });
-
-  let existing: string[] = [];
-
   try {
-    existing = JSON.parse(await fs.readFile(SIGNUPS_FILE, "utf8")) as string[];
+    await storeSignup(
+      email,
+      request.headers.get("user-agent") || "unknown"
+    );
+
+    return NextResponse.json({
+      ok: true,
+      message: "Thanks. You're on the list.",
+    });
   } catch {
-    existing = [];
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "Signup storage temporarily unavailable.",
+      },
+      { status: 503 }
+    );
   }
-
-  const deduped = Array.from(new Set([...existing, email])).sort();
-
-  await fs.writeFile(SIGNUPS_FILE, JSON.stringify(deduped, null, 2));
-
-  return NextResponse.json({
-    ok: true,
-    message: "Thanks. We'll be in contact soon.",
-  });
 }
