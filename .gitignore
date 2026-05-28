@@ -7,6 +7,5 @@ upload-sink/.wrangler
 *.zip
 data/signups.json
 UX_PRINCIPLES.md
-codebase.zip
 PROJECT_CONTEXT.md
 CODING_GUIDELINES.md
