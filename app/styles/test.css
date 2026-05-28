@@ -421,3 +421,70 @@
 .test-shell .test-measures-mini {
   margin-top: 0;
 }
+
+/* =========================================================
+   TEST PAGE RESPONSIVE
+========================================================= */
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .test-shell {
+    width: min(760px, calc(100% - 32px));
+  }
+
+  .hero-panel {
+    padding: 34px;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .hero-visual {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-left: 0;
+    padding-top: 28px;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-start-button {
+    width: 100%;
+    text-align: center;
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .hero-panel {
+    padding: 18px;
+    margin: 16px 0;
+  }
+
+  .hero-grid {
+    gap: 18px;
+  }
+
+  .hero-kicker {
+    margin-bottom: 12px;
+    font-size: 10px;
+  }
+
+  .hero-panel h1 {
+    font-size: clamp(38px, 13vw, 52px);
+    line-height: 0.92;
+    margin-bottom: 18px;
+  }
+
+  .hero-subtitle {
+    font-size: 21px;
+    line-height: 1.12;
+    margin-bottom: 14px;
+  }
+
+  .hero-description {
+    font-size: 15px;
+    line-height: 1.42;
+    margin-bottom: 20px;
+  }
+}
