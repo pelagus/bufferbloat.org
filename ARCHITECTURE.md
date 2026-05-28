@@ -1,117 +1,66 @@
-# Bufferbloat.org architecture
+# Architecture
 
-This project is intentionally simple.
+bufferbloat.org is a small Next.js App Router application focused on measuring latency under network load.
 
-The goal is not to build a generic speed test. The goal is to explain bufferbloat in a way normal people can immediately understand.
+## Test phases
 
-The frontend is a Next.js app deployed on Vercel.
+The browser performs:
 
-The actual test traffic is generated through:
-- static files hosted on Cloudflare R2
-- a lightweight upload worker running on Cloudflare Workers
+1. Quiet-line latency measurement
+2. Download pressure latency measurement
+3. Upload pressure latency measurement
 
-The measurement logic runs locally in the browser.
+The final result combines:
+- baseline latency
+- loaded latency
+- throughput
+- responsiveness grade
+- diagnosis text
 
----
+## Important files
 
-# Main files
+### lib/bufferbloat-test.ts
 
-## app/page.tsx
+Core browser-side measurement engine.
 
-Landing page.
+Responsible for:
+- ping sampling
+- download load generation
+- upload load generation
+- median calculations
+- live updates
 
-This is the narrative and educational entry point of the project.
+### app/test/page.tsx
 
----
+Main orchestration UI.
 
-## app/test/page.tsx
+Responsible for:
+- running state
+- rendering test phases
+- diagnosis rendering
+- responsive behavior
 
-Main test UI.
+### app/styles/
 
-Responsible only for:
-- rendering
-- progress states
-- displaying measurements
-- diagnosis presentation
+CSS split by concern:
+- legacy.css
+- home.css
+- test.css
+- responsive.css
+- nav.css
 
-The actual networking logic should stay outside this file.
+## UX constraints
 
----
+Important:
+- avoid layout jumps
+- keep mobile stable
+- keep three phases visible on mobile
+- preserve scientific instrument aesthetic
+- avoid fake precision
 
-## lib/bufferbloat-test.ts
+## Deployment
 
-Core measurement engine.
-
-Handles:
-- latency probing
-- download pressure generation
-- upload pressure generation
-- throughput estimation
-- grading logic
-- progress updates
-
-This is the heart of the project.
-
----
-
-## lib/test-copy.ts
-
-Centralized messaging and diagnosis copy.
-
-Keeps wording editable without touching test logic.
-
----
-
-# Cloudflare infrastructure
-
-## upload-sink/
-
-Independent Cloudflare Worker.
-
-Receives disposable upload traffic used during upload testing.
-
-This exists separately so uploads do not hit the Next.js server.
-
-Includes:
-- CORS handling
-- simple in-memory rate limiting
-- upload size limits
-
----
-
-# Static test files
-
-Hosted on Cloudflare R2 behind:
-
-https://files.bufferbloat.org
-
-Current files:
-- ping.txt
-- 10mb.bin
-- 100mb.bin
-
-The download files should stay incompressible.
-
----
-
-# Design philosophy
-
-The UI should feel:
-- technical but understandable
-- trustworthy
-- restrained
-- informative
-- slightly instrument-like
-
-Avoid:
-- gamer aesthetics
-- glossy startup gradients
-- networking jargon overload
-- fake precision
-- "AI assistant" tone
-
-The important concept is:
-
-Fast internet can still feel bad if latency spikes under load.
-
-That is what the project exists to demonstrate.
+- Vercel hosting
+- Cloudflare DNS/proxy
+- canonical domain:
+  https://bufferbloat.org
