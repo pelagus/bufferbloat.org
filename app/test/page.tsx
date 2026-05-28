@@ -148,6 +148,14 @@ export default function Page() {
                 Keep this tab visible during the test.
               </p>
 
+              <button
+                className="hero-start-button"
+                onClick={runTest}
+                disabled={running || analyzing}
+              >
+                Start test
+              </button>
+
               <section className="test-measures-mini">
                 <h2>What this test measures</h2>
 
@@ -171,14 +179,6 @@ export default function Page() {
                   </article>
                 </div>
               </section>
-
-              <button
-                className="hero-start-button"
-                onClick={runTest}
-                disabled={running || analyzing}
-              >
-                Start test
-              </button>
             </div>
 
 

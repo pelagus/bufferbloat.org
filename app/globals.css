@@ -2,5 +2,6 @@
 
 @import "./styles/nav.css";
 @import "./styles/home.css";
-@import "./styles/test.css";
 @import "./styles/responsive.css";
+@import "./styles/test.css";
+@import "./styles/measurement.css";

@@ -390,3 +390,34 @@
     ) !important;
   border-color: rgba(168, 85, 247, 0.55) !important;
 }
+
+/* /test has no hero visual column, so use full panel width on desktop */
+@media (min-width: 981px) {
+  .test-shell .hero-grid {
+    display: block;
+  }
+
+  .test-shell .hero-copy {
+    width: 100%;
+  }
+
+  .test-shell .hero-subtitle {
+    max-width: 980px;
+  }
+
+  .test-shell .test-measures-mini {
+    max-width: 920px;
+  }
+}
+
+/* Stronger primary CTA placement */
+.test-shell .hero-start-button {
+  display: block;
+  width: 100%;
+  margin: 36px 0 42px;
+  text-align: center;
+}
+
+.test-shell .test-measures-mini {
+  margin-top: 0;
+}
