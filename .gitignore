@@ -7,3 +7,5 @@ upload-sink/.wrangler
 bufferbloat-for-next-chat.zip
 *.zip
 data/signups.json
+AI_CODING_INSTRUCTIONS.md
+UX_PRINCIPLES.md
