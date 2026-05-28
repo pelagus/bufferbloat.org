@@ -1163,3 +1163,147 @@
   .instrument-panel {
     padding: 12px;
   }
+/* =========================================================
+   MEASUREMENT RESPONSIVE + ACTIVE STATES
+========================================================= */
+
+@media (max-width: 767px) {
+  .signal-card {
+    padding: 18px;
+  }
+
+  .signal-value {
+    font-size: 44px;
+  }
+
+  .result-layout {
+    gap: 18px;
+  }
+
+  .result-card h2 {
+    font-size: 28px;
+  }
+
+  .diagnosis-list li {
+    font-size: 17px;
+  }
+
+  .signup-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .signup-icon {
+    width: 58px;
+    height: 58px;
+    font-size: 28px;
+  }
+
+  .signup-card form {
+    grid-template-columns: 1fr;
+  }
+
+  .signup-card input,
+  .signup-card button {
+    width: 100%;
+    height: 56px;
+  }
+
+  .stage-panel-header {
+    min-height: 0 !important;
+    grid-template-columns: 44px 1fr;
+    padding: 13px !important;
+  }
+
+  .stage-title-block strong {
+    font-size: 19px;
+  }
+
+  .stage-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    min-height: 0 !important;
+    padding-top: 10px !important;
+    gap: 8px !important;
+  }
+
+  .summary-speed {
+    grid-template-columns: 110px 1fr;
+    min-height: 0 !important;
+  }
+
+  .speedometer {
+    width: 110px;
+  }
+
+  .median-ping-readout {
+    display: grid !important;
+    grid-template-rows: auto 26px auto;
+    row-gap: 4px;
+    min-height: 0 !important;
+    overflow: hidden;
+  }
+
+  .median-ping-readout > span {
+    grid-row: 1;
+  }
+
+  .median-ping-readout .ping-flyout {
+    grid-row: 2;
+    position: relative !important;
+    top: auto !important;
+    height: 26px !important;
+    margin: 0 !important;
+    overflow: hidden;
+  }
+
+  .median-ping-readout strong {
+    grid-row: 3;
+    margin-top: 0 !important;
+    font-size: 30px !important;
+  }
+
+  .ping-flyout {
+    position: relative !important;
+    top: auto !important;
+    height: 24px !important;
+  }
+}
+
+:root {
+  --baseline: #d49a00;
+}
+
+.stage-panel.active-now.baseline {
+  border-color: var(--baseline) !important;
+  color: var(--baseline) !important;
+}
+
+.stage-panel.active-now.baseline .stage-icon,
+.stage-panel.active-now.baseline .stage-title-block strong,
+.stage-panel.active-now.baseline .stage-summary span,
+.stage-panel.active-now.baseline .stage-summary strong,
+.stage-panel.active-now.baseline .ping-flyout em {
+  color: var(--baseline) !important;
+  border-color: var(--baseline) !important;
+}
+
+.stage-panel.complete.baseline,
+.stage-panel.complete.baseline * {
+  color: var(--fg);
+}
+
+.stage-panel.active-now.download {
+  border-color: var(--blue) !important;
+  color: var(--blue) !important;
+}
+
+.stage-panel.active-now.upload {
+  border-color: var(--purple) !important;
+  color: var(--purple) !important;
+}
+
+.progress-fill {
+  background: #111 !important;
+}

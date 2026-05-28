@@ -1,0 +1,63 @@
+/* =========================================================
+   SHARED LAYOUT + RESPONSIVE PRIMITIVES
+========================================================= */
+
+/* Desktop */
+
+@media (min-width: 1100px) {
+  .home-shell,
+  .test-shell,
+  .page-shell,
+  .site-nav {
+    width: min(1040px, calc(100% - 48px));
+  }
+
+  .hero-panel {
+    padding: 44px;
+  }
+}
+
+/* Tablet */
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .home-shell,
+  .test-shell,
+  .page-shell,
+  .site-nav {
+    width: min(760px, calc(100% - 32px));
+  }
+
+  .hero-panel {
+    padding: 34px;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .hero-visual {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-left: 0;
+    padding-top: 28px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 767px) {
+  .primary-button,
+  .hero-start-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .hero-subtitle {
+    font-size: 24px;
+  }
+
+  .hero-description {
+    font-size: 16px;
+  }
+}
