@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getPrivateConfig } from "../../../lib/private-config";
 
 export const runtime = "nodejs";
 
@@ -11,9 +12,9 @@ function isEmail(value: string) {
 }
 
 async function storeSignup(email: string, userAgent: string) {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const databaseId = process.env.CLOUDFLARE_D1_DATABASE_ID;
-  const apiToken = process.env.CLOUDFLARE_D1_API_TOKEN;
+  const accountId = getPrivateConfig("CLOUDFLARE_ACCOUNT_ID");
+  const databaseId = getPrivateConfig("CLOUDFLARE_D1_DATABASE_ID");
+  const apiToken = getPrivateConfig("CLOUDFLARE_D1_API_TOKEN");
 
   if (!accountId || !databaseId || !apiToken) {
     throw new Error("Missing D1 configuration");

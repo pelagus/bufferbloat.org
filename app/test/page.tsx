@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { runBufferbloatTest } from "../../lib/bufferbloat-test";
-import { initialTestMessage, preTestInstruction, type Grade } from "../../lib/test-copy";
+import { initialTestMessage, type Grade } from "../../lib/test-copy";
 import ResultCard from "./components/ResultCard";
 import SignupBox from "./components/SignupBox";
 import { formatLatency, formatSpeed, speedWidth } from "./components/format";
@@ -10,6 +10,10 @@ import { diagnosisFor, stageIndex } from "./components/diagnosis";
 
 const DOWNLOAD_TEST_SIZE = "100 MB";
 const UPLOAD_TEST_SIZE = "32 MB";
+
+type NavigatorWithDeviceMemory = Navigator & {
+  deviceMemory?: number;
+};
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -47,11 +51,13 @@ export default function Page() {
   const browserInfo = useMemo(() => {
     if (typeof window === "undefined") return null;
 
+    const navigatorWithMemory = navigator as NavigatorWithDeviceMemory;
+
     return {
       userAgent: navigator.userAgent,
       language: navigator.language,
       platform: navigator.platform,
-      memory: (navigator as any).deviceMemory || "unknown",
+      memory: navigatorWithMemory.deviceMemory || "unknown",
       cores: navigator.hardwareConcurrency || "unknown",
       viewport: `${window.innerWidth}x${window.innerHeight}`,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

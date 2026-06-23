@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type SignupResponse = {
   ok?: boolean;
@@ -8,18 +8,13 @@ type SignupResponse = {
 };
 
 export default function SignupBox() {
-  const [hidden, setHidden] = useState(true);
+  const [hidden, setHidden] = useState(() => (
+    typeof document !== "undefined" &&
+    document.cookie.includes("bufferbloat_signup=1")
+  ));
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    const alreadySignedUp =
-      typeof window !== "undefined" &&
-      document.cookie.includes("bufferbloat_signup=1");
-
-    setHidden(alreadySignedUp);
-  }, []);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();

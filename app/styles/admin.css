@@ -1,0 +1,114 @@
+/* private admin views */
+
+.admin-shell {
+  max-width: 1120px;
+}
+
+.admin-panel {
+  display: grid;
+  gap: 22px;
+}
+
+.admin-login-form {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-login-form label {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.admin-login-form > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.admin-login-form input {
+  min-width: 0;
+  height: 48px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  padding: 0 14px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 15px;
+}
+
+.admin-login-form button {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.admin-message {
+  margin: 0;
+}
+
+.admin-results {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-results-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.admin-results-summary strong {
+  font-size: 42px;
+  line-height: 1;
+}
+
+.admin-results-summary span {
+  color: var(--muted);
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-table th,
+.admin-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-table td:last-child {
+  max-width: 460px;
+  color: var(--muted);
+  word-break: break-word;
+}
+
+@media (max-width: 767px) {
+  .admin-login-form > div {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-login-form button {
+    width: 100%;
+  }
+}
