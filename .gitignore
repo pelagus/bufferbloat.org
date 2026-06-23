@@ -11,6 +11,7 @@ data/signups.json
 
 upload-sink/node_modules
 upload-sink/.wrangler
+.wrangler
 
 local-only/
 
