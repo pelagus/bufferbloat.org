@@ -6,6 +6,7 @@ import { severityClass } from "./diagnosis";
 export default function ResultCard({
   grade,
   diagnosis,
+  summary,
   technical,
 }: {
   grade: Grade;
@@ -14,6 +15,11 @@ export default function ResultCard({
     label: string;
     bullets: string[];
   };
+  summary: Array<{
+    label: string;
+    value: string;
+    detail: string;
+  }>;
   technical: string;
 }) {
   return (
@@ -34,6 +40,16 @@ export default function ResultCard({
             ))}
           </ul>
         </div>
+      </div>
+
+      <div className="result-summary-grid">
+        {summary.map((item) => (
+          <article key={item.label}>
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+            <p>{item.detail}</p>
+          </article>
+        ))}
       </div>
 
       <details className="technical-details">

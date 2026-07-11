@@ -5,11 +5,13 @@ import { runBufferbloatTest, type TestPhase } from "../../lib/bufferbloat-test";
 import { initialTestMessage, type Grade } from "../../lib/test-copy";
 import ResultCard from "./components/ResultCard";
 import SignupBox from "./components/SignupBox";
-import { formatLatency, formatSpeed, speedWidth } from "./components/format";
+import { formatLatency, formatSpeed } from "./components/format";
 import { diagnosisFor, stageIndex } from "./components/diagnosis";
 
 const DOWNLOAD_TEST_SIZE = "100 MB file, repeated across 4 streams";
 const UPLOAD_TEST_SIZE = "1 MB chunks, repeated across 3 streams";
+const DOWNLOAD_STREAM_LABEL = "4 download streams";
+const UPLOAD_STREAM_LABEL = "3 upload streams";
 
 type NavigatorWithDeviceMemory = Navigator & {
   deviceMemory?: number;
@@ -19,11 +21,21 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function latencyDelta(base: number | null, loaded: number | null) {
+  if (base === null || loaded === null) return null;
+  return loaded - base;
+}
+
+function formatDelta(delta: number | null) {
+  if (delta === null) return "—";
+  const rounded = Math.round(delta);
+  return `${rounded >= 0 ? "+" : ""}${rounded} ms`;
+}
+
 export default function Page() {
   const [running, setRunning] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [manualStage, setManualStage] = useState<number | null>(null);
 
   const [progress, setProgress] = useState(0);
   const [idle, setIdle] = useState<number | null>(null);
@@ -69,7 +81,6 @@ export default function Page() {
   async function runTest() {
     try {
       setError(null);
-      setManualStage(null);
       setRunning(true);
       setAnalyzing(false);
       setFinished(false);
@@ -123,8 +134,48 @@ export default function Page() {
   }
 
   const automaticStage = running && !analyzing ? stageIndex(status) : 0;
-  const openStage = running ? automaticStage : manualStage;
-  const isWarming = running && phase === "warmup";
+  const phaseDetail = getPhaseDetail(phase, status);
+  const downloadDelta = latencyDelta(idle, downloadLatency);
+  const uploadDelta = latencyDelta(idle, uploadLatency);
+  const liveStages = [
+    {
+      stage: 1,
+      title: "Quiet latency",
+      theme: "baseline",
+      icon: "⌁",
+      ping: idle,
+      samples: automaticStage === 1 ? recentLatencySamples : [],
+      done: idle !== null,
+      speed: null,
+      speedLabel: null,
+    },
+    {
+      stage: 2,
+      title: "Download load",
+      theme: "download",
+      icon: "↓",
+      ping: downloadLatency,
+      samples: automaticStage === 2 ? recentLatencySamples : [],
+      done: downloadLatency !== null,
+      speed: downloadMbps,
+      speedLabel: "Download throughput",
+    },
+    {
+      stage: 3,
+      title: "Upload load",
+      theme: "upload",
+      icon: "↑",
+      ping: uploadLatency,
+      samples: automaticStage === 3 ? recentLatencySamples : [],
+      done: uploadLatency !== null,
+      speed: uploadMbps,
+      speedLabel: "Upload throughput",
+    },
+  ] as const;
+  const activeLiveStage = liveStages.find((item) => item.stage === automaticStage) ?? null;
+  const completedLiveStages = liveStages.filter(
+    (item) => item.done && item.stage !== automaticStage
+  );
 
   const diagnosis = diagnosisFor(
     grade,
@@ -134,11 +185,6 @@ export default function Page() {
     downloadLatency,
     uploadLatency
   );
-
-  function toggleStage(stage: number, done: boolean) {
-    if (running || analyzing || !done) return;
-    setManualStage(manualStage === stage ? null : stage);
-  }
 
   return (
     <main className="test-shell">
@@ -228,11 +274,30 @@ export default function Page() {
             <ResultCard
             grade={grade}
             diagnosis={diagnosis}
+            summary={[
+              {
+                label: "Quiet latency",
+                value: `${formatLatency(idle)} ms`,
+                detail: "baseline median",
+              },
+              {
+                label: "Download load",
+                value: formatDelta(downloadDelta),
+                detail: `${formatLatency(downloadLatency)} ms median`,
+              },
+              {
+                label: "Upload load",
+                value: formatDelta(uploadDelta),
+                detail: `${formatLatency(uploadLatency)} ms median`,
+              },
+            ]}
             technical={
               `
 Quiet-line median ping latency: ${formatLatency(idle)} ms
 Download-stress median ping latency: ${formatLatency(downloadLatency)} ms
 Upload-stress median ping latency: ${formatLatency(uploadLatency)} ms
+Download loaded latency increase: ${formatDelta(downloadDelta)}
+Upload loaded latency increase: ${formatDelta(uploadDelta)}
 
 Download throughput estimate: ${formatSpeed(downloadMbps)} Mbps
 Upload throughput estimate: ${formatSpeed(uploadMbps)} Mbps
@@ -261,7 +326,7 @@ User agent: ${browserInfo?.userAgent}
         </>
       )}
 
-      {(running || analyzing || finished) && (
+      {(running || analyzing) && (
         <section className="instrument-panel">
           {running && (
             <>
@@ -273,104 +338,76 @@ User agent: ${browserInfo?.userAgent}
               <div className="progress-bar top">
                 <div className="progress-fill" style={{ width: `${progress}%` }} />
               </div>
+
+              <PhaseStepper phase={phase} status={status} />
+
+              <div className="phase-detail-card" aria-live="polite">
+                <div>
+                  <span>{phaseDetail.eyebrow}</span>
+                  <strong>{phaseDetail.title}</strong>
+                  <p>{phaseDetail.detail}</p>
+                </div>
+
+                <div className="phase-facts">
+                  {phase === "download" && (
+                    <>
+                      <span>{DOWNLOAD_STREAM_LABEL} active</span>
+                      <span>{formatSpeed(downloadMbps)} Mb/s estimate</span>
+                    </>
+                  )}
+
+                  {phase === "upload" && (
+                    <>
+                      <span>{UPLOAD_STREAM_LABEL} active</span>
+                      <span>{formatSpeed(uploadMbps)} Mb/s estimate</span>
+                    </>
+                  )}
+
+                  {phase === "idle" && (
+                    <>
+                      <span>No stress traffic</span>
+                      <span>{formatLatency(idle)} ms current median</span>
+                    </>
+                  )}
+
+                  {phase === "warmup" && (
+                    <>
+                      <span>Preflight only</span>
+                      <span>Excluded from medians</span>
+                    </>
+                  )}
+                </div>
+              </div>
             </>
           )}
 
-          {isWarming && (
-            <div className="warmup-panel" aria-live="polite">
-              <div className="warmup-pulse" aria-hidden="true" />
-
-              <div>
-                <span>Preflight warm-up</span>
-                <strong>Preparing the test session before quiet-line measurement.</strong>
-                <p>
-                  Small ping, download, and upload requests are warming the browser path.
-                  These samples are not included in the final medians.
-                </p>
-              </div>
-            </div>
+          {activeLiveStage && (
+            <ActiveMeasurementCard
+              title={activeLiveStage.title}
+              theme={activeLiveStage.theme}
+              icon={activeLiveStage.icon}
+              ping={activeLiveStage.ping}
+              samples={activeLiveStage.samples}
+              speed={activeLiveStage.speed}
+              speedLabel={activeLiveStage.speedLabel}
+            />
           )}
 
-          <div className="stage-accordion">
-            <StagePanel
-              stage={1}
-              expanded={openStage === 1}
-              title="Median ping latency under quiet conditions"
-              ping={idle}
-              samples={openStage === 1 ? recentLatencySamples : []}
-              done={idle !== null}
-              onToggle={() => toggleStage(1, idle !== null)}
-            >
-              <MetricCard
-                label="Network stress"
-                title="No additional stress"
-                value="none"
-                footer="baseline measurement"
-                theme="baseline"
-              />
-
-              <PingCard
-                title="Quiet-line ping"
-                value={idle}
-                active={automaticStage === 1}
-                theme="baseline"
-              />
-            </StagePanel>
-
-            <StagePanel
-              stage={2}
-              expanded={openStage === 2}
-              title="Median ping latency with download stress"
-              ping={downloadLatency}
-              samples={openStage === 2 ? recentLatencySamples : []}
-              speed={downloadMbps}
-              speedLabel="Download throughput"
-              done={downloadLatency !== null}
-              onToggle={() => toggleStage(2, downloadLatency !== null)}
-            >
-              <SpeedGauge
-                label="Download stress"
-                title="Receiving test file"
-                value={downloadMbps}
-                payload={DOWNLOAD_TEST_SIZE}
-                theme="download"
-              />
-
-              <PingCard
-                title="Download-stress ping"
-                value={downloadLatency}
-                active={automaticStage === 2}
-                theme="download"
-              />
-            </StagePanel>
-
-            <StagePanel
-              stage={3}
-              expanded={openStage === 3}
-              title="Median ping latency with upload stress"
-              ping={uploadLatency}
-              samples={openStage === 3 ? recentLatencySamples : []}
-              speed={uploadMbps}
-              speedLabel="Upload throughput"
-              done={uploadLatency !== null}
-              onToggle={() => toggleStage(3, uploadLatency !== null)}
-            >
-              <SpeedGauge
-                label="Upload stress"
-                title="Sending test payload"
-                value={uploadMbps}
-                payload={UPLOAD_TEST_SIZE}
-                theme="upload"
-              />
-
-              <PingCard
-                title="Upload-stress ping"
-                value={uploadLatency}
-                active={automaticStage === 3}
-                theme="upload"
-              />
-            </StagePanel>
-          </div>
+          {completedLiveStages.length > 0 && (
+            <div className="completed-stage-strip" aria-label="Completed measurements">
+              {completedLiveStages.map((item) => (
+                <CompletedStageSummary
+                  key={item.stage}
+                  title={item.title}
+                  theme={item.theme}
+                  icon={item.icon}
+                  ping={item.ping}
+                  speed={item.speed}
+                  speedLabel={item.speedLabel}
+                />
+              ))}
+            </div>
+          )}
         </section>
       )}
 
@@ -381,68 +418,185 @@ User agent: ${browserInfo?.userAgent}
   );
 }
 
-function StagePanel({
-  stage,
-  expanded,
+function getPhaseDetail(phase: TestPhase | "ready", status: string) {
+  if (phase === "warmup") {
+    return {
+      eyebrow: "Step 1 of 4",
+      title: "Warming up the session",
+      detail: "Small ping, download, and upload requests prepare the browser path before measurement starts.",
+    };
+  }
+
+  if (phase === "idle") {
+    return {
+      eyebrow: "Step 2 of 4",
+      title: "Measuring quiet latency",
+      detail: "No extra stress traffic is added during this baseline median.",
+    };
+  }
+
+  if (phase === "download") {
+    const settling = status.includes("settling") || status.includes("starting");
+
+    return {
+      eyebrow: "Step 3 of 4",
+      title: settling ? "Stabilizing download pressure" : "Measuring latency during download",
+      detail: settling
+        ? "Download streams are already running; these first seconds are excluded from the median."
+        : "Latency samples are now being recorded while download pressure stays active.",
+    };
+  }
+
+  if (phase === "upload") {
+    const settling = status.includes("settling") || status.includes("starting");
+
+    return {
+      eyebrow: "Step 4 of 4",
+      title: settling ? "Stabilizing upload pressure" : "Measuring latency during upload",
+      detail: settling
+        ? "Upload streams are already running; these first seconds are excluded from the median."
+        : "Latency samples are now being recorded while upload pressure stays active.",
+    };
+  }
+
+  return {
+    eyebrow: "Ready",
+    title: "Ready to test",
+    detail: "Start a run to measure quiet and loaded latency.",
+  };
+}
+
+function PhaseStepper({
+  phase,
+  status,
+}: {
+  phase: TestPhase | "ready";
+  status: string;
+}) {
+  const steps = [
+    { phase: "warmup", label: "Warm-up" },
+    { phase: "idle", label: "Quiet" },
+    { phase: "download", label: "Download" },
+    { phase: "upload", label: "Upload" },
+  ] as const;
+  const currentIndex = steps.findIndex((step) => step.phase === phase);
+
+  return (
+    <ol className="phase-stepper" aria-label="Test progress">
+      {steps.map((step, index) => {
+        const active = step.phase === phase;
+        const complete = currentIndex > index || phase === "analysis";
+        const settling =
+          active &&
+          (status.includes("settling") || status.includes("starting"));
+
+        return (
+          <li
+            key={step.phase}
+            className={`${active ? "active" : ""} ${complete ? "complete" : ""}`}
+          >
+            <span>{complete ? "✓" : index + 1}</span>
+            <strong>{step.label}</strong>
+            {active && (
+              <em>{settling ? "settling" : step.phase === "warmup" ? "warming" : "measuring"}</em>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function ActiveMeasurementCard({
   title,
+  theme,
+  icon,
   ping,
   samples,
   speed,
   speedLabel,
-  done,
 }: {
-  stage: number;
-  expanded: boolean;
   title: string;
+  theme: "baseline" | "download" | "upload";
+  icon: string;
   ping: number | null;
   samples: number[];
   speed?: number | null;
-  speedLabel?: string;
-  done: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
+  speedLabel?: string | null;
 }) {
-  const theme = stage === 2 ? "download" : stage === 3 ? "upload" : "baseline";
-
   return (
-    <section className={`stage-panel ${expanded ? "active-now" : "complete"} ${theme}`}>
-      <div className="stage-panel-header">
-        <div className="stage-icon">
-          {done ? "✓" : theme === "download" ? "↓" : theme === "upload" ? "↑" : "⌁"}
-        </div>
+    <section className={`active-measurement-card ${theme}`} aria-live="polite">
+      <div className="active-measurement-header">
+        <div className="stage-icon">{icon}</div>
 
-        <div className="stage-title-block">
+        <div>
+          <span>Measuring now</span>
           <strong>{title}</strong>
         </div>
+      </div>
 
-        <div className="stage-summary">
-          <div className="median-ping-readout">
-            <span>Median ping</span>
-            <strong>{ping === null ? "—" : `${formatLatency(ping)} ms`}</strong>
+      <div className="active-measurement-grid">
+        <div className="active-readout">
+          <span>Median ping</span>
+          <strong>{ping === null ? "—" : `${formatLatency(ping)} ms`}</strong>
 
-            <div className="ping-flyout" aria-hidden="true">
-              {(samples.length > 0 ? samples : [null, null, null, null, null]).map((sample, index) => (
-                <em
-                  key={sample === null ? `empty-${index}` : `${sample}-${index}`}
-                  className={sample === null ? "empty-sample" : undefined}
-                  style={{ "--sample-index": index } as React.CSSProperties}
-                >
-                  {sample === null ? "00ms" : `${Math.round(sample)}ms`}
-                </em>
-              ))}
-            </div>
+          <div className="active-samples" aria-hidden="true">
+            {(samples.length > 0 ? samples : [null, null, null, null, null]).map((sample, index) => (
+              <em
+                key={sample === null ? `empty-${index}` : `${sample}-${index}`}
+                className={sample === null ? "empty-sample" : undefined}
+                style={{ "--sample-index": index } as React.CSSProperties}
+              >
+                {sample === null ? "00ms" : `${Math.round(sample)}ms`}
+              </em>
+            ))}
           </div>
+        </div>
 
-          {speedLabel && (
-            <div className="summary-speed">
-              <span>{speedLabel}</span>
+        <div className="active-speed">
+          <span>{speedLabel ?? "Traffic pressure"}</span>
+          {speedLabel ? (
+            <>
               <Speedometer value={speed ?? null} />
               <strong>{speed == null ? "—" : `${formatSpeed(speed)} Mb/s`}</strong>
-            </div>
+            </>
+          ) : (
+            <strong>No added load</strong>
           )}
         </div>
       </div>
     </section>
+  );
+}
+
+function CompletedStageSummary({
+  title,
+  theme,
+  icon,
+  ping,
+  speed,
+  speedLabel,
+}: {
+  title: string;
+  theme: "baseline" | "download" | "upload";
+  icon: string;
+  ping: number | null;
+  speed?: number | null;
+  speedLabel?: string | null;
+}) {
+  return (
+    <article className={`completed-stage-summary ${theme}`}>
+      <span>{icon}</span>
+
+      <div>
+        <strong>{title}</strong>
+        <p>{formatLatency(ping)} ms median</p>
+      </div>
+
+      {speedLabel && (
+        <em>{speed == null ? "—" : `${formatSpeed(speed)} Mb/s`}</em>
+      )}
+    </article>
   );
 }
 
@@ -476,111 +630,5 @@ function Speedometer({ value }: { value: number | null }) {
       <text x="55" y="20">50</text>
       <text x="94" y="64">100</text>
     </svg>
-  );
-}
-
-function MetricCard({
-  label,
-  title,
-  value,
-  footer,
-  theme,
-}: {
-  label: string;
-  title: string;
-  value: string;
-  footer: string;
-  theme: string;
-}) {
-  return (
-    <div className={`metric-card ${theme}`}>
-      <p>{label}</p>
-      <h3>{title}</h3>
-      <div className="big-read">{value}</div>
-      <small>{footer}</small>
-    </div>
-  );
-}
-
-function SpeedGauge({
-  label,
-  title,
-  value,
-  payload,
-  theme,
-}: {
-  label: string;
-  title: string;
-  value: number | null;
-  payload: string;
-  theme: string;
-}) {
-  return (
-    <div className={`metric-card speed-gauge ${theme}`}>
-      <p>{label}</p>
-      <h3>{title}</h3>
-
-      <div className="dial" style={{ "--dial": `${speedWidth(value)}%` } as React.CSSProperties}>
-        <div className="dial-value">
-          {formatSpeed(value)}
-          <span>Mbps</span>
-        </div>
-      </div>
-
-      <small>{payload} payload</small>
-    </div>
-  );
-}
-
-function PingCard({
-  title,
-  value,
-  active,
-  theme,
-}: {
-  title: string;
-  value: number | null;
-  active: boolean;
-  theme: string;
-}) {
-  const samples =
-    value === null
-      ? ["…", "…", "…", "…", "…"]
-      : [
-          Math.round(value * 0.96),
-          Math.round(value * 1.01),
-          Math.round(value),
-          Math.round(value * 0.98),
-          Math.round(value * 1.03),
-        ];
-
-  return (
-    <div className={`metric-card ping ${theme} ${active ? "active" : "locked"}`}>
-      <p>Ping latency</p>
-      <h3>{title}</h3>
-
-      <div className="sample-row">
-        {samples.map((sample, index) => (
-          <span
-            key={index}
-            style={{ "--sample-index": index } as React.CSSProperties}
-          >
-            {sample}
-          </span>
-        ))}
-      </div>
-
-      <div className="wave-row">
-        {samples.map((_, index) => (
-          <span key={index} />
-        ))}
-      </div>
-
-      <div className="big-read">
-        {formatLatency(value)} ms
-      </div>
-
-      <small>{active ? "sampling trials" : "median locked"}</small>
-    </div>
   );
 }

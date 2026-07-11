@@ -344,7 +344,7 @@ export async function runBufferbloatTest(
 
   onUpdate({
     phase: "warmup",
-    status: "warming session",
+    status: "warmup",
     message: "Warming the test path before recording samples.",
     progress: 3,
     idle,
@@ -362,7 +362,7 @@ export async function runBufferbloatTest(
 
   onUpdate({
     phase: "idle",
-    status: "quiet line",
+    status: "quiet measuring",
     message: "Measuring baseline response time.",
     progress: 8,
     idle,
@@ -379,7 +379,7 @@ export async function runBufferbloatTest(
 
     onUpdate({
       phase: "idle",
-      status: "quiet line",
+      status: "quiet measuring",
       message: "Sampling quiet-line ping.",
       progress: 24,
       idle,
@@ -395,7 +395,7 @@ export async function runBufferbloatTest(
 
   onUpdate({
     phase: "download",
-    status: "latency during download",
+    status: "download starting",
     message: "Starting download pressure before recording loaded ping.",
     progress: 34,
     idle,
@@ -414,7 +414,7 @@ export async function runBufferbloatTest(
 
   onUpdate({
     phase: "download",
-    status: "latency during download",
+    status: "download settling",
     message: "Letting download pressure settle before recording samples.",
     progress: 44,
     idle,
@@ -429,7 +429,7 @@ export async function runBufferbloatTest(
 
   onUpdate({
     phase: "download",
-    status: "latency during download",
+    status: "download measuring",
     message: "Sampling ping under established download pressure.",
     progress: 58,
     idle,
@@ -446,7 +446,7 @@ export async function runBufferbloatTest(
 
     onUpdate({
       phase: "download",
-      status: "latency during download",
+      status: "download measuring",
       message: "Sampling ping under established download pressure.",
       progress: 58,
       idle,
@@ -465,7 +465,7 @@ export async function runBufferbloatTest(
 
   onUpdate({
     phase: "upload",
-    status: "latency during upload",
+    status: "upload starting",
     message: "Starting upload pressure before recording loaded ping.",
     progress: 68,
     idle,
@@ -484,7 +484,7 @@ export async function runBufferbloatTest(
 
   onUpdate({
     phase: "upload",
-    status: "latency during upload",
+    status: "upload settling",
     message: "Letting upload pressure settle before recording samples.",
     progress: 76,
     idle,
@@ -499,7 +499,7 @@ export async function runBufferbloatTest(
 
   onUpdate({
     phase: "upload",
-    status: "latency during upload",
+    status: "upload measuring",
     message: "Sampling ping under established upload pressure.",
     progress: 88,
     idle,
@@ -516,7 +516,7 @@ export async function runBufferbloatTest(
 
     onUpdate({
       phase: "upload",
-      status: "latency during upload",
+      status: "upload measuring",
       message: "Sampling ping under established upload pressure.",
       progress: 88,
       idle,
