@@ -1,128 +1,201 @@
 # bufferbloat.org
 
-Open-source browser-based bufferbloat test for measuring internet responsiveness under load.
+An open-source project dedicated to measuring internet responsiveness.
 
-Most speed tests measure bandwidth. bufferbloat.org measures whether your connection stays responsive while downloads and uploads are active.
+Most internet speed tests measure **throughput**: how many megabits per second your connection can deliver. Bufferbloat.org measures something different: how responsive your connection remains while it is under load.
 
-https://bufferbloat.org
+**Website:** https://bufferbloat.org
 
-![bufferbloat.org homepage](docs/homepage-desktop.png)
+---
+
+## Why this exists
+
+I built Bufferbloat.org because I couldn't find the tool I wanted.
+
+Most people are told to judge their internet connection by download speed. More technical users know to look at ping. Both are useful, but neither fully explains a question millions of people ask every day:
+
+> **"Why is my internet still laggy if I have 500 Mbps?"**
+
+A connection can deliver hundreds of megabits per second while video calls freeze, games stutter, websites hesitate and remote desktops become frustrating to use. The problem is often not bandwidth, but **latency under load**.
+
+Networking researchers have understood this for years. Yet, despite excellent research and commercial products, I was surprised by how few open, transparent and browser-based tools existed to measure it.
+
+I wanted a tool whose methodology anyone could inspect, whose implementation anyone could verify, and whose measurements anyone could improve.
+
+So I built one.
+
+---
 
 ## What is bufferbloat?
 
-Bufferbloat is excessive latency caused by overloaded network queues.
+Bufferbloat is excessive latency caused by oversized or overloaded network queues.
 
-A connection can show high download speed and still feel bad if latency spikes while the connection is busy. That is why video calls freeze, games lag, pages stall, and remote work feels unstable even when a normal speed test looks fine.
+When a connection becomes busy, packets can spend too long waiting before being transmitted. Throughput may remain high while responsiveness deteriorates dramatically.
 
-bufferbloat.org focuses on responsiveness, not just raw throughput.
+That's why a connection can achieve an excellent speed test result and still perform poorly during video calls, online gaming, browsing or other interactive applications.
 
-## Open-source internet utility
+This project focuses on measuring **internet responsiveness**, not just throughput.
 
-bufferbloat.org is open source because internet quality diagnostics should be transparent, inspectable, and easy to improve.
+---
 
-The project is designed to be different from opaque commercial speed tests:
+## Why open source?
 
-- no ad-driven funnel
-- no fake precision
-- no unnecessary tracking pressure
-- browser-native testing
-- visible methodology
-- clear responsiveness-focused results
-- community-friendly codebase
+Internet measurement should be transparent.
 
-The goal is to help people understand how their connection behaves under load.
+Measurements should be reproducible. Methodology should be public. Implementation should never be a black box.
 
-## Live test interface
+Bufferbloat.org is built around those principles.
+
+The project provides:
+
+- Open measurement methodology
+- Inspectable source code
+- Browser-based testing
+- Privacy-first design
+- Reproducible measurements
+- Community-driven development
+
+---
+
+## Live test
 
 ![Live bufferbloat test interface](docs/live-test-optimized.gif)
 
+---
+
 ## What the test measures
 
-The browser runs three phases:
+The browser performs three measurement phases:
 
 1. Quiet-line latency
 2. Download latency under load
 3. Upload latency under load
 
-The result includes:
+Results include:
 
-- median quiet ping latency
-- median download-stress latency
-- median upload-stress latency
-- download throughput
-- upload throughput
-- responsiveness grade
-- plain-language diagnosis
+- Median idle latency
+- Median download latency under load
+- Median upload latency under load
+- Download throughput
+- Upload throughput
+- Overall responsiveness grade
+- Plain-language diagnosis
+
+---
 
 ## Why responsiveness matters
 
-Bandwidth tells you how much data can move through a connection.
+Throughput tells you **how much** data your connection can move.
 
-Responsiveness tells you whether the connection still reacts quickly while busy.
+Responsiveness tells you **how quickly** your connection continues to react while moving that data.
 
-For everyday internet use, responsiveness often matters more than peak speed for:
-- video calls
-- online games
-- browsing
-- remote work
-- streaming while other devices are active
+For many everyday applications, responsiveness has a greater impact on user experience than peak bandwidth.
+
+Examples include:
+
+- Video conferencing
+- Online gaming
+- Web browsing
+- Remote desktop
+- Voice calls
+- Cloud development
+- Streaming while other devices are active
+
+---
 
 ## Features
 
-- Browser-based bufferbloat test
-- Latency-under-load measurement
-- Download and upload stress phases
-- Median-based ping reporting
-- Real-time instrumentation UI
-- Mobile-friendly design
-- Light and dark mode support
-- Open-source codebase
+- Browser-based latency-under-load measurement
+- Open-source measurement engine
+- Download and upload stress testing
+- Median latency reporting
+- Real-time visualisation
+- Mobile-friendly interface
+- Light and dark mode
+- Public measurement methodology
+
+---
 
 ## Local development
 
 Install dependencies:
 
+```bash
 npm install
+```
 
 Run the development server:
 
+```bash
 npm run dev
+```
 
-Then open:
+Open:
 
+```
 http://localhost:3000
+```
 
 Build for production:
 
+```bash
 npm run build
+```
 
-## Tech stack
+---
+
+## Technology
 
 - Next.js App Router
 - TypeScript
-- Vercel
 - Cloudflare
+- Vercel
+
+---
 
 ## Contributing
 
 Contributions are welcome.
 
-Areas especially worth improving:
-- measurement methodology
-- browser compatibility
-- accessibility
-- documentation
-- mobile responsiveness
-- privacy-preserving diagnostics
+Areas of particular interest include:
+
+- Measurement methodology
+- Browser compatibility
+- Accessibility
+- Documentation
+- Privacy-preserving diagnostics
+- Visualisation and reporting
+
+If you disagree with the methodology, find a bug, or have an idea for improving the measurements, please open an issue or submit a pull request.
+
+---
 
 ## Privacy
 
-The core test runs entirely in the browser.
+The core measurement runs entirely in the browser.
 
-Optional email signup storage should never be committed:
+Optional email signup data is stored separately and should never be committed:
 
+```
 data/signups.json
+```
+
+---
+
+## About the author
+
+Bufferbloat.org is created and maintained by **Emanuele Brandi**.
+
+I've spent more than twenty years building products that shape how people experience the web, including work on Google Search, AdSense and Firefox. Throughout my career, I've cared deeply about the health of the open web and about building technology that is transparent, useful and easy to understand.
+
+Bufferbloat.org is an independent open-source project created because I believe internet responsiveness deserves the same attention as internet speed, and because the tools we use to measure the web should themselves be open to inspection and improvement.
+
+- Website: https://bufferbloat.org
+- GitHub: https://github.com/pelagus
+- LinkedIn: https://linkedin.com/in/ebrandi
+
+---
 
 ## License
 
-See LICENSE.
+MIT
