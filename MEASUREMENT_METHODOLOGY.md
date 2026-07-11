@@ -6,7 +6,16 @@ The goal is to estimate whether latency increases significantly when a connectio
 
 ## Test phases
 
-The test currently runs three phases:
+Before recording samples, the browser performs a short session warm-up. This
+warms DNS/TLS/CORS/fetch paths with small ping, download, and upload requests,
+then gives the connection a brief moment to settle. Warm-up samples are not
+included in the reported medians.
+
+Latency probes use a small Cloudflare Speed endpoint instead of the large
+download-file origin. This avoids treating same-origin browser/CDN contention as
+network latency under load.
+
+The recorded test currently runs three phases:
 
 1. Quiet-line latency
 2. Download latency under load
@@ -22,11 +31,22 @@ This establishes the reference point for later comparison.
 
 The download phase creates download pressure and measures whether ping latency increases while data is being received.
 
+The browser starts several download streams, lets the load settle briefly, and
+then records loaded-latency samples while the download pressure continues. The
+early settling period is excluded from the reported median.
+
 ## Upload latency under load
 
 The upload phase creates upload pressure and measures whether ping latency increases while data is being sent.
 
 Upload pressure is often especially important because many consumer connections have much lower upload capacity than download capacity.
+
+The upload phase follows the same settling rule as download: pressure starts
+first, then loaded-latency samples are recorded after the initial ramp period.
+
+Upload pressure uses repeated small chunks sent to Cloudflare Speed's upload
+endpoint. Throughput is an estimate based on server-confirmed completed bytes,
+not a laboratory-grade upload-speed measurement.
 
 ## Aggregation
 

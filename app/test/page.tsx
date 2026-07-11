@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { runBufferbloatTest } from "../../lib/bufferbloat-test";
+import { runBufferbloatTest, type TestPhase } from "../../lib/bufferbloat-test";
 import { initialTestMessage, type Grade } from "../../lib/test-copy";
 import ResultCard from "./components/ResultCard";
 import SignupBox from "./components/SignupBox";
 import { formatLatency, formatSpeed, speedWidth } from "./components/format";
 import { diagnosisFor, stageIndex } from "./components/diagnosis";
 
-const DOWNLOAD_TEST_SIZE = "100 MB";
-const UPLOAD_TEST_SIZE = "32 MB";
+const DOWNLOAD_TEST_SIZE = "100 MB file, repeated across 4 streams";
+const UPLOAD_TEST_SIZE = "1 MB chunks, repeated across 3 streams";
 
 type NavigatorWithDeviceMemory = Navigator & {
   deviceMemory?: number;
@@ -31,6 +31,7 @@ export default function Page() {
   const [uploadLatency, setUploadLatency] = useState<number | null>(null);
   const [downloadMbps, setDownloadMbps] = useState<number | null>(null);
   const [uploadMbps, setUploadMbps] = useState<number | null>(null);
+  const [phase, setPhase] = useState<TestPhase | "ready">("ready");
   const [status, setStatus] = useState("ready");
   const [recentLatencySamples, setRecentLatencySamples] = useState<number[]>([]);
   const [message, setMessage] = useState(initialTestMessage);
@@ -78,10 +79,12 @@ export default function Page() {
       setUploadLatency(null);
       setDownloadMbps(null);
       setUploadMbps(null);
+      setPhase("ready");
       setGrade("—");
       setRecentLatencySamples([]);
 
       const result = await runBufferbloatTest((update) => {
+        setPhase(update.phase);
         setStatus(update.status);
         setMessage(update.message);
         setProgress(update.progress);
@@ -103,6 +106,7 @@ export default function Page() {
 
       setRunning(false);
       setAnalyzing(true);
+      setPhase("analysis");
       setStatus("diagnosis");
       setMessage("Computing diagnosis from completed measurements.");
 
@@ -114,11 +118,13 @@ export default function Page() {
       setError(err instanceof Error ? err.message : "Unknown test error");
       setRunning(false);
       setAnalyzing(false);
+      setPhase("ready");
     }
   }
 
   const automaticStage = running && !analyzing ? stageIndex(status) : 0;
   const openStage = running ? automaticStage : manualStage;
+  const isWarming = running && phase === "warmup";
 
   const diagnosis = diagnosisFor(
     grade,
@@ -224,15 +230,18 @@ export default function Page() {
             diagnosis={diagnosis}
             technical={
               `
-Quiet-line average ping latency: ${formatLatency(idle)} ms
-Download-stress average ping latency: ${formatLatency(downloadLatency)} ms
-Upload-stress average ping latency: ${formatLatency(uploadLatency)} ms
+Quiet-line median ping latency: ${formatLatency(idle)} ms
+Download-stress median ping latency: ${formatLatency(downloadLatency)} ms
+Upload-stress median ping latency: ${formatLatency(uploadLatency)} ms
 
-Download throughput: ${formatSpeed(downloadMbps)} Mbps
-Upload throughput: ${formatSpeed(uploadMbps)} Mbps
+Download throughput estimate: ${formatSpeed(downloadMbps)} Mbps
+Upload throughput estimate: ${formatSpeed(uploadMbps)} Mbps
 
 Download test payload size: ${DOWNLOAD_TEST_SIZE}
 Upload test payload size: ${UPLOAD_TEST_SIZE}
+Latency probe: Cloudflare Speed 1-byte endpoint, separate from download file origin
+Session warm-up: small preflight ping, download, and upload requests excluded from medians
+Loaded latency settling: first 4 seconds of download and upload pressure excluded from medians
 
 Browser platform: ${browserInfo?.platform}
 Browser language: ${browserInfo?.language}
@@ -265,6 +274,21 @@ User agent: ${browserInfo?.userAgent}
                 <div className="progress-fill" style={{ width: `${progress}%` }} />
               </div>
             </>
+          )}
+
+          {isWarming && (
+            <div className="warmup-panel" aria-live="polite">
+              <div className="warmup-pulse" aria-hidden="true" />
+
+              <div>
+                <span>Preflight warm-up</span>
+                <strong>Preparing the test session before quiet-line measurement.</strong>
+                <p>
+                  Small ping, download, and upload requests are warming the browser path.
+                  These samples are not included in the final medians.
+                </p>
+              </div>
+            </div>
           )}
 
           <div className="stage-accordion">
@@ -300,7 +324,7 @@ User agent: ${browserInfo?.userAgent}
               ping={downloadLatency}
               samples={openStage === 2 ? recentLatencySamples : []}
               speed={downloadMbps}
-              speedLabel="Median download speed"
+              speedLabel="Download throughput"
               done={downloadLatency !== null}
               onToggle={() => toggleStage(2, downloadLatency !== null)}
             >
@@ -327,7 +351,7 @@ User agent: ${browserInfo?.userAgent}
               ping={uploadLatency}
               samples={openStage === 3 ? recentLatencySamples : []}
               speed={uploadMbps}
-              speedLabel="Median upload speed"
+              speedLabel="Upload throughput"
               done={uploadLatency !== null}
               onToggle={() => toggleStage(3, uploadLatency !== null)}
             >
