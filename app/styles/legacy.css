@@ -36,6 +36,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-weight: 360;
 }
 
 a {
@@ -55,7 +56,7 @@ a {
 }
 
 .site-logo {
-  font-weight: 700;
+  font-weight: 520;
 }
 
 .site-links {
@@ -78,7 +79,8 @@ a {
   font-family: var(--font-geist-mono), monospace;
   font-size: clamp(42px, 7vw, 78px);
   line-height: 0.96;
-  letter-spacing: -0.07em;
+  font-weight: 520;
+  letter-spacing: 0;
 }
 
 .page-title.compact {
@@ -110,6 +112,7 @@ button,
   padding: 13px 20px;
   font-family: var(--font-geist-mono), monospace;
   font-size: 15px;
+  font-weight: 460;
   cursor: pointer;
 }
 

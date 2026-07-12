@@ -47,6 +47,11 @@
 /* Mobile */
 
 @media (max-width: 767px) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   .primary-button,
   .hero-start-button {
     width: 100%;

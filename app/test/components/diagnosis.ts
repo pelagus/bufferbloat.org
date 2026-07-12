@@ -38,8 +38,8 @@ export function diagnosisFor(
       headline: "Your connection looks weak before stress becomes the main issue.",
       label: "Weak",
       bullets: [
-        "Throughput is very low, so normal browsing may already feel slow.",
-        "Loaded ping still matters, but this run mainly shows limited capacity.",
+        "Speed was very low, so normal browsing may already feel slow.",
+        "Loaded latency still matters, but this run mainly shows limited capacity.",
         "Repeat the test later with the same device and location.",
       ],
     };
@@ -48,17 +48,17 @@ export function diagnosisFor(
   if (grade === "D" || grade === "C") {
     return {
       headline: uploadWorse
-        ? "Upload traffic is the main source of latency pressure."
+        ? "Latency rose most during upload."
         : downloadWorse
-        ? "Download traffic is the main source of latency pressure."
+        ? "Latency rose most during download."
         : "Your connection becomes unstable under load.",
       label: grade === "D" ? "Poor" : "Uneven",
       bullets: [
         uploadWorse
-          ? "Ping rises most sharply while sending data."
+          ? "Lag rises most sharply while sending data."
           : downloadWorse
-          ? "Ping rises most sharply while receiving data."
-          : "Ping rises when traffic pressure increases.",
+          ? "Lag rises most sharply while receiving data."
+          : "Lag rises when the connection gets busy.",
         "Calls, games, and page loads may freeze even when speed tests look acceptable.",
         "A stronger diagnosis needs repeated runs plus device and network context.",
       ],
@@ -69,8 +69,8 @@ export function diagnosisFor(
     headline: "Your connection stayed reasonably responsive in this run.",
     label: "Stable",
     bullets: [
-      "Ping did not collapse under load.",
-      "Upload and download pressure stayed within a reasonable range.",
+      "Lag did not spike while the connection was busy.",
+      "Upload and download traffic stayed within a reasonable range.",
       "Repeat later to confirm consistency.",
     ],
   };

@@ -4,45 +4,135 @@ export default function Home() {
   return (
     <main className="home-shell">
       <section className="hero-panel home-as-test">
-        <div className="hero-copy">
-          <div className="hero-kicker">Open-source internet responsiveness test</div>
+        <div className="home-hero-grid">
+          <div className="hero-copy">
+            <div className="home-project-label">
+              <span>open-source project</span>
+              <span>browser measurement</span>
+              <span>methodology public</span>
+            </div>
 
-          <h1>Fast internet can still feel slow.</h1>
+            <h1>Bufferbloat.org</h1>
 
-          <p className="hero-subtitle">
-            Bufferbloat.org compares quiet latency with latency during download
-            and upload load, so you can see whether a connection stays
-            responsive while it is busy.
-          </p>
+            <p className="hero-subtitle">
+              An open-source test for latency under load: the lag that appears
+              when your connection is busy.
+            </p>
 
-          <div className="home-hero-actions">
-            <Link href="/test" className="hero-start-button">
-              Run the test
-            </Link>
+            <p className="home-hero-description">
+              Speed tests report throughput. Bufferbloat.org measures whether
+              the network still responds while download and upload traffic are
+              active, then shows the result in a report that can be inspected
+              and cited.
+            </p>
 
-            <div className="home-hero-links" aria-label="Project references">
-              <Link href="/docs">Methodology</Link>
+            <div className="home-hero-actions">
+              <Link href="/test" className="hero-start-button">
+                Run measurement
+              </Link>
+
+              <div className="home-hero-links" aria-label="Project references">
+                <Link href="/docs">Read methodology</Link>
+                <a
+                  href="https://github.com/pelagus/bufferbloat.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View source
+                </a>
+                <Link href="/learn">Learn</Link>
+              </div>
+            </div>
+          </div>
+
+          <aside
+            className="home-hero-instrument"
+            aria-label="Example latency under load measurement"
+          >
+            <div className="instrument-header">
+              <span>example run</span>
+              <strong>latency under load</strong>
+            </div>
+
+            <dl className="instrument-metrics">
+              <div>
+                <dt>Quiet</dt>
+                <dd>24 ms</dd>
+              </div>
+              <div>
+                <dt>Loaded</dt>
+                <dd>412 ms</dd>
+              </div>
+              <div>
+                <dt>Added delay</dt>
+                <dd>+388 ms</dd>
+              </div>
+            </dl>
+
+            <div
+              className="instrument-trace"
+              aria-label="Illustrative latency trace"
+            >
+              <svg viewBox="0 0 420 170" role="img" aria-labelledby="home-trace-title">
+                <title id="home-trace-title">
+                  Example trace where latency rises while traffic is active
+                </title>
+                <line x1="28" y1="132" x2="392" y2="132" className="trace-axis" />
+                <line x1="28" y1="38" x2="392" y2="38" className="trace-grid" />
+                <line x1="28" y1="85" x2="392" y2="85" className="trace-grid" />
+                <rect x="28" y="22" width="112" height="110" className="trace-zone trace-zone-quiet" />
+                <rect x="140" y="22" width="126" height="110" className="trace-zone trace-zone-download" />
+                <rect x="266" y="22" width="126" height="110" className="trace-zone trace-zone-upload" />
+                <path
+                  className="trace-line trace-line-quiet"
+                  d="M28 123 L50 124 L72 122 L94 123 L116 121 L138 123"
+                />
+                <path
+                  className="trace-line trace-line-load"
+                  d="M140 120 L160 113 L180 118 L200 104 L220 109 L240 96 L266 101 L286 62 L306 46 L326 55 L346 36 L366 49 L392 31"
+                />
+                <text x="28" y="154" className="trace-label">quiet</text>
+                <text x="154" y="154" className="trace-label">download</text>
+                <text x="284" y="154" className="trace-label">upload</text>
+              </svg>
+            </div>
+
+            <p>
+              Same connection. Different question: does latency stay stable
+              when the line is busy?
+            </p>
+          </aside>
+        </div>
+
+        <dl className="project-index" aria-label="Project summary">
+          <div>
+            <dt>Status</dt>
+            <dd>Active public test</dd>
+          </div>
+          <div>
+            <dt>Source</dt>
+            <dd>
               <a
                 href="https://github.com/pelagus/bufferbloat.org"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Source
+                GitHub repository
               </a>
-              <Link href="/learn">Learn</Link>
-            </div>
+            </dd>
           </div>
-
-          <div className="home-trust-strip" aria-label="Project trust signals">
-            <span>Quiet latency</span>
-            <span>Download load</span>
-            <span>Upload load</span>
-            <span>Median reporting</span>
+          <div>
+            <dt>Measures</dt>
+            <dd>Latency under load</dd>
           </div>
-        </div>
+          <div>
+            <dt>Reports</dt>
+            <dd>Medians and throughput</dd>
+          </div>
+        </dl>
       </section>
 
-      <section className="home-grid">
+      <section className="home-grid project-principles">
         <article>
           <span>Problem</span>
           <h2>Throughput is not responsiveness</h2>
@@ -60,6 +150,16 @@ export default function Home() {
             The test samples quiet latency, then measures latency while
             download and upload traffic are active. The goal is a practical
             signal that users can understand and experts can inspect.
+          </p>
+        </article>
+
+        <article>
+          <span>Project</span>
+          <h2>A public reference for internet responsiveness</h2>
+          <p>
+            Source code and methodology are public. The site keeps measurement
+            details and limitations visible so results can be checked, debated,
+            and improved.
           </p>
         </article>
       </section>

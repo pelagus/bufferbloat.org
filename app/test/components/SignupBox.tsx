@@ -61,7 +61,7 @@ export default function SignupBox() {
 
         <div>
           <h2>You’re on the list</h2>
-          <p>We’ll contact you when deeper personalised diagnostics become available.</p>
+          <p>We’ll send occasional project updates as the test and methodology improve.</p>
         </div>
       </section>
     );
@@ -72,10 +72,10 @@ export default function SignupBox() {
       <div className="signup-icon">✉</div>
 
       <div>
-        <h2>Get the full fix guide</h2>
+        <h2>Follow the project</h2>
         <p>
-          Get notified when personalised bufferbloat diagnostics and
-          connection-specific advice become available.
+          Get occasional updates as the open-source test and methodology
+          improve.
         </p>
       </div>
 
@@ -83,16 +83,16 @@ export default function SignupBox() {
         <input
           type="email"
           required
-          placeholder="your email"
+          placeholder="email@example.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
 
         <button type="submit" disabled={state === "loading"}>
-          {state === "loading" ? "Saving..." : "Notify me"}
+          {state === "loading" ? "Saving..." : "Subscribe"}
         </button>
 
-        <small>▣ No spam. Unsubscribe at any time.</small>
+        <small>No spam. Project updates only.</small>
       </form>
 
       {message && (

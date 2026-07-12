@@ -6,19 +6,20 @@
 .site-logo {
   max-width: 155px;
   overflow: hidden;
+  font-weight: 520;
   white-space: nowrap;
 }
 
 .site-links {
   align-items: center;
   gap: 9px;
+  font-weight: 380;
 }
 
 .github-link {
-  display: inline-grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
   color: var(--fg);
 }
 
@@ -26,6 +27,10 @@
   width: 16px;
   height: 16px;
   fill: currentColor;
+}
+
+.github-link span {
+  color: var(--muted);
 }
 
 .github-link:hover {
@@ -39,7 +44,10 @@
   }
 
   .github-link {
-    width: 22px;
-    height: 22px;
+    gap: 0;
+  }
+
+  .github-link span {
+    display: none;
   }
 }

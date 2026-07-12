@@ -316,6 +316,227 @@
   padding: 14px 16px;
 }
 
+.preflight-card {
+  display: grid;
+  gap: 16px;
+  margin: 28px 0;
+  padding: clamp(24px, 5vw, 48px);
+  border-color: color-mix(in srgb, var(--fg) 18%, var(--line));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--fg) 4%, transparent), transparent 46%),
+    var(--soft);
+}
+
+.preflight-layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.42fr) minmax(0, 1fr);
+  gap: clamp(18px, 4vw, 36px);
+  align-items: center;
+}
+
+.preflight-visual {
+  display: grid;
+  place-items: center;
+  min-height: 190px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.preflight-visual img {
+  width: min(260px, 100%);
+  height: auto;
+}
+
+.preflight-copy {
+  display: grid;
+  gap: 16px;
+}
+
+.preflight-card span {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-weight: 420;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.preflight-card h1 {
+  max-width: 820px;
+  margin: 0;
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(40px, 6vw, 74px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.preflight-card p {
+  max-width: 760px;
+  margin: 0;
+  color: color-mix(in srgb, var(--fg) 74%, var(--muted));
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.preflight-countdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: baseline;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 10px 12px;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.preflight-countdown strong {
+  color: var(--fg);
+  font-size: clamp(18px, 3vw, 26px);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.preflight-countdown span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.preflight-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.preflight-actions button {
+  min-height: 48px;
+}
+
+.preflight-actions .secondary-button {
+  border-color: var(--line);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.preflight-actions .secondary-button:hover {
+  border-color: var(--fg);
+}
+
+.test-progress-rail {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 86%, var(--soft));
+}
+
+.test-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.test-progress-meta span {
+  font-weight: 420;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.test-progress-meta strong {
+  color: var(--fg);
+  font-size: 12px;
+}
+
+.test-progress-track {
+  position: relative;
+  height: 12px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--fg) 18%, var(--line));
+  background:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--fg) 7%, transparent) 0,
+      color-mix(in srgb, var(--fg) 7%, transparent) 1px,
+      transparent 1px,
+      transparent 12px
+    ),
+    var(--bg);
+}
+
+.test-progress-track span {
+  position: relative;
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      110deg,
+      rgba(255, 255, 255, 0.18) 0,
+      rgba(255, 255, 255, 0.18) 6px,
+      transparent 6px,
+      transparent 15px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--good) 72%, var(--fg)),
+      color-mix(in srgb, var(--blue) 52%, var(--good))
+    );
+  background-size: 28px 28px, 100% 100%;
+  animation: progressFillDrift 1600ms linear infinite;
+  transition: width 420ms ease;
+}
+
+.test-progress-track span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.34),
+      transparent
+    );
+  transform: translateX(-100%);
+  animation: progressTrustSweep 2200ms ease-in-out infinite;
+}
+
+@keyframes progressTrustSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  52% {
+    transform: translateX(120%);
+  }
+
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes progressFillDrift {
+  from {
+    background-position: 0 0, 0 0;
+  }
+
+  to {
+    background-position: 28px 0, 0 0;
+  }
+}
+
 .result-method-note {
   display: grid;
   gap: 8px;
@@ -325,30 +546,43 @@
 
 .test-stop-card {
   display: grid;
-  gap: 10px;
+  justify-items: center;
+  gap: 12px;
   color: var(--fg);
+  text-align: center;
 }
 
 .test-stop-screen {
-  min-height: min(520px, calc(100vh - 160px));
+  min-height: min(440px, calc(100vh - 150px));
   align-content: center;
   margin-top: 24px;
-  padding: clamp(24px, 5vw, 52px);
+  padding: clamp(22px, 5vw, 44px);
+}
+
+.test-stop-illustration {
+  width: min(220px, 68vw);
+  height: auto;
+  margin-bottom: 4px;
 }
 
 .test-stop-card strong {
-  max-width: 760px;
-  color: var(--bad);
-  font-size: clamp(22px, 3vw, 34px);
-  line-height: 1.35;
+  max-width: 560px;
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(24px, 5vw, 42px);
+  font-weight: 500;
+  line-height: 1.08;
 }
 
 .test-stop-card p {
-  max-width: 640px;
+  max-width: 480px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.45;
 }
 
 .test-stop-card button {
-  justify-self: start;
   margin-top: 8px;
 }
 
@@ -584,5 +818,22 @@
     font-size: 15px;
     line-height: 1.42;
     margin-bottom: 20px;
+  }
+
+  .preflight-card {
+    margin: 16px 0;
+    padding: 20px;
+  }
+
+  .preflight-card h1 {
+    font-size: clamp(34px, 11vw, 48px);
+  }
+
+  .preflight-card p {
+    font-size: 16px;
+  }
+
+  .preflight-actions {
+    display: grid;
   }
 }

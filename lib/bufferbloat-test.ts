@@ -18,6 +18,7 @@ export type TestUpdate = {
   downloadMbps: number | null;
   uploadMbps: number | null;
   recentLatencySamples: number[];
+  latencySampleCount: number;
 };
 
 export type TestResult = {
@@ -377,6 +378,7 @@ export async function runBufferbloatTest(
   let downloadMbps: number | null = null;
   let uploadMbps: number | null = null;
   let recentLatencySamples: number[] = [];
+  let latencySampleCount = 0;
 
   onUpdate({
     phase: "warmup",
@@ -389,6 +391,7 @@ export async function runBufferbloatTest(
     downloadMbps,
     uploadMbps,
     recentLatencySamples,
+    latencySampleCount,
   });
 
   throwIfAborted(signal);
@@ -411,11 +414,13 @@ export async function runBufferbloatTest(
     downloadMbps,
     uploadMbps,
     recentLatencySamples,
+    latencySampleCount,
   });
 
   const idleSamples = await sampleLatency(IDLE_DURATION_MS, (sample) => {
     idle = sample;
     recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
+    latencySampleCount += 1;
 
     onUpdate({
       phase: "idle",
@@ -428,6 +433,7 @@ export async function runBufferbloatTest(
       downloadMbps,
       uploadMbps,
       recentLatencySamples,
+      latencySampleCount,
     });
   }, signal);
 
@@ -444,9 +450,11 @@ export async function runBufferbloatTest(
     downloadMbps,
     uploadMbps,
     recentLatencySamples,
+    latencySampleCount,
   });
 
   recentLatencySamples = [];
+  latencySampleCount = 0;
 
   const downloadPressure = startDownloadPressure((mbps) => {
     downloadMbps = mbps;
@@ -467,6 +475,7 @@ export async function runBufferbloatTest(
       downloadMbps,
       uploadMbps,
       recentLatencySamples,
+      latencySampleCount,
     });
 
     await wait(LOADED_SETTLE_MS, signal);
@@ -482,11 +491,13 @@ export async function runBufferbloatTest(
       downloadMbps,
       uploadMbps,
       recentLatencySamples,
+      latencySampleCount,
     });
 
     downloadSamples = await sampleLatency(LOADED_RECORDING_MS, (sample) => {
       downloadLatency = sample;
       recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
+      latencySampleCount += 1;
 
       onUpdate({
         phase: "download",
@@ -499,6 +510,7 @@ export async function runBufferbloatTest(
         downloadMbps,
         uploadMbps,
         recentLatencySamples,
+        latencySampleCount,
       });
     }, signal);
   } finally {
@@ -520,9 +532,11 @@ export async function runBufferbloatTest(
     downloadMbps,
     uploadMbps,
     recentLatencySamples,
+    latencySampleCount,
   });
 
   recentLatencySamples = [];
+  latencySampleCount = 0;
 
   const uploadPressure = startUploadPressure((mbps) => {
     uploadMbps = mbps;
@@ -543,6 +557,7 @@ export async function runBufferbloatTest(
       downloadMbps,
       uploadMbps,
       recentLatencySamples,
+      latencySampleCount,
     });
 
     await wait(LOADED_SETTLE_MS, signal);
@@ -558,11 +573,13 @@ export async function runBufferbloatTest(
       downloadMbps,
       uploadMbps,
       recentLatencySamples,
+      latencySampleCount,
     });
 
     uploadSamples = await sampleLatency(LOADED_RECORDING_MS, (sample) => {
       uploadLatency = sample;
       recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
+      latencySampleCount += 1;
 
       onUpdate({
         phase: "upload",
@@ -575,6 +592,7 @@ export async function runBufferbloatTest(
         downloadMbps,
         uploadMbps,
         recentLatencySamples,
+        latencySampleCount,
       });
     }, signal);
   } finally {
@@ -596,6 +614,7 @@ export async function runBufferbloatTest(
     downloadMbps,
     uploadMbps,
     recentLatencySamples,
+    latencySampleCount,
   });
 
   await wait(FREEZE_FINAL_MS, signal);

@@ -1,0 +1,19 @@
+<svg width="260" height="180" viewBox="0 0 260 180" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Foreground browser tab</title>
+  <desc id="desc">A browser window kept in front while a network measurement runs.</desc>
+  <rect x="38" y="30" width="184" height="120" fill="#fff" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M38 55H222" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M55 30H118L128 55H55V30Z" fill="#f7f7f7" stroke="#1f1f1f" stroke-width="2"/>
+  <circle cx="54" cy="43" r="3" fill="#1f1f1f"/>
+  <circle cx="66" cy="43" r="3" fill="#1f1f1f"/>
+  <circle cx="78" cy="43" r="3" fill="#1f1f1f"/>
+  <path d="M68 104H92L109 82L128 119L151 92L171 104H193" stroke="#1f1f1f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M68 124H193" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M68 136H150" stroke="#1f1f1f" stroke-width="2"/>
+  <rect x="16" y="68" width="58" height="38" fill="#f7f7f7" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M27 82H62" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M27 94H52" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M186 20L215 20L215 49" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M215 20L184 51" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M203 33L222 52" stroke="#1f1f1f" stroke-width="2"/>
+</svg>

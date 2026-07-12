@@ -1,0 +1,16 @@
+<svg width="220" height="150" viewBox="0 0 220 150" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Paused browser tab</title>
+  <desc id="desc">A simple browser window with a pause symbol.</desc>
+  <rect x="28" y="26" width="164" height="104" fill="#fff" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M28 48H192" stroke="#1f1f1f" stroke-width="2"/>
+  <circle cx="42" cy="37" r="3" fill="#1f1f1f"/>
+  <circle cx="54" cy="37" r="3" fill="#1f1f1f"/>
+  <circle cx="66" cy="37" r="3" fill="#1f1f1f"/>
+  <rect x="76" y="70" width="18" height="38" fill="#1f1f1f"/>
+  <rect x="108" y="70" width="18" height="38" fill="#1f1f1f"/>
+  <path d="M145 80H171" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M145 93H171" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M145 106H162" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M37 122L20 139" stroke="#1f1f1f" stroke-width="2"/>
+  <path d="M183 122L200 139" stroke="#1f1f1f" stroke-width="2"/>
+</svg>
