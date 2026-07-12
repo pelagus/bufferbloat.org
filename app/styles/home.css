@@ -146,6 +146,258 @@
   margin-top: 18px;
 }
 
+.home-text-link {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.home-trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.home-trust-strip span {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 7px 10px;
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+}
+
+.home-reference-panel,
+.resource-note {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  padding: 24px;
+}
+
+.home-reference-panel h2,
+.resource-note h2 {
+  margin: 0;
+  max-width: 720px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(24px, 3.5vw, 38px);
+  line-height: 1.1;
+}
+
+.home-reference-panel p,
+.resource-note p {
+  margin: 0;
+  max-width: 780px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.home-reference-links,
+.resource-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.home-reference-links a,
+.resource-links a {
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  padding: 9px 12px;
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 13px;
+}
+
+.home-reference-links a:hover,
+.resource-links a:hover {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.resource-page {
+  max-width: 980px;
+}
+
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 34px;
+}
+
+.resource-grid article {
+  border: 1px solid var(--line);
+  background: var(--soft);
+  padding: 18px;
+}
+
+.resource-grid span {
+  display: block;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.resource-grid h2 {
+  margin: 0 0 12px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.resource-grid p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.mission-shell {
+  max-width: 980px;
+}
+
+.mission-hero {
+  padding: 34px 0 18px;
+}
+
+.mission-lede {
+  max-width: 780px;
+  margin: 22px 0 0;
+  font-family: var(--font-geist-mono), monospace;
+  color: var(--fg);
+  font-size: clamp(22px, 3vw, 32px);
+  line-height: 1.25;
+}
+
+.mission-prose {
+  max-width: 820px;
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 26px;
+}
+
+.mission-prose p {
+  margin: 0 0 22px;
+  color: var(--fg);
+  font-size: clamp(18px, 2.1vw, 22px);
+  line-height: 1.62;
+}
+
+.mission-prose p:not(.mission-closing) {
+  color: color-mix(in srgb, var(--fg) 82%, var(--muted));
+}
+
+.mission-closing {
+  margin-top: 34px !important;
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 800;
+}
+
+.mission-principles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 34px;
+}
+
+.mission-principles article,
+.mission-references {
+  border: 1px solid var(--line);
+  background: var(--soft);
+  padding: 18px;
+}
+
+.mission-principles span {
+  display: block;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 13px;
+}
+
+.mission-principles h2,
+.mission-references h2 {
+  margin: 0 0 12px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.mission-principles p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.mission-references {
+  margin-top: 12px;
+}
+
+.mission-references ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mission-references li {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.mission-references a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 767px) {
+  .mission-hero {
+    padding-top: 22px;
+  }
+
+  .mission-prose {
+    padding-top: 20px;
+  }
+
+  .mission-prose p {
+    font-size: 17px;
+    line-height: 1.58;
+  }
+
+  .mission-principles {
+    grid-template-columns: 1fr;
+  }
+
+  .home-reference-panel,
+  .resource-note {
+    padding: 18px;
+  }
+
+  .resource-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .home-latency-demo .signal-card {
   background: var(--bg);
 }

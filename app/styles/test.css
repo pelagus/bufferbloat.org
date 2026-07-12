@@ -254,6 +254,27 @@
   padding: 18px;
 }
 
+.test-trust-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.test-trust-links a {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 8px 10px;
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+}
+
+.test-trust-links a:hover {
+  border-color: var(--fg);
+  color: var(--fg);
+}
+
 .test-measures-mini h2 {
   margin: 0 0 16px;
   font-size: 20px;

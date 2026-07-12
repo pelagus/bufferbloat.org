@@ -15,11 +15,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Bufferbloat Test | Check Internet Responsiveness Under Load",
+    default: "Bufferbloat.org | Open Source Bufferbloat Test",
     template: "%s | Bufferbloat.org",
   },
   description:
-    "Run a browser-based bufferbloat test to check whether your internet connection stays responsive while downloads and uploads are active.",
+    "An open-source browser-based bufferbloat test and technical resource for measuring internet responsiveness and latency under load.",
   keywords: [
     "bufferbloat test",
     "internet responsiveness test",
@@ -31,9 +31,9 @@ export const metadata: Metadata = {
     "internet lag test",
   ],
   openGraph: {
-    title: "Bufferbloat Test",
+    title: "Bufferbloat.org",
     description:
-      "Check whether your internet connection stays responsive while busy.",
+      "An open-source test for internet responsiveness and latency under load.",
     url: "https://bufferbloat.org",
     siteName: "Bufferbloat.org",
     type: "website",

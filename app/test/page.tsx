@@ -199,11 +199,13 @@ export default function Page() {
               <h1>Bufferbloat test</h1>
 
               <p className="hero-subtitle">
-                We’ll measure quiet ping latency, then repeat the measurement while your connection is under download and upload pressure.
+                Measure whether your internet connection stays responsive while
+                download and upload traffic are active.
               </p>
 
               <p className="hero-description">
-                Keep this tab visible during the test.
+                The test compares quiet latency with latency under load. Keep
+                this tab visible while it runs.
               </p>
 
               <button
@@ -214,6 +216,18 @@ export default function Page() {
                 Start test
               </button>
 
+              <div className="test-trust-links" aria-label="Project trust links">
+                <a href="/docs">Methodology</a>
+                <a
+                  href="https://github.com/pelagus/bufferbloat.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Source code
+                </a>
+                <a href="/mission">Mission</a>
+              </div>
+
               <section className="test-measures-mini">
                 <h2>What this test measures</h2>
 
@@ -221,18 +235,18 @@ export default function Page() {
                   <article>
                     <span>01</span>
                     <strong>Quiet ping latency</strong>
-                    <p>Baseline response time before adding traffic.</p>
+                    <p>The baseline response time before adding traffic.</p>
                   </article>
 
                   <article>
                     <span>02</span>
-                    <strong>Download latency</strong>
+                    <strong>Download loaded latency</strong>
                     <p>Whether ping rises while receiving data.</p>
                   </article>
 
                   <article>
                     <span>03</span>
-                    <strong>Upload latency</strong>
+                    <strong>Upload loaded latency</strong>
                     <p>Whether ping rises while sending data.</p>
                   </article>
                 </div>
