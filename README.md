@@ -186,16 +186,17 @@ data/signups.json
 
 Bufferbloat.org is created and maintained by **Emanuele Brandi**.
 
-I've spent more than twenty years building products that shape how people experience the web, including work on Google Search, AdSense and Firefox. Throughout my career, I've cared deeply about the health of the open web and about building technology that is transparent, useful and easy to understand.
+I've spent more than two decades trying to make the web work a little better. Somewhere along the way, I developed an obsession with things that are measurable, transparent and useful, and lost almost all patience for black boxes.
 
-Bufferbloat.org is an independent open-source project created because I believe internet responsiveness deserves the same attention as internet speed, and because the tools we use to measure the web should themselves be open to inspection and improvement.
+After spending most of my career building commercial products, Bufferbloat.org is my first open-source project. I built it because I believe the web needs independent, transparent and community-owned tools more than ever, and because the tools we use to measure the web should themselves be open to inspection, scrutiny and improvement.
+
+I hope you find it useful. If you do, whether as an individual or an organisation, please consider contributing.
 
 - Website: https://bufferbloat.org
 - GitHub: https://github.com/pelagus
 - LinkedIn: https://linkedin.com/in/ebrandi
 
----
-
+  
 ## License
 
 MIT
