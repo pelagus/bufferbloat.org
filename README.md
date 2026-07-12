@@ -172,7 +172,9 @@ If you disagree with the methodology, find a bug, or have an idea for improving 
 
 ## Privacy
 
-The core measurement runs entirely in the browser.
+The core measurement is orchestrated by the browser. Test traffic is generated
+from the page against public measurement endpoints, and no local helper
+application is required.
 
 Optional email signup data is stored separately and should never be committed:
 
@@ -188,7 +190,10 @@ Bufferbloat.org is an independent project created and maintained by **Emanuele B
 
 I've spent more than two decades trying to make the web work a little better. Somewhere along the way, I developed an obsession with things that are measurable, transparent and useful, and lost almost all patience for black boxes.
 
-Bufferbloat.org is my first open-source project. I built it because I believe the web needs independent, transparent and community-owned tools more than ever, and because the tools we use to measure the web should themselves be open to inspection, scrutiny and improvement.
+Bufferbloat.org is an independent open-source project. I built it because I
+believe the web needs transparent and community-owned tools more than ever, and
+because the tools we use to measure the web should themselves be open to
+inspection, scrutiny and improvement.
 
 I hope you find it useful. If you do, whether as an individual or an organisation, please consider contributing.
 

@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Why Bufferbloat.org Exists",
   description:
-    "The mission behind Bufferbloat.org: an open, transparent browser-based test for internet responsiveness and latency under load.",
+    "Why Bufferbloat.org exists: an independent open-source project for measuring internet responsiveness and latency under load.",
   alternates: {
     canonical: "https://bufferbloat.org/mission",
   },
@@ -25,22 +25,22 @@ export default function Page() {
 
       <section className="mission-prose" aria-label="Project mission">
         <p>
-          Most internet speed tests tell you how many megabits per second your
-          connection can deliver. Networking experts call this throughput. It is
-          an important metric, but it does not explain why video calls still
-          freeze, games still stutter, or websites become sluggish as soon as
-          your connection is busy.
+          Most people are told to judge their internet connection by download
+          speed. More technical users know to look at ping. Both are useful, but
+          neither fully explains a question millions of people ask every day:
+          why is my internet still laggy if I have hundreds of megabits per
+          second?
         </p>
 
         <p>
-          More experienced users often look at ping. That is a step in the
-          right direction, but idle ping is not the whole story either. A
-          connection can have excellent idle latency until someone starts a
-          large download or upload, at which point responsiveness can collapse.
+          A connection can deliver excellent throughput while video calls
+          freeze, games stutter, websites hesitate, and remote desktops become
+          frustrating to use. The problem is often not bandwidth. It is latency
+          under load.
         </p>
 
         <p>
-          That is the problem Bufferbloat.org measures: latency under load.
+          That is the problem Bufferbloat.org measures.
         </p>
 
         <p>
@@ -52,18 +52,26 @@ export default function Page() {
         </p>
 
         <p>
-          There are excellent research projects and commercial tools in this
-          space, but I wanted a fast, open-source resource built around a
-          browser-based test that anyone could inspect, verify, and improve. A
-          test that measures not just how much data your connection can move,
-          but how well it continues to respond while moving it.
+          Networking researchers have understood this for years, and there are
+          excellent research projects and commercial products in this space. But
+          I was surprised by how few open, transparent, browser-based tools
+          existed for measuring it.
         </p>
 
         <p>
-          Bufferbloat.org is intentionally simple. The code is open. The
-          methodology is public. The limitations are documented. The goal is to
-          make internet responsiveness easier to measure, easier to understand,
-          and easier to discuss.
+          I wanted a tool whose methodology anyone could inspect, whose
+          implementation anyone could verify, and whose measurements anyone
+          could improve. A test that measures not just how much data your
+          connection can move, but how well it continues to respond while moving
+          it.
+        </p>
+
+        <p>
+          Bufferbloat.org is an independent open-source project built around
+          that principle. The code is open. The methodology is public. The
+          limitations are documented. The goal is to make internet
+          responsiveness easier to measure, easier to understand, and easier to
+          discuss.
         </p>
 
         <p className="mission-closing">
@@ -76,8 +84,8 @@ export default function Page() {
           <span>01</span>
           <h2>Open core</h2>
           <p>
-            The measurement engine is public so developers and researchers can
-            inspect how the test works.
+            The methodology and implementation are public so developers and
+            researchers can inspect how the test works.
           </p>
         </article>
 
@@ -94,8 +102,8 @@ export default function Page() {
           <span>03</span>
           <h2>Citable method</h2>
           <p>
-            The methodology, caveats, and source code are intended to be clear
-            enough for public-interest and academic reference.
+            Measurements should be reproducible, methodology should be public,
+            and implementation should never be a black box.
           </p>
         </article>
       </section>

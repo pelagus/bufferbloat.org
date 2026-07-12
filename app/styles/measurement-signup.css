@@ -585,3 +585,301 @@
     display: none;
   }
 }
+
+/* Method-first running state */
+
+.instrument-panel .accuracy-banner {
+  margin-bottom: 12px;
+}
+
+.test-procedure-panel {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.procedure-current {
+  display: grid;
+  gap: 8px;
+  padding: clamp(16px, 3vw, 24px);
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.procedure-current span {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.procedure-current h2 {
+  margin: 0;
+  color: var(--fg);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.procedure-current p {
+  max-width: 760px;
+  margin: 0;
+  color: color-mix(in srgb, var(--fg) 76%, var(--muted));
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.procedure-current em {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.procedure-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  list-style: none;
+}
+
+.procedure-stage-grid li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 2px 8px;
+  min-height: 58px;
+  padding: 9px 10px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 86%, var(--soft));
+  color: var(--muted);
+}
+
+.procedure-stage-grid li.active {
+  color: var(--fg);
+  background: var(--bg);
+}
+
+.procedure-stage-grid li.complete {
+  color: var(--fg);
+}
+
+.procedure-stage-grid li.complete.warmup {
+  background: color-mix(in srgb, var(--warn) 14%, var(--bg));
+  border-color: color-mix(in srgb, var(--warn) 44%, var(--line));
+}
+
+.procedure-stage-grid li.complete.idle {
+  background: color-mix(in srgb, #eab308 16%, var(--bg));
+  border-color: color-mix(in srgb, #eab308 50%, var(--line));
+}
+
+.procedure-stage-grid li.complete.download {
+  background: color-mix(in srgb, var(--blue) 14%, var(--bg));
+  border-color: color-mix(in srgb, var(--blue) 46%, var(--line));
+}
+
+.procedure-stage-grid li.complete.upload {
+  background: color-mix(in srgb, var(--purple) 14%, var(--bg));
+  border-color: color-mix(in srgb, var(--purple) 46%, var(--line));
+}
+
+.procedure-stage-grid li.complete.analysis {
+  background: color-mix(in srgb, var(--good) 14%, var(--bg));
+  border-color: color-mix(in srgb, var(--good) 46%, var(--line));
+}
+
+.procedure-stage-grid li.active.warmup {
+  box-shadow: inset 0 0 0 2px var(--warn);
+}
+
+.procedure-stage-grid li.active.idle {
+  box-shadow: inset 0 0 0 2px #eab308;
+}
+
+.procedure-stage-grid li.active.download {
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.procedure-stage-grid li.active.upload {
+  box-shadow: inset 0 0 0 2px var(--purple);
+}
+
+.procedure-stage-grid li.active.analysis {
+  box-shadow: inset 0 0 0 2px var(--good);
+}
+
+.procedure-stage-grid li > span {
+  grid-row: 1 / 3;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: currentColor;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.procedure-stage-grid strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--fg);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.procedure-stage-grid em {
+  min-width: 0;
+  overflow: hidden;
+  color: currentColor;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.procedure-stage-grid li.pending strong,
+.procedure-stage-grid li.pending > span {
+  color: var(--muted);
+}
+
+.procedure-stage-grid li.complete > span {
+  color: var(--good);
+}
+
+.active-measurement-card {
+  margin-top: 0;
+}
+
+.active-measurement-card {
+  gap: 12px;
+  border-color: color-mix(in srgb, currentColor 46%, var(--line));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, currentColor 7%, transparent), transparent 58%),
+    var(--bg);
+}
+
+.active-measurement-header .stage-icon {
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+}
+
+.active-measurement-header strong {
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: 18px;
+}
+
+.active-measurement-table {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid color-mix(in srgb, currentColor 30%, var(--line));
+  border-left: 1px solid color-mix(in srgb, currentColor 30%, var(--line));
+}
+
+.active-measurement-table div {
+  min-width: 0;
+  border-right: 1px solid color-mix(in srgb, currentColor 30%, var(--line));
+  border-bottom: 1px solid color-mix(in srgb, currentColor 30%, var(--line));
+  background: color-mix(in srgb, var(--bg) 92%, currentColor);
+  padding: 12px;
+}
+
+.active-measurement-table dt {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.active-measurement-table dd {
+  margin: 8px 0 0;
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.completed-stage-strip {
+  margin-top: 0;
+}
+
+@media (max-width: 860px) {
+  .procedure-stage-grid {
+    grid-template-columns: repeat(5, minmax(86px, 1fr));
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+}
+
+@media (max-width: 560px) {
+  .procedure-current p {
+    font-size: 16px;
+  }
+
+  .procedure-stage-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    overflow-x: visible;
+  }
+
+  .procedure-stage-grid li {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    justify-items: center;
+    gap: 4px;
+    min-height: 54px;
+    padding: 7px 3px;
+    text-align: center;
+  }
+
+  .procedure-stage-grid li > span {
+    grid-row: auto;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .procedure-stage-grid strong {
+    max-width: 100%;
+    font-size: 10px;
+    line-height: 1.05;
+    white-space: normal;
+  }
+
+  .procedure-stage-grid em {
+    display: none;
+  }
+
+  .active-measurement-table {
+    grid-template-columns: 1fr;
+  }
+
+  .active-measurement-table div {
+    padding: 10px;
+  }
+
+  .active-measurement-table dd {
+    font-size: 15px;
+  }
+}

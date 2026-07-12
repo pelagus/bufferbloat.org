@@ -12,6 +12,8 @@ const DOWNLOAD_TEST_SIZE = "100 MB file, repeated across 4 streams";
 const UPLOAD_TEST_SIZE = "1 MB chunks, repeated across 3 streams";
 const DOWNLOAD_STREAM_LABEL = "4 download streams";
 const UPLOAD_STREAM_LABEL = "3 upload streams";
+const FOREGROUND_ERROR =
+  "Test stopped because this tab left the foreground. To protect accuracy, keep Bufferbloat.org visible until the run finishes.";
 
 type NavigatorWithDeviceMemory = Navigator & {
   deviceMemory?: number;
@@ -37,7 +39,7 @@ export default function Page() {
   const [analyzing, setAnalyzing] = useState(false);
   const [finished, setFinished] = useState(false);
 
-  const [progress, setProgress] = useState(0);
+  const [, setProgress] = useState(0);
   const [idle, setIdle] = useState<number | null>(null);
   const [downloadLatency, setDownloadLatency] = useState<number | null>(null);
   const [uploadLatency, setUploadLatency] = useState<number | null>(null);
@@ -51,6 +53,35 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
 
   const diagnosisRef = useRef<HTMLDivElement | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!running) return;
+
+    function stopForVisibility() {
+      if (document.visibilityState === "hidden") {
+        abortControllerRef.current?.abort(FOREGROUND_ERROR);
+      }
+    }
+
+    function stopForPageHide() {
+      abortControllerRef.current?.abort(FOREGROUND_ERROR);
+    }
+
+    function stopForBlur() {
+      abortControllerRef.current?.abort(FOREGROUND_ERROR);
+    }
+
+    document.addEventListener("visibilitychange", stopForVisibility);
+    window.addEventListener("pagehide", stopForPageHide);
+    window.addEventListener("blur", stopForBlur);
+
+    return () => {
+      document.removeEventListener("visibilitychange", stopForVisibility);
+      window.removeEventListener("pagehide", stopForPageHide);
+      window.removeEventListener("blur", stopForBlur);
+    };
+  }, [running]);
 
   useEffect(() => {
     if (finished && diagnosisRef.current) {
@@ -79,6 +110,10 @@ export default function Page() {
   }, []);
 
   async function runTest() {
+    abortControllerRef.current?.abort();
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
       setError(null);
       setRunning(true);
@@ -91,21 +126,26 @@ export default function Page() {
       setDownloadMbps(null);
       setUploadMbps(null);
       setPhase("ready");
+      setStatus("ready");
+      setMessage(initialTestMessage);
       setGrade("—");
       setRecentLatencySamples([]);
 
-      const result = await runBufferbloatTest((update) => {
-        setPhase(update.phase);
-        setStatus(update.status);
-        setMessage(update.message);
-        setProgress(update.progress);
-        setIdle(update.idle);
-        setDownloadLatency(update.downloadLatency);
-        setUploadLatency(update.uploadLatency);
-        setDownloadMbps(update.downloadMbps);
-        setUploadMbps(update.uploadMbps);
-        setRecentLatencySamples(update.recentLatencySamples);
-      });
+      const result = await runBufferbloatTest(
+        (update) => {
+          setPhase(update.phase);
+          setStatus(update.status);
+          setMessage(update.message);
+          setProgress(update.progress);
+          setIdle(update.idle);
+          setDownloadLatency(update.downloadLatency);
+          setUploadLatency(update.uploadLatency);
+          setDownloadMbps(update.downloadMbps);
+          setUploadMbps(update.uploadMbps);
+          setRecentLatencySamples(update.recentLatencySamples);
+        },
+        { signal: abortController.signal }
+      );
 
       setIdle(result.idle);
       setDownloadLatency(result.downloadLatency);
@@ -119,17 +159,33 @@ export default function Page() {
       setAnalyzing(true);
       setPhase("analysis");
       setStatus("diagnosis");
-      setMessage("Computing diagnosis from completed measurements.");
+      setMessage("Comparing quiet and loaded latency medians.");
 
       await wait(3200);
 
       setAnalyzing(false);
       setFinished(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown test error");
+      const stoppedForForeground =
+        abortController.signal.aborted &&
+        abortController.signal.reason === FOREGROUND_ERROR;
+
+      setError(
+        stoppedForForeground
+          ? FOREGROUND_ERROR
+          : err instanceof Error
+            ? err.message
+            : "Unknown test error"
+      );
       setRunning(false);
       setAnalyzing(false);
       setPhase("ready");
+      setStatus("stopped");
+      setMessage("Test stopped before completion.");
+    } finally {
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
     }
   }
 
@@ -188,7 +244,7 @@ export default function Page() {
 
   return (
     <main className="test-shell">
-      {!running && !analyzing && !finished && (
+      {!error && !running && !analyzing && !finished && (
         <section className="hero-panel">
           <div className="hero-grid">
             <div className="hero-copy">
@@ -204,9 +260,19 @@ export default function Page() {
               </p>
 
               <p className="hero-description">
-                The test compares quiet latency with latency under load. Keep
-                this tab visible while it runs.
+                The test compares quiet latency with latency under load. It
+                normally takes less than a minute and is designed to be faster
+                than the alternative.
               </p>
+
+              <div className="accuracy-notice">
+                <strong>Keep this page in the foreground.</strong>
+                <p>
+                  Browser scheduling changes when a tab is hidden. If you switch
+                  tabs, minimize the browser, or leave the page, the test will
+                  stop so the result is not misleading.
+                </p>
+              </div>
 
               <button
                 className="hero-start-button"
@@ -227,30 +293,6 @@ export default function Page() {
                 </a>
                 <a href="/mission">Mission</a>
               </div>
-
-              <section className="test-measures-mini">
-                <h2>What this test measures</h2>
-
-                <div>
-                  <article>
-                    <span>01</span>
-                    <strong>Quiet ping latency</strong>
-                    <p>The baseline response time before adding traffic.</p>
-                  </article>
-
-                  <article>
-                    <span>02</span>
-                    <strong>Download loaded latency</strong>
-                    <p>Whether ping rises while receiving data.</p>
-                  </article>
-
-                  <article>
-                    <span>03</span>
-                    <strong>Upload loaded latency</strong>
-                    <p>Whether ping rises while sending data.</p>
-                  </article>
-                </div>
-              </section>
             </div>
 
 
@@ -259,26 +301,53 @@ export default function Page() {
       )}
 
       {error && (
-        <section className="terminal-card error-card">
-          Test error: {error}
+        <section className="terminal-card error-card test-stop-card test-stop-screen">
+          <span>Test stopped</span>
+          <strong>{error}</strong>
+          <p>
+            Nothing is wrong with your connection. Restart the test and keep
+            this tab visible until the result appears.
+          </p>
+          <button onClick={runTest} disabled={running || analyzing}>
+            Restart test
+          </button>
         </section>
       )}
 
       {analyzing && (
-        <section className="analysis-card">
-          <div className="analysis-loader tall">
-            <span />
-            <div>
-              <p>Crunching numbers...</p>
-              <small>
-                Comparing quiet latency, stressed latency, throughput, payload size, and client telemetry.
-              </small>
-            </div>
+        <section className="instrument-panel">
+          <div className="accuracy-banner" role="status">
+            <strong>Accuracy check complete</strong>
+            <p>Measurements are complete; the result is being computed.</p>
           </div>
 
-          <div className="analysis-progress">
-            <div />
-          </div>
+          <TestProcedurePanel
+            phase="analysis"
+            status="analysis"
+            message="Comparing quiet latency with download and upload latency under load."
+            phaseDetail={getPhaseDetail("analysis", "analysis")}
+            idle={idle}
+            downloadLatency={downloadLatency}
+            uploadLatency={uploadLatency}
+            downloadMbps={downloadMbps}
+            uploadMbps={uploadMbps}
+          />
+
+          <section className="analysis-card">
+            <div className="analysis-loader tall">
+              <span />
+              <div>
+                <p>Computing result...</p>
+                <small>
+                  Deriving the responsiveness grade from completed measurements.
+                </small>
+              </div>
+            </div>
+
+            <div className="analysis-progress">
+              <div />
+            </div>
+          </section>
         </section>
       )}
 
@@ -336,62 +405,43 @@ User agent: ${browserInfo?.userAgent}
           />
           </div>
 
+          <section className="result-method-note">
+            <span>How to read this result</span>
+            <p>
+              The grade is based on median quiet latency compared with median
+              latency during download and upload load. Warm-up and settling
+              periods are excluded, and the run requires the tab to stay visible
+              so browser throttling does not distort the samples.
+            </p>
+          </section>
+
           <SignupBox />
         </>
       )}
 
       {(running || analyzing) && (
         <section className="instrument-panel">
+          <div className="accuracy-banner" role="status">
+            <strong>Accuracy check active</strong>
+            <p>
+              Keep this tab visible; the test stops if the page leaves the
+              foreground.
+            </p>
+          </div>
+
           {running && (
             <>
-              <div className="test-status-row top">
-                <span>{message}</span>
-                <span>{Math.floor(progress)}%</span>
-              </div>
-
-              <div className="progress-bar top">
-                <div className="progress-fill" style={{ width: `${progress}%` }} />
-              </div>
-
-              <PhaseStepper phase={phase} status={status} />
-
-              <div className="phase-detail-card" aria-live="polite">
-                <div>
-                  <span>{phaseDetail.eyebrow}</span>
-                  <strong>{phaseDetail.title}</strong>
-                  <p>{phaseDetail.detail}</p>
-                </div>
-
-                <div className="phase-facts">
-                  {phase === "download" && (
-                    <>
-                      <span>{DOWNLOAD_STREAM_LABEL} active</span>
-                      <span>{formatSpeed(downloadMbps)} Mb/s estimate</span>
-                    </>
-                  )}
-
-                  {phase === "upload" && (
-                    <>
-                      <span>{UPLOAD_STREAM_LABEL} active</span>
-                      <span>{formatSpeed(uploadMbps)} Mb/s estimate</span>
-                    </>
-                  )}
-
-                  {phase === "idle" && (
-                    <>
-                      <span>No stress traffic</span>
-                      <span>{formatLatency(idle)} ms current median</span>
-                    </>
-                  )}
-
-                  {phase === "warmup" && (
-                    <>
-                      <span>Preflight only</span>
-                      <span>Excluded from medians</span>
-                    </>
-                  )}
-                </div>
-              </div>
+              <TestProcedurePanel
+                phase={phase}
+                status={status}
+                message={message}
+                phaseDetail={phaseDetail}
+                idle={idle}
+                downloadLatency={downloadLatency}
+                uploadLatency={uploadLatency}
+                downloadMbps={downloadMbps}
+                uploadMbps={uploadMbps}
+              />
             </>
           )}
 
@@ -435,17 +485,19 @@ User agent: ${browserInfo?.userAgent}
 function getPhaseDetail(phase: TestPhase | "ready", status: string) {
   if (phase === "warmup") {
     return {
-      eyebrow: "Step 1 of 4",
+      eyebrow: "Step 1 of 5",
       title: "Warming up the session",
-      detail: "Small ping, download, and upload requests prepare the browser path before measurement starts.",
+      detail:
+        "The browser makes small ping, download, and upload requests first. These samples are not scored; they reduce one-off setup effects before the real measurement starts.",
     };
   }
 
   if (phase === "idle") {
     return {
-      eyebrow: "Step 2 of 4",
+      eyebrow: "Step 2 of 5",
       title: "Measuring quiet latency",
-      detail: "No extra stress traffic is added during this baseline median.",
+      detail:
+        "This is the baseline: how quickly the connection responds before the test adds extra traffic. Later stages are compared against this median.",
     };
   }
 
@@ -453,11 +505,11 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
     const settling = status.includes("settling") || status.includes("starting");
 
     return {
-      eyebrow: "Step 3 of 4",
+      eyebrow: "Step 3 of 5",
       title: settling ? "Stabilizing download pressure" : "Measuring latency during download",
       detail: settling
-        ? "Download streams are already running; these first seconds are excluded from the median."
-        : "Latency samples are now being recorded while download pressure stays active.",
+        ? "Download streams are filling the connection, but the first seconds are ignored so startup effects do not skew the median."
+        : "Latency is sampled while download traffic stays active. This shows whether bulk receiving traffic makes the connection less responsive.",
     };
   }
 
@@ -465,11 +517,20 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
     const settling = status.includes("settling") || status.includes("starting");
 
     return {
-      eyebrow: "Step 4 of 4",
+      eyebrow: "Step 4 of 5",
       title: settling ? "Stabilizing upload pressure" : "Measuring latency during upload",
       detail: settling
-        ? "Upload streams are already running; these first seconds are excluded from the median."
-        : "Latency samples are now being recorded while upload pressure stays active.",
+        ? "Upload streams are filling the upstream path, but the first seconds are ignored before the median is recorded."
+        : "Latency is sampled while upload traffic stays active. Upload congestion is a common reason video calls, games, and browsing become sluggish.",
+    };
+  }
+
+  if (phase === "analysis") {
+    return {
+      eyebrow: "Step 5 of 5",
+      title: "Computing result",
+      detail:
+        "The result compares quiet latency with download-loaded and upload-loaded latency, then summarizes the responsiveness impact.",
     };
   }
 
@@ -480,44 +541,106 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
   };
 }
 
-function PhaseStepper({
+function TestProcedurePanel({
   phase,
   status,
+  message,
+  phaseDetail,
+  idle,
+  downloadLatency,
+  uploadLatency,
+  downloadMbps,
+  uploadMbps,
 }: {
   phase: TestPhase | "ready";
   status: string;
+  message: string;
+  phaseDetail: ReturnType<typeof getPhaseDetail>;
+  idle: number | null;
+  downloadLatency: number | null;
+  uploadLatency: number | null;
+  downloadMbps: number | null;
+  uploadMbps: number | null;
 }) {
   const steps = [
-    { phase: "warmup", label: "Warm-up" },
-    { phase: "idle", label: "Quiet" },
-    { phase: "download", label: "Download" },
-    { phase: "upload", label: "Upload" },
+    {
+      phase: "warmup",
+      label: "Warm-up",
+      purpose:
+        "Prepare the browser path before recording scored samples.",
+      evidence: "Excluded from medians",
+    },
+    {
+      phase: "idle",
+      label: "Quiet",
+      purpose:
+        "Record the baseline response time before adding traffic.",
+      evidence:
+        idle === null ? "Waiting for samples" : `${formatLatency(idle)} ms current median`,
+    },
+    {
+      phase: "download",
+      label: "Download",
+      purpose:
+        "Measure whether latency rises while download traffic is active.",
+      evidence:
+        downloadLatency === null
+          ? `${DOWNLOAD_STREAM_LABEL} during this step`
+          : `${formatLatency(downloadLatency)} ms median, ${formatSpeed(downloadMbps)} Mb/s`,
+    },
+    {
+      phase: "upload",
+      label: "Upload",
+      purpose:
+        "Measure whether latency rises while upload traffic is active.",
+      evidence:
+        uploadLatency === null
+          ? `${UPLOAD_STREAM_LABEL} during this step`
+          : `${formatLatency(uploadLatency)} ms median, ${formatSpeed(uploadMbps)} Mb/s`,
+    },
+    {
+      phase: "analysis",
+      label: "Result",
+      purpose:
+        "Compare quiet and loaded medians to derive the responsiveness grade.",
+      evidence: "Computing diagnosis",
+    },
   ] as const;
   const currentIndex = steps.findIndex((step) => step.phase === phase);
 
   return (
-    <ol className="phase-stepper" aria-label="Test progress">
-      {steps.map((step, index) => {
-        const active = step.phase === phase;
-        const complete = currentIndex > index || phase === "analysis";
-        const settling =
-          active &&
-          (status.includes("settling") || status.includes("starting"));
+    <section className="test-procedure-panel" aria-live="polite">
+      <ol className="procedure-stage-grid" aria-label="Test procedure">
+        {steps.map((step, index) => {
+          const active = step.phase === phase;
+          const complete = currentIndex > index || (phase === "analysis" && step.phase !== "analysis");
+          const pending = !active && !complete;
+          const settling =
+            active &&
+            (status.includes("settling") || status.includes("starting"));
 
-        return (
-          <li
-            key={step.phase}
-            className={`${active ? "active" : ""} ${complete ? "complete" : ""}`}
-          >
-            <span>{complete ? "✓" : index + 1}</span>
-            <strong>{step.label}</strong>
-            {active && (
-              <em>{settling ? "settling" : step.phase === "warmup" ? "warming" : "measuring"}</em>
-            )}
-          </li>
-        );
-      })}
-    </ol>
+          return (
+            <li
+              key={step.phase}
+              className={`${active ? "active" : ""} ${
+                complete ? "complete" : ""
+              } ${pending ? "pending" : ""} ${step.phase}`}
+            >
+              <span>{complete ? "✓" : index + 1}</span>
+              <strong>{step.label}</strong>
+              {active && <em>{settling ? "settling" : step.phase === "analysis" ? "computing" : "measuring"}</em>}
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="procedure-current">
+        <span>{phaseDetail.eyebrow}</span>
+        <h2>{phaseDetail.title}</h2>
+        <p>{phaseDetail.detail}</p>
+        <em>{message}</em>
+      </div>
+    </section>
   );
 }
 
@@ -538,47 +661,39 @@ function ActiveMeasurementCard({
   speed?: number | null;
   speedLabel?: string | null;
 }) {
+  const visibleSamples = samples.slice(-5);
+  const sampleText =
+    visibleSamples.length > 0
+      ? visibleSamples.map((sample) => `${Math.round(sample)} ms`).join("  ")
+      : "collecting";
+
   return (
     <section className={`active-measurement-card ${theme}`} aria-live="polite">
       <div className="active-measurement-header">
         <div className="stage-icon">{icon}</div>
 
         <div>
-          <span>Measuring now</span>
+          <span>Live evidence</span>
           <strong>{title}</strong>
         </div>
       </div>
 
-      <div className="active-measurement-grid">
-        <div className="active-readout">
-          <span>Median ping</span>
-          <strong>{ping === null ? "—" : `${formatLatency(ping)} ms`}</strong>
-
-          <div className="active-samples" aria-hidden="true">
-            {(samples.length > 0 ? samples : [null, null, null, null, null]).map((sample, index) => (
-              <em
-                key={sample === null ? `empty-${index}` : `${sample}-${index}`}
-                className={sample === null ? "empty-sample" : undefined}
-                style={{ "--sample-index": index } as React.CSSProperties}
-              >
-                {sample === null ? "00ms" : `${Math.round(sample)}ms`}
-              </em>
-            ))}
-          </div>
+      <dl className="active-measurement-table">
+        <div>
+          <dt>Latency median</dt>
+          <dd>{ping === null ? "pending" : `${formatLatency(ping)} ms`}</dd>
         </div>
 
-        <div className="active-speed">
-          <span>{speedLabel ?? "Traffic pressure"}</span>
-          {speedLabel ? (
-            <>
-              <Speedometer value={speed ?? null} />
-              <strong>{speed == null ? "—" : `${formatSpeed(speed)} Mb/s`}</strong>
-            </>
-          ) : (
-            <strong>No added load</strong>
-          )}
+        <div>
+          <dt>{speedLabel ?? "Traffic pressure"}</dt>
+          <dd>{speedLabel ? (speed == null ? "estimating" : `${formatSpeed(speed)} Mb/s`) : "none"}</dd>
         </div>
-      </div>
+
+        <div>
+          <dt>Recent samples</dt>
+          <dd>{sampleText}</dd>
+        </div>
+      </dl>
     </section>
   );
 }
@@ -611,38 +726,5 @@ function CompletedStageSummary({
         <em>{speed == null ? "—" : `${formatSpeed(speed)} Mb/s`}</em>
       )}
     </article>
-  );
-}
-
-function Speedometer({ value }: { value: number | null }) {
-  const percent = Math.min(100, Math.max(0, value ?? 0));
-  const angle = -90 + percent * 1.8;
-  const arcLength = 142;
-  const dashOffset = arcLength - (arcLength * percent) / 100;
-
-  return (
-    <svg className="speedometer" viewBox="0 0 120 70" aria-hidden="true">
-      <path className="speedometer-bg" d="M15 60 A45 45 0 0 1 105 60" />
-      <path
-        className="speedometer-fill"
-        d="M15 60 A45 45 0 0 1 105 60"
-        style={{
-          strokeDasharray: arcLength,
-          strokeDashoffset: dashOffset,
-        }}
-      />
-      <line
-        className="speedometer-needle"
-        x1="60"
-        y1="60"
-        x2="60"
-        y2="22"
-        style={{ transform: `rotate(${angle}deg)`, transformOrigin: "60px 60px" }}
-      />
-      <circle className="speedometer-dot" cx="60" cy="60" r="5" />
-      <text x="18" y="64">0</text>
-      <text x="55" y="20">50</text>
-      <text x="94" y="64">100</text>
-    </svg>
   );
 }
