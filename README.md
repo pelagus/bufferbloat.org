@@ -184,7 +184,7 @@ data/signups.json
 
 ## About the author
 
-Bufferbloat.org is created and maintained by **Emanuele Brandi**.
+Bufferbloat.org is an independent project created and maintained by **Emanuele Brandi**.
 
 I've spent more than two decades trying to make the web work a little better. Somewhere along the way, I developed an obsession with things that are measurable, transparent and useful, and lost almost all patience for black boxes.
 
