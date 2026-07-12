@@ -19,6 +19,7 @@ export type TestUpdate = {
   uploadMbps: number | null;
   recentLatencySamples: number[];
   latencySampleCount: number;
+  latencySamples: LatencySamplesByPhase;
 };
 
 export type TestResult = {
@@ -30,6 +31,13 @@ export type TestResult = {
   uploadMbps: number | null;
 
   grade: "A" | "B" | "C" | "D";
+  latencySamples: LatencySamplesByPhase;
+};
+
+export type LatencySamplesByPhase = {
+  idle: number[];
+  download: number[];
+  upload: number[];
 };
 
 const DOWNLOAD_URL = "https://files.bufferbloat.org/100mb.bin";
@@ -379,6 +387,11 @@ export async function runBufferbloatTest(
   let uploadMbps: number | null = null;
   let recentLatencySamples: number[] = [];
   let latencySampleCount = 0;
+  const latencySamples: LatencySamplesByPhase = {
+    idle: [],
+    download: [],
+    upload: [],
+  };
 
   onUpdate({
     phase: "warmup",
@@ -392,6 +405,7 @@ export async function runBufferbloatTest(
     uploadMbps,
     recentLatencySamples,
     latencySampleCount,
+    latencySamples,
   });
 
   throwIfAborted(signal);
@@ -415,10 +429,12 @@ export async function runBufferbloatTest(
     uploadMbps,
     recentLatencySamples,
     latencySampleCount,
+    latencySamples,
   });
 
   const idleSamples = await sampleLatency(IDLE_DURATION_MS, (sample) => {
     idle = sample;
+    latencySamples.idle = [...latencySamples.idle, sample];
     recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
     latencySampleCount += 1;
 
@@ -434,6 +450,7 @@ export async function runBufferbloatTest(
       uploadMbps,
       recentLatencySamples,
       latencySampleCount,
+      latencySamples,
     });
   }, signal);
 
@@ -451,6 +468,7 @@ export async function runBufferbloatTest(
     uploadMbps,
     recentLatencySamples,
     latencySampleCount,
+    latencySamples,
   });
 
   recentLatencySamples = [];
@@ -476,6 +494,7 @@ export async function runBufferbloatTest(
       uploadMbps,
       recentLatencySamples,
       latencySampleCount,
+      latencySamples,
     });
 
     await wait(LOADED_SETTLE_MS, signal);
@@ -492,10 +511,12 @@ export async function runBufferbloatTest(
       uploadMbps,
       recentLatencySamples,
       latencySampleCount,
+      latencySamples,
     });
 
     downloadSamples = await sampleLatency(LOADED_RECORDING_MS, (sample) => {
       downloadLatency = sample;
+      latencySamples.download = [...latencySamples.download, sample];
       recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
       latencySampleCount += 1;
 
@@ -511,6 +532,7 @@ export async function runBufferbloatTest(
         uploadMbps,
         recentLatencySamples,
         latencySampleCount,
+        latencySamples,
       });
     }, signal);
   } finally {
@@ -533,6 +555,7 @@ export async function runBufferbloatTest(
     uploadMbps,
     recentLatencySamples,
     latencySampleCount,
+    latencySamples,
   });
 
   recentLatencySamples = [];
@@ -558,6 +581,7 @@ export async function runBufferbloatTest(
       uploadMbps,
       recentLatencySamples,
       latencySampleCount,
+      latencySamples,
     });
 
     await wait(LOADED_SETTLE_MS, signal);
@@ -574,10 +598,12 @@ export async function runBufferbloatTest(
       uploadMbps,
       recentLatencySamples,
       latencySampleCount,
+      latencySamples,
     });
 
     uploadSamples = await sampleLatency(LOADED_RECORDING_MS, (sample) => {
       uploadLatency = sample;
+      latencySamples.upload = [...latencySamples.upload, sample];
       recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
       latencySampleCount += 1;
 
@@ -593,6 +619,7 @@ export async function runBufferbloatTest(
         uploadMbps,
         recentLatencySamples,
         latencySampleCount,
+        latencySamples,
       });
     }, signal);
   } finally {
@@ -615,6 +642,7 @@ export async function runBufferbloatTest(
     uploadMbps,
     recentLatencySamples,
     latencySampleCount,
+    latencySamples,
   });
 
   await wait(FREEZE_FINAL_MS, signal);
@@ -626,5 +654,6 @@ export async function runBufferbloatTest(
     downloadMbps,
     uploadMbps,
     grade: gradeResult(idle, downloadLatency, uploadLatency),
+    latencySamples,
   };
 }

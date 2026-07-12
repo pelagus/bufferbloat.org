@@ -13,6 +13,7 @@ export default function ResultCard({
   finding,
   reliabilityGroups,
   scoredMeasurements,
+  chartSlot,
   technicalRows,
   signupSlot,
 }: {
@@ -45,6 +46,7 @@ export default function ResultCard({
     delta: string;
     detail: string;
   }>;
+  chartSlot?: ReactNode;
   technicalRows: Array<{
     metric: string;
     value: string;
@@ -54,14 +56,19 @@ export default function ResultCard({
 }) {
   const formattedMeasuredAt = new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
-    timeStyle: "medium",
+    timeStyle: "short",
   }).format(new Date(measuredAt));
 
   return (
     <section className="result-card result-scorecard terminal-card">
       <div className="result-compact-header">
-        <div>
-          <h2>Latency under load report</h2>
+        <div className="result-brand-lockup" aria-label="Bufferbloat.org">
+          <strong>Bufferbloat.org</strong>
+          <span>open source responsiveness test</span>
+        </div>
+
+        <div className="result-report-title">
+          <h2>Latency under load</h2>
           <p>
             Measured {formattedMeasuredAt} · {methodologyVersion}
           </p>
@@ -88,6 +95,8 @@ export default function ResultCard({
           </div>
         </div>
       </div>
+
+      {chartSlot}
 
       <div className="result-applications">
         <div className="result-section-heading">

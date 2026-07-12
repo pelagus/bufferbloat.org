@@ -50,7 +50,7 @@ export default function Home() {
             aria-label="Example latency under load measurement"
           >
             <div className="instrument-header">
-              <span>example run</span>
+              <span>example measurement trace</span>
               <strong>latency under load</strong>
             </div>
 
@@ -60,7 +60,11 @@ export default function Home() {
                 <dd>24 ms</dd>
               </div>
               <div>
-                <dt>Loaded</dt>
+                <dt>Download load</dt>
+                <dd>118 ms</dd>
+              </div>
+              <div>
+                <dt>Upload load</dt>
                 <dd>412 ms</dd>
               </div>
               <div>
@@ -73,33 +77,58 @@ export default function Home() {
               className="instrument-trace"
               aria-label="Illustrative latency trace"
             >
-              <svg viewBox="0 0 420 170" role="img" aria-labelledby="home-trace-title">
+              <svg viewBox="0 0 420 202" role="img" aria-labelledby="home-trace-title">
                 <title id="home-trace-title">
                   Example trace where latency rises while traffic is active
                 </title>
-                <line x1="28" y1="132" x2="392" y2="132" className="trace-axis" />
-                <line x1="28" y1="38" x2="392" y2="38" className="trace-grid" />
-                <line x1="28" y1="85" x2="392" y2="85" className="trace-grid" />
-                <rect x="28" y="22" width="112" height="110" className="trace-zone trace-zone-quiet" />
-                <rect x="140" y="22" width="126" height="110" className="trace-zone trace-zone-download" />
-                <rect x="266" y="22" width="126" height="110" className="trace-zone trace-zone-upload" />
+                <line x1="42" y1="132" x2="392" y2="132" className="trace-axis" />
+                <line x1="42" y1="26" x2="392" y2="26" className="trace-grid" />
+                <line x1="42" y1="79" x2="392" y2="79" className="trace-grid" />
+                <text x="10" y="29" className="trace-axis-label">500</text>
+                <text x="10" y="82" className="trace-axis-label">250</text>
+                <text x="18" y="135" className="trace-axis-label">0</text>
+                <text x="7" y="18" className="trace-axis-label">ms</text>
+                <rect x="42" y="22" width="104" height="110" className="trace-zone trace-zone-quiet" />
+                <rect x="146" y="22" width="122" height="110" className="trace-zone trace-zone-download" />
+                <rect x="268" y="22" width="124" height="110" className="trace-zone trace-zone-upload" />
+                <line x1="146" y1="22" x2="146" y2="132" className="trace-phase-break" />
+                <line x1="268" y1="22" x2="268" y2="132" className="trace-phase-break" />
+                <path
+                  className="trace-line trace-line-reference"
+                  d="M42 122 L66 123 L90 121 L114 122 L138 121 L162 122 L186 121 L210 122 L234 121 L258 122 L282 121 L306 122 L330 121 L354 122 L378 121 L392 122"
+                />
                 <path
                   className="trace-line trace-line-quiet"
-                  d="M28 123 L50 124 L72 122 L94 123 L116 121 L138 123"
+                  d="M42 126 L64 125 L86 126 L108 124 L130 125 L144 124"
                 />
                 <path
-                  className="trace-line trace-line-load"
-                  d="M140 120 L160 113 L180 118 L200 104 L220 109 L240 96 L266 101 L286 62 L306 46 L326 55 L346 36 L366 49 L392 31"
+                  className="trace-line trace-line-download"
+                  d="M156 111 L174 103 L192 107 L210 96 L228 101 L246 90 L262 94"
                 />
-                <text x="28" y="154" className="trace-label">quiet</text>
-                <text x="154" y="154" className="trace-label">download</text>
-                <text x="284" y="154" className="trace-label">upload</text>
+                <path
+                  className="trace-line trace-line-upload"
+                  d="M278 68 L296 44 L314 54 L332 36 L350 49 L368 31 L388 40"
+                />
+                <text x="42" y="154" className="trace-label">quiet</text>
+                <text x="160" y="154" className="trace-label">download</text>
+                <text x="286" y="154" className="trace-label">upload</text>
+                <g className="trace-legend">
+                  <line x1="42" y1="180" x2="58" y2="180" className="legend-quiet" />
+                  <text x="64" y="184">quiet</text>
+                  <line x1="110" y1="180" x2="126" y2="180" className="legend-download" />
+                  <text x="132" y="184">download</text>
+                  <line x1="208" y1="180" x2="224" y2="180" className="legend-upload" />
+                  <text x="230" y="184">upload</text>
+                  <line x1="288" y1="180" x2="304" y2="180" className="legend-reference" />
+                  <text x="310" y="184">quiet median</text>
+                </g>
               </svg>
             </div>
 
             <p>
-              Same connection. Different question: does latency stay stable
-              when the line is busy?
+              Illustrative data. The live test reports measured quiet latency,
+              download latency under load, upload latency under load, and
+              throughput.
             </p>
           </aside>
         </div>
@@ -162,69 +191,6 @@ export default function Home() {
             and improved.
           </p>
         </article>
-      </section>
-
-      <section className="home-panel latency-trace-panel">
-        <div className="trace-header">
-          <div>
-            <p className="eyebrow">example measurement trace</p>
-            <h2>Latency should remain stable when traffic is active.</h2>
-          </div>
-
-          <dl className="trace-summary" aria-label="Example latency summary">
-            <div>
-              <dt>Quiet</dt>
-              <dd>24 ms</dd>
-            </div>
-            <div>
-              <dt>Download load</dt>
-              <dd>118 ms</dd>
-            </div>
-            <div>
-              <dt>Upload load</dt>
-              <dd>412 ms</dd>
-            </div>
-          </dl>
-        </div>
-
-        <div className="latency-chart" aria-label="Example latency over time chart">
-          <svg viewBox="0 0 900 300" role="img" aria-labelledby="latency-chart-title">
-            <title id="latency-chart-title">
-              Example latency trace showing quiet, download load, and upload load phases
-            </title>
-            <line x1="64" y1="38" x2="64" y2="246" className="axis" />
-            <line x1="64" y1="246" x2="850" y2="246" className="axis" />
-            <line x1="64" y1="198" x2="850" y2="198" className="grid-line" />
-            <line x1="64" y1="150" x2="850" y2="150" className="grid-line" />
-            <line x1="64" y1="102" x2="850" y2="102" className="grid-line" />
-            <line x1="64" y1="54" x2="850" y2="54" className="grid-line" />
-
-            <text x="28" y="250" className="axis-label">0</text>
-            <text x="20" y="154" className="axis-label">200</text>
-            <text x="20" y="58" className="axis-label">400</text>
-            <text x="64" y="276" className="phase-label">quiet</text>
-            <text x="332" y="276" className="phase-label">download load</text>
-            <text x="634" y="276" className="phase-label">upload load</text>
-
-            <rect x="64" y="38" width="246" height="208" className="phase phase-quiet" />
-            <rect x="310" y="38" width="270" height="208" className="phase phase-download" />
-            <rect x="580" y="38" width="270" height="208" className="phase phase-upload" />
-
-            <path
-              className="latency-line baseline-line"
-              d="M64 232 L104 234 L144 231 L184 232 L224 230 L264 233 L304 231"
-            />
-            <path
-              className="latency-line loaded-line"
-              d="M310 226 L338 214 L366 220 L394 208 L422 216 L450 198 L478 204 L506 190 L534 205 L562 196 L580 198 L606 130 L632 82 L658 96 L684 62 L710 88 L736 58 L762 76 L788 50 L814 68 L850 46"
-            />
-          </svg>
-        </div>
-
-        <p className="trace-caption">
-          Illustrative data. The live test reports measured quiet latency,
-          download latency under load, upload latency under load, and throughput.
-        </p>
       </section>
 
       <section className="home-reference-panel">

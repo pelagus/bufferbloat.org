@@ -105,38 +105,38 @@
 /* BASELINE ACTIVE STATE */
 
 .phase-idle.phase-active {
-  border-color: #eab308;
+  border-color: var(--fg);
 }
 
 .phase-idle.phase-active .test-phase-title,
 .phase-idle.phase-active .test-phase-icon,
 .phase-idle.phase-active .test-phase-metric-value,
 .phase-idle.phase-active .live-ping-sample {
-  color: #eab308;
+  color: var(--fg);
 }
 
 .phase-idle.phase-active .test-phase-icon {
-  border-color: #eab308;
+  border-color: var(--fg);
 }
 
 
-/* Active baseline must be yellow, not neutral */
+/* Active baseline uses the quiet/idle phase color */
 
 .stage-panel.active-now.baseline {
-  color: #eab308;
-  border-color: #eab308;
+  color: var(--fg);
+  border-color: var(--fg);
 }
 
 .stage-panel.active-now.baseline .stage-icon {
-  color: #eab308;
-  border-color: #eab308;
+  color: var(--fg);
+  border-color: var(--fg);
 }
 
 .stage-panel.active-now.baseline .stage-title-block strong,
 .stage-panel.active-now.baseline .stage-summary span,
 .stage-panel.active-now.baseline .stage-summary strong,
 .stage-panel.active-now.baseline .ping-flyout em {
-  color: #eab308;
+  color: var(--fg);
 }
 
 /* Keep completed cards neutral */
@@ -329,7 +329,7 @@
 
 .preflight-layout {
   display: grid;
-  grid-template-columns: minmax(180px, 0.42fr) minmax(0, 1fr);
+  grid-template-columns: minmax(160px, 0.34fr) minmax(0, 1fr);
   gap: clamp(18px, 4vw, 36px);
   align-items: center;
 }
@@ -349,7 +349,7 @@
 
 .preflight-copy {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .preflight-card span {
@@ -367,43 +367,46 @@
   margin: 0;
   color: var(--fg);
   font-family: var(--font-geist-mono), monospace;
-  font-size: clamp(40px, 6vw, 74px);
+  font-size: clamp(34px, 4.6vw, 56px);
   font-weight: 500;
-  line-height: 0.98;
+  line-height: 1;
   letter-spacing: 0;
 }
 
 .preflight-card p {
-  max-width: 760px;
+  max-width: 620px;
   margin: 0;
   color: color-mix(in srgb, var(--fg) 74%, var(--muted));
-  font-size: 18px;
-  line-height: 1.55;
+  font-size: 17px;
+  line-height: 1.45;
 }
 
 .preflight-countdown {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-  align-items: baseline;
-  width: fit-content;
+  display: grid;
+  justify-self: center;
+  justify-items: center;
+  gap: 6px;
+  width: min(260px, 100%);
   max-width: 100%;
   border: 1px solid var(--line);
   background: var(--bg);
-  padding: 10px 12px;
+  padding: 18px 18px 16px;
   font-family: var(--font-geist-mono), monospace;
+  text-align: center;
 }
 
 .preflight-countdown strong {
   color: var(--fg);
-  font-size: clamp(18px, 3vw, 26px);
+  font-size: clamp(72px, 12vw, 124px);
   font-weight: 500;
-  line-height: 1;
+  line-height: 0.82;
 }
 
-.preflight-countdown span {
+.preflight-countdown span,
+.preflight-countdown em {
   color: var(--muted);
   font-size: 12px;
+  font-style: normal;
   line-height: 1.35;
 }
 
@@ -826,14 +829,14 @@
   }
 
   .preflight-card h1 {
-    font-size: clamp(34px, 11vw, 48px);
+    font-size: clamp(30px, 9vw, 42px);
   }
 
   .preflight-card p {
-    font-size: 16px;
+    font-size: 15px;
   }
 
-  .preflight-actions {
-    display: grid;
+  .preflight-countdown {
+    width: 100%;
   }
 }

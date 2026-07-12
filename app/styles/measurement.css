@@ -98,18 +98,18 @@
 
 .preflight-card {
   margin: 28px 0 0;
-  padding: 32px;
+  padding: 30px;
 }
 
 .preflight-card h1 {
-  max-width: 760px;
+  max-width: 680px;
   font-family: var(--font-geist-sans), Arial, sans-serif;
-  font-size: clamp(40px, 5.4vw, 64px);
-  line-height: 1.02;
+  font-size: clamp(34px, 4.6vw, 56px);
+  line-height: 1;
 }
 
 .preflight-card p {
-  max-width: 760px;
+  max-width: 620px;
   color: color-mix(in srgb, var(--fg) 76%, var(--muted));
   font-family: var(--font-geist-sans), Arial, sans-serif;
 }
@@ -130,6 +130,34 @@
   gap: 12px;
   margin-top: 28px;
   padding: 12px !important;
+}
+
+.foreground-run-notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--bad) 42%, var(--line));
+  background: color-mix(in srgb, var(--bad) 8%, var(--bg));
+  color: color-mix(in srgb, var(--bad) 86%, var(--fg));
+  padding: 8px 10px;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.foreground-run-notice strong {
+  min-width: 64px;
+  color: var(--bad);
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 560;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.foreground-run-notice span {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 460;
+  line-height: 1.35;
 }
 
 .test-progress-rail,
@@ -188,14 +216,24 @@
 
 .procedure-stage-grid {
   border-color: var(--line);
+  overflow: hidden;
 }
 
 .procedure-stage-grid li {
+  position: relative;
+  isolation: isolate;
   background: var(--bg);
+  overflow: hidden;
 }
 
 .procedure-stage-grid li.active {
-  background: color-mix(in srgb, var(--fg) 4%, var(--bg));
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--fg) 5%, transparent),
+      transparent 62%
+    ),
+    var(--bg);
 }
 
 .procedure-stage-grid li.complete.warmup,
@@ -204,23 +242,198 @@
 .procedure-stage-grid li.complete.upload,
 .procedure-stage-grid li.complete.analysis {
   border-color: var(--line);
-  background: color-mix(in srgb, var(--fg) 6%, var(--bg));
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--fg) 8%, transparent),
+      transparent 74%
+    ),
+    color-mix(in srgb, var(--fg) 3%, var(--bg));
+}
+
+.procedure-stage-grid li > i {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 0;
+  height: 4px;
+  background: color-mix(in srgb, var(--fg) 72%, var(--bg));
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.procedure-stage-grid li::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.procedure-stage-grid li > span,
+.procedure-stage-grid li > strong,
+.procedure-stage-grid li > em {
+  position: relative;
+  z-index: 1;
+}
+
+.procedure-stage-grid li.complete > i {
+  transform: scaleX(1);
+}
+
+.procedure-stage-grid li.active > i {
+  background:
+    repeating-linear-gradient(
+      110deg,
+      transparent 0,
+      transparent 8px,
+      color-mix(in srgb, var(--bg) 40%, transparent) 8px,
+      color-mix(in srgb, var(--bg) 40%, transparent) 15px
+    ),
+    color-mix(in srgb, var(--fg) 72%, var(--bg));
+  background-size: 26px 26px, 100% 100%;
+  animation: activeStepMotion 1100ms linear infinite;
+  transform: scaleX(1);
+}
+
+@keyframes activeStepMotion {
+  from {
+    background-position: 0 0, 0 0;
+  }
+
+  to {
+    background-position: 26px 0, 0 0;
+  }
 }
 
 .procedure-stage-grid li.active.warmup,
-.procedure-stage-grid li.active.idle,
-.procedure-stage-grid li.active.download,
-.procedure-stage-grid li.active.upload,
 .procedure-stage-grid li.active.analysis {
   box-shadow: inset 0 -3px 0 var(--fg);
 }
 
+.procedure-stage-grid li.active.warmup {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--fg) 7%, transparent),
+      transparent 66%
+    ),
+    var(--bg);
+  box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--fg) 58%, var(--line));
+}
+
+.procedure-stage-grid li.active.warmup::before {
+  inset: -68% auto auto 50%;
+  width: 92px;
+  height: 92px;
+  border-radius: 999px;
+  background:
+    conic-gradient(
+      from 0deg,
+      color-mix(in srgb, var(--fg) 18%, transparent),
+      transparent 34%,
+      color-mix(in srgb, var(--fg) 12%, transparent),
+      transparent 76%,
+      color-mix(in srgb, var(--fg) 18%, transparent)
+    );
+  opacity: 0.62;
+  transform: translateX(-50%);
+  animation: warmupSpin 1400ms linear infinite;
+}
+
+.procedure-stage-grid li.complete.warmup > i,
+.procedure-stage-grid li.active.warmup > i {
+  background:
+    repeating-linear-gradient(
+      110deg,
+      transparent 0,
+      transparent 8px,
+      color-mix(in srgb, var(--bg) 42%, transparent) 8px,
+      color-mix(in srgb, var(--bg) 42%, transparent) 15px
+    ),
+    color-mix(in srgb, var(--fg) 54%, var(--line));
+}
+
+@keyframes warmupSpin {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+
+.procedure-stage-grid li.active.idle {
+  box-shadow: inset 0 -3px 0 var(--fg);
+}
+
+.procedure-stage-grid li.active.download {
+  box-shadow: inset 0 -3px 0 var(--blue);
+}
+
+.procedure-stage-grid li.active.upload {
+  box-shadow: inset 0 -3px 0 var(--purple);
+}
+
+.procedure-stage-grid li.complete.download > i,
+.procedure-stage-grid li.active.download > i {
+  background:
+    repeating-linear-gradient(
+      110deg,
+      transparent 0,
+      transparent 8px,
+      color-mix(in srgb, var(--bg) 40%, transparent) 8px,
+      color-mix(in srgb, var(--bg) 40%, transparent) 15px
+    ),
+    var(--blue);
+}
+
+.procedure-stage-grid li.complete.upload > i,
+.procedure-stage-grid li.active.upload > i {
+  background:
+    repeating-linear-gradient(
+      110deg,
+      transparent 0,
+      transparent 8px,
+      color-mix(in srgb, var(--bg) 42%, transparent) 8px,
+      color-mix(in srgb, var(--bg) 42%, transparent) 15px
+    ),
+    var(--purple);
+}
+
 .procedure-stage-grid li > span {
   border-radius: 0;
+  background: var(--bg);
 }
 
 .procedure-stage-grid li.complete > span {
   color: var(--fg);
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+}
+
+.procedure-stage-grid li.complete.download > span,
+.procedure-stage-grid li.active.download > span {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.procedure-stage-grid li.complete.upload > span,
+.procedure-stage-grid li.active.upload > span {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.procedure-stage-grid li.active.download strong,
+.procedure-stage-grid li.active.download em {
+  color: var(--blue);
+}
+
+.procedure-stage-grid li.active.upload strong,
+.procedure-stage-grid li.active.upload em {
+  color: var(--purple);
 }
 
 .procedure-current h2 {
@@ -236,17 +449,63 @@
 
 .active-measurement-card,
 .active-measurement-card.baseline,
-.active-measurement-card.download,
-.active-measurement-card.upload,
 .completed-stage-summary.baseline,
 .completed-stage-summary.download,
 .completed-stage-summary.upload {
   color: var(--fg);
 }
 
+.active-measurement-card.download,
+.completed-stage-summary.download {
+  color: var(--blue);
+}
+
+.active-measurement-card.upload,
+.completed-stage-summary.upload {
+  color: var(--purple);
+}
+
 .active-measurement-card {
   border-color: var(--line);
   background: var(--bg);
+}
+
+.live-chart-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.34fr);
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 10px;
+}
+
+.live-chart-layout .latency-phase-chart.live {
+  margin-top: 0;
+}
+
+.live-chart-layout .live-measurement-strip {
+  grid-template-columns: 1fr;
+}
+
+.live-chart-layout .live-measurement-strip .active-measurement-header {
+  border-right: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.live-chart-layout .live-measurement-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.live-chart-layout .live-measurement-grid dd {
+  font-size: clamp(15px, 1.45vw, 18px);
+  line-height: 1.14;
+}
+
+.live-chart-layout .live-measurement-grid div:nth-child(2n) {
+  border-right: 0;
+}
+
+.live-chart-layout .live-measurement-grid div:nth-last-child(-n + 2) {
+  border-bottom: 1px solid var(--line);
 }
 
 .live-measurement-strip {
@@ -276,7 +535,7 @@
 
 .live-measurement-grid div {
   min-width: 0;
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-right: 1px solid var(--line);
 }
 
@@ -300,46 +559,246 @@
 .live-measurement-grid dd {
   margin-top: 6px;
   color: var(--fg);
-  font-size: clamp(20px, 3vw, 28px);
+  font-size: clamp(16px, 1.7vw, 20px);
+  font-weight: 420;
+  line-height: 1.12;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.latency-phase-chart {
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(to right, color-mix(in srgb, var(--line) 36%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--line) 36%, transparent) 1px, transparent 1px),
+    var(--bg);
+  background-size: 34px 34px;
+  color: var(--fg);
+  overflow: hidden;
+}
+
+.latency-phase-chart.live {
+  margin-top: 12px;
+}
+
+.latency-phase-chart.result {
+  margin: 0;
+  border-right: 0;
+  border-left: 0;
+}
+
+.latency-phase-chart.result.grade-a {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--good) 18%, transparent), transparent 44%),
+    linear-gradient(to right, color-mix(in srgb, var(--line) 34%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--line) 34%, transparent) 1px, transparent 1px),
+    var(--bg);
+  background-size: auto, 34px 34px, 34px 34px;
+}
+
+.latency-phase-chart.result.grade-b,
+.latency-phase-chart.result.grade-c {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--warn) 20%, transparent), transparent 44%),
+    linear-gradient(to right, color-mix(in srgb, var(--line) 34%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--line) 34%, transparent) 1px, transparent 1px),
+    var(--bg);
+  background-size: auto, 34px 34px, 34px 34px;
+}
+
+.latency-phase-chart.result.grade-d {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--bad) 18%, transparent), transparent 44%),
+    linear-gradient(to right, color-mix(in srgb, var(--line) 34%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--line) 34%, transparent) 1px, transparent 1px),
+    var(--bg);
+  background-size: auto, 34px 34px, 34px 34px;
+}
+
+.latency-phase-chart-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.latency-phase-chart-header span {
+  color: var(--muted);
+}
+
+.latency-phase-chart-header strong {
+  color: var(--fg);
   font-weight: 500;
-  line-height: 1;
 }
 
-.latency-sparkline {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: center;
-  padding: 8px 12px 10px;
-  border-top: 1px solid var(--line);
-  background: color-mix(in srgb, var(--fg) 2%, var(--bg));
-}
-
-.latency-sparkline svg {
+.latency-phase-chart svg {
   display: block;
   width: 100%;
-  height: 38px;
+  min-height: 260px;
 }
 
-.latency-sparkline polyline {
-  fill: none;
-  stroke: var(--fg);
-  stroke-width: 2;
+.latency-phase-chart.live svg {
+  height: 176px;
+  min-height: 0;
+}
+
+.latency-phase-chart.result svg {
+  height: 236px;
+  min-height: 0;
+}
+
+.latency-phase-chart .phase-zone {
+  opacity: 0.42;
+}
+
+.latency-phase-chart .phase-zone-idle {
+  fill: color-mix(in srgb, var(--fg) 5%, transparent);
+}
+
+.latency-phase-chart .phase-zone-download {
+  fill: color-mix(in srgb, var(--blue) 10%, transparent);
+}
+
+.latency-phase-chart .phase-zone-upload {
+  fill: color-mix(in srgb, var(--purple) 10%, transparent);
+}
+
+.latency-phase-chart .chart-axis {
+  stroke: color-mix(in srgb, var(--fg) 64%, var(--line));
+  stroke-width: 1.4;
+}
+
+.latency-phase-chart .chart-grid {
+  stroke: color-mix(in srgb, var(--line) 80%, transparent);
+  stroke-width: 1;
+}
+
+.latency-phase-chart .phase-break {
+  stroke: color-mix(in srgb, var(--fg) 22%, var(--line));
+  stroke-dasharray: 5 6;
+  stroke-width: 1.2;
+}
+
+.latency-phase-chart .latency-reference-line,
+.latency-phase-chart .latency-median-line {
   vector-effect: non-scaling-stroke;
 }
 
-.latency-sparkline span {
+.latency-phase-chart .latency-reference-line {
+  stroke: color-mix(in srgb, var(--fg) 34%, var(--line));
+  stroke-dasharray: 5 5;
+  stroke-width: 2;
+}
+
+.latency-phase-chart .latency-median-line {
+  stroke: var(--bad);
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+  stroke-width: 2.4;
+}
+
+.latency-phase-chart .latency-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.latency-phase-chart.live .latency-line {
+  opacity: 0.78;
+  stroke-linecap: square;
+  stroke-linejoin: bevel;
+  stroke-width: 2.4;
+}
+
+.latency-phase-chart.result .latency-line {
+  opacity: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.latency-phase-chart .line-idle {
+  stroke: var(--fg);
+}
+
+.latency-phase-chart .line-download {
+  stroke: var(--blue);
+}
+
+.latency-phase-chart .line-upload {
+  stroke: var(--purple);
+}
+
+.latency-phase-chart .chart-axis-label,
+.latency-phase-chart .chart-phase-label {
+  fill: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+}
+
+.latency-phase-chart .chart-phase-completed-layer {
+  fill: color-mix(in srgb, var(--bg) 72%, var(--line));
+  opacity: 0.64;
+}
+
+.latency-phase-chart .chart-phase-obscured rect {
+  fill: color-mix(in srgb, var(--bg) 82%, var(--line));
+  opacity: 0.92;
+}
+
+.latency-phase-chart .chart-phase-obscured text {
+  fill: color-mix(in srgb, var(--fg) 42%, var(--muted));
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  text-anchor: middle;
+}
+
+.latency-phase-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 0 12px 12px;
   color: var(--muted);
   font-family: var(--font-geist-mono), monospace;
   font-size: 11px;
   line-height: 1.2;
-  white-space: nowrap;
 }
 
-.latency-sparkline.waiting {
-  grid-template-columns: 1fr;
-  min-height: 42px;
+.latency-phase-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.latency-phase-legend span::before {
+  content: "";
+  width: 18px;
+  border-top: 3px solid var(--fg);
+}
+
+.latency-phase-legend .download::before {
+  border-color: var(--blue);
+}
+
+.latency-phase-legend .upload::before {
+  border-color: var(--purple);
+}
+
+.latency-phase-legend .reference::before {
+  border-color: var(--bad);
+  border-top-style: dashed;
+}
+
+.latency-phase-legend .pending::before {
+  border-color: color-mix(in srgb, var(--fg) 34%, var(--line));
+  border-top-style: dotted;
 }
 
 .active-measurement-table {
@@ -719,7 +1178,7 @@
 
   .preflight-layout {
     grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 16px;
   }
 
   .preflight-visual {
@@ -731,11 +1190,11 @@
   }
 
   .preflight-card h1 {
-    font-size: clamp(34px, 11vw, 48px);
+    font-size: clamp(30px, 9vw, 42px);
   }
 
   .preflight-card p {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .preflight-countdown {
@@ -788,14 +1247,15 @@
 
 .result-compact-header {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
-  align-items: start;
-  padding: 12px 16px;
+  grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--line);
 }
 
 .result-compact-header span,
+.result-brand-lockup span,
 .result-scorecard .result-section-heading span,
 .result-scorecard .result-grade p,
 .result-scorecard .result-metric-grid span,
@@ -810,11 +1270,26 @@
   text-transform: none;
 }
 
+.result-brand-lockup {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.result-brand-lockup strong {
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(18px, 2.3vw, 26px);
+  font-weight: 560;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
 .result-compact-header h2 {
   margin: 0;
   color: var(--fg);
   font-family: var(--font-geist-mono), monospace;
-  font-size: clamp(28px, 4vw, 42px);
+  font-size: clamp(24px, 3.2vw, 34px);
   font-weight: 500;
   letter-spacing: 0;
   line-height: 1;
@@ -831,7 +1306,7 @@
 
 .result-scorecard-grid {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
+  grid-template-columns: 136px minmax(0, 1fr);
   gap: 0;
   border-bottom: 1px solid var(--line);
 }
@@ -845,21 +1320,21 @@
 .result-scorecard .result-grade {
   display: grid;
   align-content: center;
-  min-height: 180px;
-  padding: 16px;
+  min-height: 148px;
+  padding: 12px 14px;
   border-right: 1px solid var(--line);
   border-bottom: 0;
 }
 
 .result-scorecard .result-grade p {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
 }
 
 .result-scorecard .result-grade strong {
   display: block;
   color: var(--fg);
   font-family: var(--font-geist-mono), monospace;
-  font-size: clamp(86px, 16vw, 132px);
+  font-size: clamp(74px, 12vw, 108px);
   font-weight: 500;
   letter-spacing: 0;
   line-height: 0.82;
@@ -868,7 +1343,7 @@
 .result-scorecard .result-grade span {
   display: inline-flex;
   width: fit-content;
-  margin-top: 12px;
+  margin-top: 8px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, #2f8f4e 10%, var(--bg));
   color: var(--fg);
@@ -887,7 +1362,7 @@
 
 .result-metric-grid article {
   min-width: 0;
-  padding: 14px;
+  padding: 10px 12px;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: var(--bg);
@@ -907,10 +1382,10 @@
 
 .result-metric-grid strong {
   display: block;
-  margin-top: 8px;
+  margin-top: 6px;
   color: var(--fg);
   font-family: var(--font-geist-mono), monospace;
-  font-size: clamp(23px, 4vw, 38px);
+  font-size: clamp(20px, 3.2vw, 30px);
   font-weight: 500;
   letter-spacing: 0;
   line-height: 1;
@@ -919,13 +1394,13 @@
 
 .result-finding {
   margin: 0;
-  padding: 14px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--fg) 2.5%, var(--bg));
   color: color-mix(in srgb, var(--fg) 86%, var(--muted));
-  font-size: clamp(16px, 2.1vw, 21px);
+  font-size: clamp(14px, 1.8vw, 18px);
   font-weight: 380;
-  line-height: 1.35;
+  line-height: 1.28;
 }
 
 .result-scorecard .result-applications {
@@ -977,6 +1452,7 @@
 
 .reliability-group ul {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
   margin: 0;
   padding: 0;
@@ -989,10 +1465,16 @@
   gap: 2px 8px;
   align-items: center;
   padding: 9px 10px;
+  border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
 
-.reliability-group li:last-child {
+.reliability-group li:nth-child(2n) {
+  border-right: 0;
+}
+
+.reliability-group li:last-child,
+.reliability-group li:nth-last-child(2):nth-child(odd) {
   border-bottom: 0;
 }
 
@@ -1183,18 +1665,51 @@
     margin-top: 18px;
   }
 
+  .foreground-run-notice {
+    gap: 9px;
+    padding: 7px 8px;
+  }
+
+  .foreground-run-notice strong {
+    min-width: 50px;
+    font-size: clamp(20px, 7vw, 27px);
+  }
+
+  .foreground-run-notice span {
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
   .result-compact-header {
     grid-template-columns: 1fr;
-    gap: 6px;
-    padding: 12px;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .result-brand-lockup {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .result-brand-lockup strong {
+    font-size: clamp(17px, 5.5vw, 23px);
+  }
+
+  .result-brand-lockup span {
+    font-size: 10px;
   }
 
   .result-compact-header h2 {
-    font-size: clamp(24px, 8vw, 34px);
+    font-size: clamp(21px, 6.6vw, 29px);
+  }
+
+  .result-compact-header p {
+    font-size: 10px;
   }
 
   .result-scorecard-grid {
-    grid-template-columns: minmax(92px, 0.32fr) minmax(0, 1fr);
+    grid-template-columns: minmax(82px, 0.28fr) minmax(0, 1fr);
   }
 
   .result-scorecard .result-grade {
@@ -1203,7 +1718,7 @@
     align-content: start;
     align-items: start;
     min-height: 0;
-    padding: 10px 12px;
+    padding: 9px 10px;
     border-right: 1px solid var(--line);
     border-bottom: 0;
   }
@@ -1213,13 +1728,13 @@
   }
 
   .result-scorecard .result-grade strong {
-    font-size: clamp(58px, 17vw, 78px);
+    font-size: clamp(50px, 15vw, 66px);
   }
 
   .result-scorecard .result-grade span {
     margin-top: 0;
-    padding: 4px 6px;
-    font-size: 10px;
+    padding: 3px 5px;
+    font-size: 9px;
   }
 
   .result-metric-grid {
@@ -1227,7 +1742,7 @@
   }
 
   .result-metric-grid article {
-    padding: 10px;
+    padding: 8px;
   }
 
   .result-metric-grid article:nth-child(3n) {
@@ -1253,12 +1768,13 @@
   }
 
   .result-metric-grid strong {
-    font-size: clamp(20px, 6vw, 27px);
+    font-size: clamp(17px, 5.2vw, 23px);
   }
 
   .result-finding {
-    padding: 12px;
-    font-size: 14px;
+    padding: 9px 10px;
+    font-size: 12px;
+    line-height: 1.25;
   }
 
   .result-scorecard .result-applications {
@@ -1270,6 +1786,10 @@
     gap: 10px;
   }
 
+  .reliability-group ul {
+    grid-template-columns: 1fr;
+  }
+
   .reliability-group h3 {
     padding: 7px 8px;
   }
@@ -1278,6 +1798,15 @@
     grid-template-columns: 22px minmax(0, 1fr) auto;
     gap: 6px;
     padding: 7px 8px;
+    border-right: 0;
+  }
+
+  .reliability-group li:nth-last-child(2):nth-child(odd) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .reliability-group li:last-child {
+    border-bottom: 0;
   }
 
   .reliability-symbol {
@@ -1338,6 +1867,10 @@
     grid-template-columns: 1fr;
   }
 
+  .live-chart-layout {
+    grid-template-columns: 1fr;
+  }
+
   .live-measurement-strip .active-measurement-header {
     border-right: 0;
     border-bottom: 1px solid var(--line);
@@ -1357,16 +1890,24 @@
   }
 
   .live-measurement-grid dd {
-    font-size: clamp(17px, 5vw, 22px);
+    font-size: clamp(15px, 4.2vw, 20px);
   }
 
-  .latency-sparkline {
-    grid-template-columns: 1fr;
-    gap: 6px;
+  .latency-phase-chart svg {
+    min-height: 220px;
   }
 
-  .latency-sparkline span {
-    white-space: normal;
+  .latency-phase-chart.result svg {
+    height: 136px;
+  }
+
+  .latency-phase-chart-header {
+    display: grid;
+    gap: 4px;
+  }
+
+  .latency-phase-legend {
+    gap: 8px 10px;
   }
 }
 

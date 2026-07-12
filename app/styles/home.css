@@ -116,16 +116,16 @@
   max-width: 860px;
   margin: 0;
   font-family: var(--font-geist-mono), monospace;
-  font-size: clamp(58px, 10vw, 118px);
+  font-size: clamp(44px, 5vw, 70px);
   font-weight: 500;
-  line-height: 0.92;
+  line-height: 1;
   letter-spacing: 0;
 }
 
 .home-shell .home-as-test.hero-panel h1 {
   margin: 0;
-  font-size: clamp(58px, 10vw, 118px);
-  line-height: 0.92;
+  font-size: clamp(44px, 5vw, 70px);
+  line-height: 1;
   letter-spacing: 0;
 }
 
@@ -288,7 +288,7 @@
 
 .instrument-metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 0;
   border-bottom: 1px solid var(--line);
 }
@@ -319,7 +319,7 @@
 .instrument-metrics dd {
   margin-top: 7px;
   color: var(--fg);
-  font-size: clamp(18px, 2.2vw, 24px);
+  font-size: clamp(17px, 1.8vw, 22px);
   font-weight: 500;
 }
 
@@ -331,7 +331,7 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 190px;
+  max-height: 230px;
 }
 
 .instrument-trace .trace-axis {
@@ -349,7 +349,7 @@
 }
 
 .instrument-trace .trace-zone-quiet {
-  fill: color-mix(in srgb, var(--good) 12%, transparent);
+  fill: color-mix(in srgb, var(--fg) 5%, transparent);
 }
 
 .instrument-trace .trace-zone-download {
@@ -357,7 +357,13 @@
 }
 
 .instrument-trace .trace-zone-upload {
-  fill: color-mix(in srgb, var(--bad) 11%, transparent);
+  fill: color-mix(in srgb, var(--purple) 10%, transparent);
+}
+
+.instrument-trace .trace-phase-break {
+  stroke: color-mix(in srgb, var(--fg) 18%, var(--line));
+  stroke-dasharray: 4 5;
+  stroke-width: 1.2;
 }
 
 .instrument-trace .trace-line {
@@ -367,18 +373,47 @@
   stroke-linecap: round;
 }
 
-.instrument-trace .trace-line-quiet {
-  stroke: var(--good);
+.instrument-trace .trace-line-reference,
+.instrument-trace .legend-reference {
+  stroke: color-mix(in srgb, var(--fg) 34%, var(--line));
+  stroke-dasharray: 4 4;
 }
 
-.instrument-trace .trace-line-load {
-  stroke: var(--bad);
+.instrument-trace .trace-line-quiet,
+.instrument-trace .legend-quiet {
+  stroke: var(--fg);
 }
 
-.instrument-trace .trace-label {
+.instrument-trace .trace-line-download,
+.instrument-trace .legend-download {
+  stroke: var(--blue);
+}
+
+.instrument-trace .trace-line-upload,
+.instrument-trace .legend-upload {
+  stroke: var(--purple);
+}
+
+.instrument-trace .trace-legend line {
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.instrument-trace .trace-legend text {
+  fill: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 10px;
+}
+
+.instrument-trace .trace-label,
+.instrument-trace .trace-axis-label {
   fill: var(--muted);
   font-family: var(--font-geist-mono), monospace;
   font-size: 11px;
+}
+
+.instrument-trace .trace-axis-label {
+  font-size: 10px;
 }
 
 .home-hero-instrument p {
@@ -431,11 +466,20 @@
   }
 
   .instrument-metrics {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .instrument-metrics div {
     padding: 10px 8px;
+    border-bottom: 0;
+  }
+
+  .instrument-metrics div:nth-child(2n) {
+    border-right: 1px solid var(--line);
+  }
+
+  .instrument-metrics div:last-child {
+    border-right: 0;
   }
 
   .instrument-metrics dt {
@@ -443,15 +487,21 @@
   }
 
   .instrument-metrics dd {
-    font-size: 17px;
+    font-size: 15px;
   }
 
   .instrument-trace {
-    padding: 8px 10px 4px;
+    padding: 7px 9px 3px;
   }
 
   .instrument-trace svg {
-    max-height: 150px;
+    max-height: 118px;
+  }
+
+  .home-hero-instrument p {
+    padding: 9px;
+    font-size: 12px;
+    line-height: 1.4;
   }
 
   .project-index {
@@ -638,131 +688,6 @@
   color: color-mix(in srgb, var(--fg) 72%, var(--muted));
   font-size: 16px;
   line-height: 1.62;
-}
-
-.latency-trace-panel {
-  margin-top: 24px;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  padding: 24px;
-}
-
-.trace-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 24px;
-  align-items: start;
-}
-
-.trace-header h2 {
-  max-width: 620px;
-  margin: 0;
-  font-family: var(--font-geist-sans), Arial, sans-serif;
-  font-size: 30px;
-  line-height: 1.2;
-  letter-spacing: 0;
-}
-
-.trace-summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(96px, 1fr));
-  gap: 0;
-  margin: 0;
-  border-top: 1px solid var(--line);
-  border-left: 1px solid var(--line);
-}
-
-.trace-summary div {
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding: 10px 12px;
-}
-
-.trace-summary dt {
-  color: var(--muted);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 11px;
-  line-height: 1.3;
-}
-
-.trace-summary dd {
-  margin: 8px 0 0;
-  color: var(--fg);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 1;
-}
-
-.latency-chart {
-  margin-top: 26px;
-  border: 1px solid var(--line);
-  background:
-    linear-gradient(to right, color-mix(in srgb, var(--line) 42%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--line) 42%, transparent) 1px, transparent 1px);
-  background-size: 72px 52px;
-  overflow: hidden;
-}
-
-.latency-chart svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.latency-chart .axis {
-  stroke: color-mix(in srgb, var(--fg) 72%, var(--line));
-  stroke-width: 1.4;
-}
-
-.latency-chart .grid-line {
-  stroke: var(--line);
-  stroke-width: 1;
-}
-
-.latency-chart .axis-label,
-.latency-chart .phase-label {
-  fill: var(--muted);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 12px;
-}
-
-.latency-chart .phase {
-  opacity: 0.36;
-}
-
-.latency-chart .phase-quiet {
-  fill: color-mix(in srgb, var(--good) 10%, transparent);
-}
-
-.latency-chart .phase-download {
-  fill: color-mix(in srgb, var(--blue) 9%, transparent);
-}
-
-.latency-chart .phase-upload {
-  fill: color-mix(in srgb, var(--bad) 10%, transparent);
-}
-
-.latency-chart .latency-line {
-  fill: none;
-  stroke-width: 4;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-
-.latency-chart .baseline-line {
-  stroke: var(--good);
-}
-
-.latency-chart .loaded-line {
-  stroke: var(--bad);
-}
-
-.trace-caption {
-  margin: 14px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.55;
 }
 
 .home-reference-panel,
@@ -1107,22 +1032,9 @@
     grid-template-columns: 1fr;
   }
 
-  .trace-header {
-    grid-template-columns: 1fr;
-  }
-
-  .trace-header h2,
   .home-reference-panel h2,
   .resource-note h2 {
     font-size: 24px;
-  }
-
-  .trace-summary {
-    grid-template-columns: 1fr;
-  }
-
-  .latency-trace-panel {
-    padding: 16px;
   }
 }
 
@@ -1193,7 +1105,6 @@
 .home-as-test h1,
 .home-shell .home-as-test.hero-panel h1,
 .home-grid h2,
-.trace-header h2,
 .home-reference-panel h2,
 .resource-note h2,
 .learning-resource-list h3,
@@ -1208,7 +1119,6 @@
 .home-as-test .hero-description,
 .home-grid p,
 .project-principles p,
-.trace-caption,
 .home-reference-panel p,
 .resource-note p,
 .learning-resource-list p,
@@ -1224,8 +1134,6 @@
 .project-index dd,
 .home-grid span,
 .project-principles span,
-.trace-summary dt,
-.trace-summary dd,
 .resource-grid span,
 .resource-grid h2,
 .mission-closing {
