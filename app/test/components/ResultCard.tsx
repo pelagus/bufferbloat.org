@@ -4,6 +4,18 @@ import type { ReactNode } from "react";
 import type { Grade } from "../../../lib/test-copy";
 import { severityClass } from "./diagnosis";
 
+type TechnicalRow = {
+  section: string;
+  metric: string;
+  value: string;
+  unit?: string;
+  note: string;
+};
+
+function csvCell(value: string) {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
 export default function ResultCard({
   grade,
   diagnosis,
@@ -43,17 +55,38 @@ export default function ResultCard({
     detail: string;
   }>;
   chartSlot?: ReactNode;
-  technicalRows: Array<{
-    metric: string;
-    value: string;
-    note: string;
-  }>;
+  technicalRows: TechnicalRow[];
   signupSlot?: ReactNode;
 }) {
   const formattedMeasuredAt = new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(measuredAt));
+
+  function exportTechnicalDetails() {
+    const rows = [
+      ["Section", "Metric", "Value", "Unit", "Notes"],
+      ...technicalRows.map((row) => [
+        row.section,
+        row.metric,
+        row.value,
+        row.unit ?? "",
+        row.note,
+      ]),
+    ];
+    const csv = `${rows.map((row) => row.map(csvCell).join(",")).join("\n")}\n`;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const dateSlug = measuredAt.slice(0, 10);
+
+    link.href = url;
+    link.download = `bufferbloat-test-details-${dateSlug}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <section className="result-card result-scorecard terminal-card">
@@ -123,7 +156,23 @@ export default function ResultCard({
       {signupSlot}
 
       <details className="technical-details">
-        <summary>Technical details</summary>
+        <summary>
+          <span className="technical-summary-label">Technical details</span>
+          <button
+            aria-label="Export technical details as CSV"
+            className="technical-export-button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              exportTechnicalDetails();
+            }}
+            title="Export technical details as CSV"
+            type="button"
+          >
+            <span aria-hidden="true">⇩</span>
+            CSV
+          </button>
+        </summary>
         <div className="result-summary-grid scored">
           {scoredMeasurements.map((item) => (
             <article key={item.label}>
@@ -137,16 +186,20 @@ export default function ResultCard({
         <table>
           <thead>
             <tr>
+              <th>Section</th>
               <th>Metric</th>
               <th>Value</th>
+              <th>Unit</th>
               <th>Notes</th>
             </tr>
           </thead>
           <tbody>
             {technicalRows.map((row) => (
-              <tr key={row.metric}>
-                <th scope="row">{row.metric}</th>
+              <tr key={`${row.section}-${row.metric}`}>
+                <th scope="row">{row.section}</th>
+                <td>{row.metric}</td>
                 <td>{row.value}</td>
+                <td>{row.unit ?? "—"}</td>
                 <td>{row.note}</td>
               </tr>
             ))}
@@ -154,7 +207,7 @@ export default function ResultCard({
         </table>
       </details>
 
-      <a className="methodology-row" href="/docs">
+      <a className="methodology-row" href="/docs" rel="noopener noreferrer" target="_blank">
         Measurement methodology
         <span aria-hidden="true">›</span>
       </a>

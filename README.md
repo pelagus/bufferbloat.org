@@ -65,7 +65,8 @@ The project provides:
 
 ## What the test measures
 
-The browser performs three measurement phases:
+The browser test starts with a short warm-up, then records three scored
+measurement phases:
 
 1. Quiet-line latency
 2. Download latency under load
@@ -80,6 +81,12 @@ Results include:
 - Upload throughput
 - Overall responsiveness grade
 - Plain-language diagnosis
+- Structured technical details
+- CSV export of the measurement record
+
+The result grade is primarily about latency stability under load. Throughput is
+reported because it matters for real applications, but low bandwidth by itself
+is not treated as bufferbloat.
 
 ---
 

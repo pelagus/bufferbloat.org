@@ -67,6 +67,11 @@ function formatDuration(seconds: number | null) {
   return `${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
+function formatLatencyRange(samples: number[]) {
+  if (samples.length === 0) return "—";
+  return `${formatLatency(Math.min(...samples))}–${formatLatency(Math.max(...samples))}`;
+}
+
 function smoothPath(points: Array<{ x: number; y: number }>) {
   if (points.length === 0) return "";
   if (points.length === 1) {
@@ -568,6 +573,159 @@ export default function Page() {
     uploadLatency
   );
   const underLoadLatency = loadedLatency(downloadLatency, uploadLatency);
+  const applicationRankingsResult = applicationRankingsFor(
+    idle,
+    downloadLatency,
+    uploadLatency,
+    downloadDelta,
+    uploadDelta,
+    downloadMbps,
+    uploadMbps
+  );
+  const totalScoredSamples = sampleCounts.idle + sampleCounts.download + sampleCounts.upload;
+  const technicalRows = [
+    {
+      section: "Report",
+      metric: "Grade",
+      value: grade,
+      note: diagnosis.label,
+    },
+    {
+      section: "Report",
+      metric: "Measured at",
+      value: resultMeasuredAt ?? new Date().toISOString(),
+      note: "Local browser measurement time recorded when the run completed.",
+    },
+    {
+      section: "Report",
+      metric: "Test duration",
+      value: formatDuration(resultDurationSeconds),
+      note: "Elapsed time from measurement start through result computation.",
+    },
+    {
+      section: "Latency medians",
+      metric: "Quiet median latency",
+      value: formatLatency(idle),
+      unit: "ms",
+      note: "Baseline response time before download or upload load.",
+    },
+    {
+      section: "Latency medians",
+      metric: "Download-loaded latency",
+      value: formatLatency(downloadLatency),
+      unit: "ms",
+      note: `Median response time while ${DOWNLOAD_STREAM_LABEL} were active.`,
+    },
+    {
+      section: "Latency medians",
+      metric: "Upload-loaded latency",
+      value: formatLatency(uploadLatency),
+      unit: "ms",
+      note: `Median response time while ${UPLOAD_STREAM_LABEL} were active.`,
+    },
+    {
+      section: "Latency changes",
+      metric: "Download stress",
+      value: formatDelta(downloadDelta).replace(" ms", ""),
+      unit: "ms",
+      note: "Download-loaded median minus quiet median.",
+    },
+    {
+      section: "Latency changes",
+      metric: "Upload stress",
+      value: formatDelta(uploadDelta).replace(" ms", ""),
+      unit: "ms",
+      note: "Upload-loaded median minus quiet median.",
+    },
+    {
+      section: "Latency changes",
+      metric: "Worst loaded latency",
+      value: formatLatency(underLoadLatency),
+      unit: "ms",
+      note: "Higher of the download-loaded and upload-loaded medians.",
+    },
+    {
+      section: "Throughput",
+      metric: "Download throughput",
+      value: formatSpeed(downloadMbps),
+      unit: "Mbps",
+      note: DOWNLOAD_TEST_SIZE,
+    },
+    {
+      section: "Throughput",
+      metric: "Upload throughput",
+      value: formatSpeed(uploadMbps),
+      unit: "Mbps",
+      note: UPLOAD_TEST_SIZE,
+    },
+    {
+      section: "Samples",
+      metric: "Quiet scored samples",
+      value: String(sampleCounts.idle),
+      note: `Recorded range: ${formatLatencyRange(latencySamples.idle)} ms.`,
+    },
+    {
+      section: "Samples",
+      metric: "Download scored samples",
+      value: String(sampleCounts.download),
+      note: `Recorded range: ${formatLatencyRange(latencySamples.download)} ms.`,
+    },
+    {
+      section: "Samples",
+      metric: "Upload scored samples",
+      value: String(sampleCounts.upload),
+      note: `Recorded range: ${formatLatencyRange(latencySamples.upload)} ms.`,
+    },
+    {
+      section: "Samples",
+      metric: "Total scored latency samples",
+      value: String(totalScoredSamples || latencySampleCount),
+      note: "Samples used for the displayed medians and latency-under-load grade.",
+    },
+    {
+      section: "Method",
+      metric: "Latency probe",
+      value: "Cloudflare Speed 1-byte endpoint",
+      note: "Separate from the download file origin.",
+    },
+    {
+      section: "Method",
+      metric: "Download load",
+      value: DOWNLOAD_STREAM_LABEL,
+      note: DOWNLOAD_TEST_SIZE,
+    },
+    {
+      section: "Method",
+      metric: "Upload load",
+      value: UPLOAD_STREAM_LABEL,
+      note: UPLOAD_TEST_SIZE,
+    },
+    {
+      section: "Method",
+      metric: "Warm-up",
+      value: "Excluded from medians",
+      note: "Short pre-measurement requests prepare the browser session before scoring begins.",
+    },
+    {
+      section: "Method",
+      metric: "Settling period",
+      value: "First 4 seconds excluded",
+      note: "Download and upload traffic reaches a steadier rate before loaded medians are scored.",
+    },
+    ...applicationRankingsResult.map((item, index) => ({
+      section: "Application fit",
+      metric: `${index + 1}. ${item.name}`,
+      value: String(item.score),
+      unit: "/100",
+      note: `${item.label}. Ranked using measured latency under load, latency movement, and relevant throughput.`,
+    })),
+    {
+      section: "Privacy",
+      metric: "Export contents",
+      value: "Measurement data only",
+      note: "No IP address, location, browser fingerprint, or device identity is included.",
+    },
+  ];
 
   return (
     <main className="test-shell">
@@ -753,15 +911,7 @@ export default function Page() {
             uploadLatency,
             downloadMbps
           )}
-          applicationRankings={applicationRankingsFor(
-            idle,
-            downloadLatency,
-            uploadLatency,
-            downloadDelta,
-            uploadDelta,
-            downloadMbps,
-            uploadMbps
-          )}
+          applicationRankings={applicationRankingsResult}
           scoredMeasurements={[
             {
               label: "Idle median",
@@ -785,63 +935,7 @@ export default function Page() {
           chartSlot={
             <LatencyPhaseChart samples={latencySamples} mode="result" grade={grade} />
           }
-          technicalRows={[
-            {
-              metric: "Test duration",
-              value: formatDuration(resultDurationSeconds),
-              note: "Elapsed time from measurement start through result computation.",
-            },
-            {
-              metric: "Quiet median latency",
-              value: `${formatLatency(idle)} ms`,
-              note: "Baseline ping median before load.",
-            },
-            {
-              metric: "Download-loaded latency",
-              value: `${formatLatency(downloadLatency)} ms`,
-              note: `Median while ${DOWNLOAD_STREAM_LABEL} were active.`,
-            },
-            {
-              metric: "Upload-loaded latency",
-              value: `${formatLatency(uploadLatency)} ms`,
-              note: `Median while ${UPLOAD_STREAM_LABEL} were active.`,
-            },
-            {
-              metric: "Download latency change",
-              value: formatDelta(downloadDelta),
-              note: "Loaded median minus quiet median.",
-            },
-            {
-              metric: "Upload latency change",
-              value: formatDelta(uploadDelta),
-              note: "Loaded median minus quiet median.",
-            },
-            {
-              metric: "Download throughput",
-              value: `${formatSpeed(downloadMbps)} Mbps`,
-              note: DOWNLOAD_TEST_SIZE,
-            },
-            {
-              metric: "Upload throughput",
-              value: `${formatSpeed(uploadMbps)} Mbps`,
-              note: UPLOAD_TEST_SIZE,
-            },
-            {
-              metric: "Latency probe",
-              value: "Cloudflare Speed 1-byte endpoint",
-              note: "Separate from the download file origin.",
-            },
-            {
-              metric: "Warm-up",
-              value: "Excluded from medians",
-              note: "Small ping, download, and upload requests prepare the browser session.",
-            },
-            {
-              metric: "Settling period",
-              value: "First 4 seconds excluded",
-              note: "Download and upload traffic reaches a steady rate before medians are scored.",
-            },
-          ]}
+          technicalRows={technicalRows}
           signupSlot={<SignupBox />}
         />
       </div>
