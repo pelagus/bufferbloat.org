@@ -1,3 +1,20 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Command-Line Bufferbloat Testing",
+  description:
+    "Status page for planned command-line bufferbloat testing. The current public Bufferbloat.org test runs in the browser.",
+  alternates: {
+    canonical: "https://bufferbloat.org/cli",
+  },
+  openGraph: {
+    title: "Command-Line Bufferbloat Testing",
+    description:
+      "Planned repeatable diagnostics outside the browser for Bufferbloat.org.",
+    url: "https://bufferbloat.org/cli",
+  },
+};
+
 export default function Page() {
   return (
     <main className="page-shell resource-page">

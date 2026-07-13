@@ -10,6 +10,8 @@
   --bad: #ff6266;
   --blue: #45a3ff;
   --purple: #b86cff;
+  --action: #167a3e;
+  --action-strong: #0f5f30;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,6 +22,8 @@
     --soft: #101010;
     --line: #303030;
     --line-strong: #eeeeee;
+    --action: #2fa866;
+    --action-strong: #45c17d;
   }
 }
 
@@ -1114,7 +1118,7 @@ button:disabled {
   }
 }
 
-/* Final responsive tuning */
+/* Final adaptive layout tuning */
 
 .site-nav {
   width: min(980px, calc(100% - 32px));

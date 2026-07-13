@@ -370,30 +370,30 @@ function findingFor(
         : "Neither loaded phase added meaningful delay.";
 
   if (grade === "F" || grade === "D" || grade === "C") {
-    return `Latency rose from ${typical} to ${underLoad} under load. Download was ${downloadText}; upload was ${uploadText}. ${direction}`;
+    return `Latency / ping rose from ${typical} to ${underLoad} under load. Download was ${downloadText}; upload was ${uploadText}. ${direction}`;
   }
 
   if (grade === "B") {
-    return `Latency rose from ${typical} to ${underLoad} under load. Download was ${downloadText}; upload was ${uploadText}. ${direction}`;
+    return `Latency / ping rose from ${typical} to ${underLoad} under load. Download was ${downloadText}; upload was ${uploadText}. ${direction}`;
   }
 
   if (grade === "A+" || grade === "A") {
     if (grade === "A+") {
-      return `Exceptional result. Latency stayed near ${typical} under load, with worst loaded latency at ${underLoad}.`;
+      return `Exceptional result. Latency / ping stayed near ${typical} under load, with worst loaded value at ${underLoad}.`;
     }
 
     if ((idle ?? 0) < 100) {
-      return `Excellent bufferbloat result. Latency stayed close to ${typical} under load, with worst loaded latency at ${underLoad}.`;
+      return `Excellent bufferbloat result. Latency / ping stayed close to ${typical} under load, with worst loaded value at ${underLoad}.`;
     }
 
     if ((idle ?? 0) <= 120) {
-      return `Excellent bufferbloat result. Latency stayed close to ${typical} under load; baseline latency is moderate, but the connection remained stable.`;
+      return `Excellent bufferbloat result. Latency / ping stayed close to ${typical} under load; baseline is moderate, but the connection remained stable.`;
     }
 
-    return `Excellent bufferbloat result. Latency stayed close to ${typical} under load, though baseline latency is already high before the connection gets busy.`;
+    return `Excellent bufferbloat result. Latency / ping stayed close to ${typical} under load, though the baseline is already high before the connection gets busy.`;
   }
 
-  return `This run measured ${formatSpeed(downloadMbps)} Mbps download, but did not produce a complete latency-under-load result.`;
+  return `This run measured ${formatSpeed(downloadMbps)} Mbps download, but did not produce a complete latency / ping under load result.`;
 }
 
 function applicationRankingsFor(
@@ -916,7 +916,7 @@ export default function Page() {
       section: "Samples",
       metric: "Total scored latency samples",
       value: String(totalScoredSamples || latencySampleCount),
-      note: "Samples used for the displayed medians and latency-under-load grade.",
+      note: "Samples used for the displayed medians and bufferbloat grade.",
     },
     {
       section: "Method",
@@ -970,20 +970,20 @@ export default function Page() {
           <div className="hero-grid">
             <div className="hero-copy">
               <div className="hero-kicker">
-                NETWORK RESPONSIVENESS DIAGNOSTIC
+                INTERNET RELIABILITY DIAGNOSTIC
               </div>
 
               <h1>Bufferbloat test</h1>
 
               <p className="hero-subtitle">
-                Measure whether your internet connection stays responsive while
+                Measure whether your internet connection stays reliable while
                 download and upload traffic are active.
               </p>
 
               <p className="hero-description">
-                The test compares normal latency with latency under load. It
-                normally takes less than a minute and is designed to be faster
-                than the alternative.
+                The bufferbloat test compares normal latency with latency under
+                load. It normally takes less than a minute and is designed to be
+                faster than the alternative.
               </p>
 
               <button
@@ -1075,7 +1075,7 @@ export default function Page() {
           <TestProcedurePanel
             phase="analysis"
             status="analysis"
-            message="Comparing normal latency with latency during download and upload."
+            message="Comparing normal latency / ping with latency / ping during download and upload."
             phaseDetail={getPhaseDetail("analysis", "analysis")}
             sampleCount={latencySampleCount}
             idle={idle}
@@ -1091,7 +1091,7 @@ export default function Page() {
               <div>
                 <p>Calculating report...</p>
                 <small>
-                  Comparing normal latency with latency during download and upload.
+                  Comparing normal latency / ping with latency / ping during download and upload.
                 </small>
               </div>
             </div>
@@ -1112,7 +1112,7 @@ export default function Page() {
           measuredAt={resultMeasuredAt ?? new Date().toISOString()}
           scorecardMetrics={[
             {
-              label: "Latency",
+              label: "Latency / ping",
               value: `${formatLatency(idle)} ms`,
             },
             {
@@ -1355,15 +1355,15 @@ function LatencyPhaseChart({
       : "";
 
   return (
-    <section className={`latency-phase-chart ${mode} ${gradeClass}`} aria-label="Latency samples by test phase">
+    <section className={`latency-phase-chart ${mode} ${gradeClass}`} aria-label="Latency / ping samples by test phase">
       <div className="latency-phase-chart-header">
-        <span>{mode === "result" ? "measured latency trace" : "live latency trace"}</span>
-        <strong>Latency in milliseconds</strong>
+        <span>{mode === "result" ? "measured latency / ping trace" : "live latency / ping trace"}</span>
+        <strong>Latency / ping in milliseconds</strong>
       </div>
 
       <svg viewBox="0 0 720 330" role="img" aria-labelledby={`latency-phase-chart-${mode}`}>
         <title id={`latency-phase-chart-${mode}`}>
-          Latency samples during quiet, download, and upload phases
+          Latency / ping samples during quiet, download, and upload phases
         </title>
 
         <rect className="phase-zone phase-zone-idle" x={chart.left} y={chart.top} width={phaseWidth} height={chart.height} />
@@ -1451,7 +1451,7 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
   if (phase === "idle") {
     return {
       eyebrow: "Step 2 of 5",
-      title: "Measuring normal latency",
+      title: "Measuring normal latency / ping",
       detail:
         "This records how fast the connection responds before download or upload traffic is added.",
     };
@@ -1486,14 +1486,14 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
       eyebrow: "Step 5 of 5",
       title: "Calculating the report",
       detail:
-        "The report compares normal latency with latency during download and upload.",
+        "The report compares normal latency / ping with latency / ping during download and upload.",
     };
   }
 
   return {
     eyebrow: "Ready",
     title: "Ready to test",
-    detail: "Start a run to measure normal latency and latency under load.",
+    detail: "Start a run to measure normal latency / ping and latency / ping under load.",
   };
 }
 

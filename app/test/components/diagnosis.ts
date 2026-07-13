@@ -40,7 +40,7 @@ export function diagnosisFor(
       label: "Weak",
       bullets: [
         "Speed was very low, so normal browsing may already feel slow.",
-        "Loaded latency still matters, but this run mainly shows limited capacity.",
+        "Loaded latency / ping still matters, but this run mainly shows limited capacity.",
         "Repeat the test later with the same device and location.",
       ],
     };
@@ -49,11 +49,11 @@ export function diagnosisFor(
   if (grade === "F" || grade === "D" || grade === "C") {
     return {
       headline: uploadWorse
-        ? "Latency rose most during upload."
+        ? "Latency / ping rose most during upload."
         : downloadWorse
-        ? "Latency rose most during download."
+        ? "Latency / ping rose most during download."
         : grade === "F"
-          ? "Latency collapsed under load."
+          ? "Latency / ping collapsed under load."
           : "Your connection becomes unstable under load.",
       label: grade === "F" ? "Severe" : grade === "D" ? "Poor" : "Uneven",
       bullets: [
@@ -73,7 +73,7 @@ export function diagnosisFor(
       headline: "Everything measured very reliably in this run.",
       label: "Very reliable",
       bullets: [
-        "Latency stayed very low while the connection was busy.",
+        "Latency / ping stayed very low while the connection was busy.",
         "Upload and download stress did not add meaningful delay.",
         "Repeat later to confirm consistency.",
       ],
@@ -81,7 +81,7 @@ export function diagnosisFor(
   }
 
   return {
-    headline: "Your connection stayed reasonably responsive in this run.",
+    headline: "Your internet looked reliable in this run.",
     label: "Stable",
     bullets: [
       "Lag did not spike while the connection was busy.",

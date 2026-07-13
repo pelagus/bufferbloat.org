@@ -1,6 +1,7 @@
 # Measurement Methodology
 
-bufferbloat.org measures browser-observable responsiveness under load.
+bufferbloat.org is a browser-based bufferbloat test for measuring internet
+reliability under load.
 
 The goal is to estimate whether latency increases significantly when a
 connection is busy. The test is designed as a transparent diagnostic signal, not
@@ -102,7 +103,8 @@ CSV file for independent inspection or comparison.
 
 ## Grading
 
-The responsiveness grade compares quiet latency with latency under download and upload pressure.
+The bufferbloat grade compares quiet latency with latency under download and
+upload pressure.
 
 Grades should be stable enough that repeated tests on the same connection do not jump wildly because of one noisy sample.
 

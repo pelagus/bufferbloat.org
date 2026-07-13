@@ -1,6 +1,7 @@
 # Architecture
 
-bufferbloat.org is a small Next.js App Router application focused on measuring latency under network load.
+bufferbloat.org is a small Next.js App Router application for the public
+browser-based bufferbloat test.
 
 ## Test phases
 
@@ -14,7 +15,7 @@ The final result combines:
 - baseline latency
 - loaded latency
 - throughput
-- responsiveness grade
+- bufferbloat grade
 - diagnosis text
 
 ## Important files
@@ -38,7 +39,7 @@ Responsible for:
 - running state
 - rendering test phases
 - diagnosis rendering
-- responsive behavior
+- adaptive layout behavior
 
 ### app/styles/
 
@@ -46,7 +47,7 @@ CSS split by concern:
 - legacy.css
 - home.css
 - test.css
-- responsive.css
+- responsive.css for adaptive layout rules
 - nav.css
 
 ## UX constraints

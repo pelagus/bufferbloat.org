@@ -1,3 +1,20 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Bufferbloat Test Methodology",
+  description:
+    "Technical notes for the Bufferbloat.org browser test: warm-up, latency under load, download stress, upload stress, scoring, privacy, and CSV export.",
+  alternates: {
+    canonical: "https://bufferbloat.org/docs",
+  },
+  openGraph: {
+    title: "Bufferbloat Test Methodology",
+    description:
+      "Inspect how Bufferbloat.org measures internet reliability and latency under load in the browser.",
+    url: "https://bufferbloat.org/docs",
+  },
+};
+
 export default function Page() {
   return (
     <main className="page-shell resource-page">

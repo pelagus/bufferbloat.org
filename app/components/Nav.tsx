@@ -8,7 +8,9 @@ export default function Nav() {
       </Link>
 
       <div className="site-links">
-        <Link href="/test">test</Link>
+        <Link href="/test" className="nav-test-link">
+          run test
+        </Link>
         <Link href="/mission">mission</Link>
         <Link href="/learn">learn</Link>
         <Link href="/docs">docs</Link>

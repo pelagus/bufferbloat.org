@@ -17,19 +17,19 @@ export const diagnosisCopy: Record<
   "—": {
     summary: "Ready to test.",
     impact: "The test has not run yet.",
-    fix: "Start the test to measure responsiveness under load.",
+    fix: "Start the bufferbloat test to measure internet reliability under load.",
   },
   "A+": {
     summary: "Excellent under pressure.",
     impact:
-      "Latency stayed very low and very stable while the connection was busy.",
-    fix: "No responsiveness issue detected.",
+      "Latency / ping stayed very low and very stable while the connection was busy.",
+    fix: "No bufferbloat issue detected.",
   },
   A: {
     summary: "Stable under pressure.",
     impact:
-      "Your connection stayed responsive while busy, which is what matters for calls, games, and everyday browsing.",
-    fix: "No major responsiveness issue detected.",
+      "Your connection stayed reliable while busy, which is what matters for calls, games, and everyday browsing.",
+    fix: "No major bufferbloat issue detected.",
   },
   B: {
     summary: "Mostly stable under pressure.",
@@ -51,9 +51,9 @@ export const diagnosisCopy: Record<
       "Look for Smart Queue Management on your router. The technical names to search for are SQM, CAKE, or fq_codel.",
   },
   F: {
-    summary: "Severe latency collapse under load.",
+    summary: "Severe latency / ping collapse under load.",
     impact:
-      "Latency rose dramatically while the connection was busy. Real-time applications are likely to stall whenever upload or download traffic competes for the line.",
+      "Latency / ping rose dramatically while the connection was busy. Real-time applications are likely to stall whenever upload or download traffic competes for the line.",
     fix:
       "This is the clearest case for router-level Smart Queue Management. Search for SQM, CAKE, or fq_codel support on your router.",
   },

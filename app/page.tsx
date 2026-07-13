@@ -1,22 +1,42 @@
 import Link from "next/link";
 
+const homeStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Bufferbloat.org",
+  url: "https://bufferbloat.org",
+  applicationCategory: "NetworkApplication",
+  operatingSystem: "Any modern browser",
+  isAccessibleForFree: true,
+  description:
+    "An open-source browser-based bufferbloat test for measuring internet reliability and latency under load.",
+  codeRepository: "https://github.com/pelagus/bufferbloat.org",
+};
+
 export default function Home() {
   return (
     <main className="home-shell">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(homeStructuredData),
+        }}
+      />
+
       <section className="hero-panel home-as-test">
         <div className="home-hero-grid">
           <div className="hero-copy">
             <div className="home-project-label">
               <span>open-source project</span>
-              <span>browser measurement</span>
+              <span>browser bufferbloat test</span>
               <span>methodology public</span>
             </div>
 
             <h1>Bufferbloat.org</h1>
 
             <p className="hero-subtitle">
-              An open-source test for latency under load: the lag that appears
-              when your connection is busy.
+              An open-source bufferbloat test for internet reliability: the lag
+              that appears when your connection is busy.
             </p>
 
             <p className="home-hero-description">
@@ -28,7 +48,7 @@ export default function Home() {
 
             <div className="home-hero-actions">
               <Link href="/test" className="hero-start-button">
-                Run measurement
+                Run test
               </Link>
 
               <div className="home-hero-links" aria-label="Project references">
@@ -47,10 +67,10 @@ export default function Home() {
 
           <aside
             className="home-hero-instrument"
-            aria-label="Example latency under load measurement"
+            aria-label="Example bufferbloat test result"
           >
             <div className="instrument-header">
-              <span>example measurement trace</span>
+              <span>example bufferbloat trace</span>
               <strong>latency under load</strong>
             </div>
 
@@ -164,7 +184,7 @@ export default function Home() {
       <section className="home-grid project-principles">
         <article>
           <span>Problem</span>
-          <h2>Throughput is not responsiveness</h2>
+          <h2>Throughput is not reliability</h2>
           <p>
             A connection can show high download speed and still feel unreliable
             if latency rises when the line is busy. That is why calls freeze,
@@ -174,7 +194,7 @@ export default function Home() {
 
         <article>
           <span>Method</span>
-          <h2>Measure latency under load</h2>
+          <h2>Measure bufferbloat directly</h2>
           <p>
             The test samples quiet latency, then measures latency while
             download and upload traffic are active. The goal is a practical
@@ -184,7 +204,7 @@ export default function Home() {
 
         <article>
           <span>Project</span>
-          <h2>A public reference for internet responsiveness</h2>
+          <h2>A public reference for internet reliability</h2>
           <p>
             Source code and methodology are public. The site keeps measurement
             details and limitations visible so results can be checked, debated,

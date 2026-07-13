@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Why Bufferbloat.org Exists",
   description:
-    "Why Bufferbloat.org exists: an independent open-source project for measuring internet responsiveness and latency under load.",
+    "Why Bufferbloat.org exists: an independent open-source bufferbloat test for measuring internet reliability and latency under load.",
   alternates: {
     canonical: "https://bufferbloat.org/mission",
   },
@@ -69,9 +69,8 @@ export default function Page() {
         <p>
           Bufferbloat.org is an independent open-source project built around
           that principle. The code is open. The methodology is public. The
-          limitations are documented. The goal is to make internet
-          responsiveness easier to measure, easier to understand, and easier to
-          discuss.
+          limitations are documented. The goal is to make internet reliability
+          easier to measure, easier to understand, and easier to discuss.
         </p>
 
         <p className="mission-closing">
@@ -93,7 +92,7 @@ export default function Page() {
           <span>02</span>
           <h2>Loaded latency</h2>
           <p>
-            The test focuses on responsiveness while a connection is busy, not
+            The test focuses on reliability while a connection is busy, not
             only on idle ping or peak throughput.
           </p>
         </article>

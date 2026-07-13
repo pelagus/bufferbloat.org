@@ -87,7 +87,7 @@ export default function ResultCard({
         <div className="result-brand-lockup" aria-label="Bufferbloat.org">
           <strong>Bufferbloat.org</strong>
           <span>
-            open source responsiveness test · Measured {formattedMeasuredAt}
+            open source bufferbloat test · Measured {formattedMeasuredAt}
           </span>
         </div>
 

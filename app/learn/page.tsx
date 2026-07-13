@@ -1,3 +1,21 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Learn About Bufferbloat",
+  description:
+    "Learn what bufferbloat is, why speed tests miss it, why latency under load matters, and which open-source resources explain how to fix it.",
+  alternates: {
+    canonical: "https://bufferbloat.org/learn",
+  },
+  openGraph: {
+    title: "Learn About Bufferbloat",
+    description:
+      "A practical guide to bufferbloat, internet reliability, loaded latency, and authoritative open-source networking resources.",
+    url: "https://bufferbloat.org/learn",
+  },
+};
+
 export default function Page() {
   const linkProps = {
     target: "_blank",
@@ -16,14 +34,54 @@ export default function Page() {
         look fast in a speed test but still feel slow in real use.
       </p>
 
+      <section className="guide-test-callout" aria-label="Run the bufferbloat test">
+        <div className="guide-test-copy">
+          <span>browser test</span>
+          <h2>Measure your connection before reading too far.</h2>
+          <p>
+            The test takes less than a minute and gives the examples on this
+            page a concrete reference: quiet ping, download stress, upload
+            stress, throughput, and a bufferbloat grade.
+          </p>
+
+          <div className="guide-test-actions">
+            <Link href="/test" className="guide-primary-action">
+              Run the bufferbloat test
+            </Link>
+            <Link href="/docs" className="guide-secondary-action">
+              Read methodology
+            </Link>
+          </div>
+        </div>
+
+        <div className="guide-test-micro" aria-hidden="true">
+          <div>
+            <span>quiet</span>
+            <strong>24 ms</strong>
+            <em>baseline ping</em>
+          </div>
+          <div>
+            <span>download</span>
+            <strong>+94</strong>
+            <em>stress delta</em>
+          </div>
+          <div>
+            <span>upload</span>
+            <strong>+388</strong>
+            <em>bufferbloat signal</em>
+          </div>
+        </div>
+      </section>
+
       <section className="resource-grid">
         <article>
           <span>01</span>
-          <h2>Throughput is not responsiveness</h2>
+          <h2>Throughput is not reliability</h2>
           <p>
-            Throughput measures how much data can move. Responsiveness measures
-            how quickly the network answers while that movement is happening.
-            Both matter, but they explain different user experiences.
+            Throughput measures how much data can move. Reliability asks
+            whether the network keeps answering quickly while that movement is
+            happening. Both matter, but they explain different user
+            experiences.
           </p>
         </article>
 
@@ -54,6 +112,46 @@ export default function Page() {
           capacity. A cloud backup, video call, or large file upload can fill
           the upstream path and make the whole connection feel delayed.
         </p>
+      </section>
+
+      <section className="resource-note learning-directory">
+        <div>
+          <p className="eyebrow">topic guides</p>
+          <h2>Start with the common searches</h2>
+        </div>
+
+        <p>
+          These short guides explain the search terms people often use when they
+          are trying to understand why a fast connection still feels laggy.
+        </p>
+
+        <div className="learning-resource-list">
+          <article>
+            <span>Technical signal</span>
+            <h3>
+              <Link href="/learn/latency-under-load">
+                Latency under load
+              </Link>
+            </h3>
+            <p>
+              What loaded latency means, how it differs from idle ping, and why
+              it is the core signal in a bufferbloat test.
+            </p>
+          </article>
+
+          <article>
+            <span>Speed-test comparison</span>
+            <h3>
+              <Link href="/learn/bufferbloat-speed-test">
+                Bufferbloat speed test
+              </Link>
+            </h3>
+            <p>
+              Why a normal speed test can look excellent while calls, games,
+              and browsing still degrade when the line is busy.
+            </p>
+          </article>
+        </div>
       </section>
 
       <section className="resource-note learning-directory">
@@ -190,7 +288,7 @@ export default function Page() {
             </h3>
             <p>
               The FLExible Network Tester, widely used for repeatable network
-              experiments such as RRUL and latency-under-load testing.
+              experiments such as RRUL and loaded-latency testing.
             </p>
           </article>
 

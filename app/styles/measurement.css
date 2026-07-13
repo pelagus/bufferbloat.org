@@ -68,9 +68,18 @@
   height: auto;
   min-height: 46px;
   margin: 28px 0 0;
+  border-color: var(--action-strong);
+  background: var(--action);
+  color: #ffffff;
   padding: 0 18px;
   font-size: 14px;
   line-height: 1;
+}
+
+.test-shell .hero-start-button:hover {
+  border-color: var(--action-strong);
+  background: var(--action-strong);
+  color: #ffffff;
 }
 
 .test-shell .test-trust-links {
@@ -1442,7 +1451,7 @@
 
 .result-metric-grid article {
   min-width: 0;
-  padding: 8px 10px;
+  padding: 7px 10px;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: var(--bg);
@@ -1462,11 +1471,11 @@
 
 .result-metric-grid strong {
   display: block;
-  margin-top: 4px;
-  color: var(--fg);
+  margin-top: 3px;
+  color: color-mix(in srgb, var(--fg) 88%, var(--muted));
   font-family: var(--font-geist-mono), monospace;
-  font-size: clamp(18px, 2.4vw, 25px);
-  font-weight: 500;
+  font-size: clamp(16px, 1.9vw, 22px);
+  font-weight: 430;
   letter-spacing: 0;
   line-height: 1;
   overflow-wrap: anywhere;
@@ -1474,13 +1483,13 @@
 
 .result-finding {
   margin: 0;
-  padding: 8px 10px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--fg) 2.5%, var(--bg));
-  color: color-mix(in srgb, var(--fg) 86%, var(--muted));
-  font-size: clamp(13px, 1.55vw, 16px);
-  font-weight: 380;
-  line-height: 1.28;
+  color: color-mix(in srgb, var(--fg) 93%, var(--muted));
+  font-size: clamp(16px, 1.8vw, 22px);
+  font-weight: 430;
+  line-height: 1.24;
 }
 
 .result-evidence-row {
@@ -1608,8 +1617,12 @@
 
 @media (min-width: 900px) {
   .result-evidence-row {
-    grid-template-columns: minmax(0, 1fr) 280px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 22vw);
     align-items: stretch;
+  }
+
+  .result-chart-cell {
+    min-height: 340px;
   }
 
   .latency-phase-chart.result {
@@ -1617,13 +1630,13 @@
   }
 
   .latency-phase-chart.result svg {
-    height: 300px;
+    height: clamp(340px, 34vh, 430px);
   }
 
   .result-scorecard .result-applications {
     display: grid;
     align-content: start;
-    padding: 8px;
+    padding: 10px;
     border-left: 1px solid var(--line);
   }
 
@@ -1636,9 +1649,9 @@
   }
 
   .application-ranking-list li {
-    grid-template-columns: 20px 20px minmax(0, 1fr);
+    grid-template-columns: 22px 22px minmax(0, 1fr);
     gap: 2px 7px;
-    padding: 7px;
+    padding: 8px;
   }
 
   .application-ranking-list li:nth-child(3n) {
@@ -1660,6 +1673,28 @@
   .application-ranking-list em {
     grid-column: 3;
     justify-self: start;
+  }
+
+  .result-finding {
+    display: grid;
+    align-items: center;
+    min-height: 86px;
+    padding: 16px 18px;
+    font-size: clamp(18px, 2vw, 25px);
+    line-height: 1.23;
+  }
+
+  .result-metric-grid article {
+    padding: 8px 12px;
+  }
+
+  .result-metric-grid span {
+    font-size: 10px;
+  }
+
+  .result-metric-grid strong {
+    font-size: clamp(16px, 1.65vw, 21px);
+    font-weight: 420;
   }
 }
 
@@ -2055,7 +2090,7 @@
   }
 
   .result-metric-grid article {
-    padding: 6px;
+    padding: 5px 6px;
   }
 
   .result-metric-grid article:nth-child(3n) {
@@ -2077,15 +2112,15 @@
   }
 
   .result-metric-grid strong {
-    font-size: clamp(13px, 4vw, 17px);
+    font-size: clamp(12px, 3.5vw, 15px);
   }
 
   .result-finding {
     display: -webkit-box;
     overflow: hidden;
-    padding: 6px 8px;
-    font-size: 10px;
-    line-height: 1.22;
+    padding: 7px 8px;
+    font-size: 11px;
+    line-height: 1.24;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
   }

@@ -1,6 +1,7 @@
 # Roadmap
 
-bufferbloat.org is an open-source browser-based test for measuring internet responsiveness under load.
+bufferbloat.org is an open-source browser-based bufferbloat test for measuring
+internet reliability under load.
 
 ## Near term
 
@@ -15,7 +16,7 @@ bufferbloat.org is an open-source browser-based test for measuring internet resp
 
 - Add a shareable result summary
 - Add advanced technical details for power users
-- Add clearer explanation of latency-under-load results
+- Add clearer explanation of bufferbloat results
 - Improve upload and download stress calibration
 - Add browser compatibility notes
 - Add visual regression checks

@@ -1,8 +1,8 @@
 # bufferbloat.org
 
-An open-source project dedicated to measuring internet responsiveness.
+An open-source bufferbloat test dedicated to measuring internet reliability.
 
-Most internet speed tests measure **throughput**: how many megabits per second your connection can deliver. Bufferbloat.org measures something different: how responsive your connection remains while it is under load.
+Most internet speed tests measure **throughput**: how many megabits per second your connection can deliver. Bufferbloat.org measures something different: how reliable your connection remains while it is under load.
 
 **Website:** https://bufferbloat.org
 
@@ -30,11 +30,11 @@ So I built one.
 
 Bufferbloat is excessive latency caused by oversized or overloaded network queues.
 
-When a connection becomes busy, packets can spend too long waiting before being transmitted. Throughput may remain high while responsiveness deteriorates dramatically.
+When a connection becomes busy, packets can spend too long waiting before being transmitted. Throughput may remain high while reliability deteriorates dramatically.
 
 That's why a connection can achieve an excellent speed test result and still perform poorly during video calls, online gaming, browsing or other interactive applications.
 
-This project focuses on measuring **internet responsiveness**, not just throughput.
+This project focuses on measuring **internet reliability under load**, not just throughput.
 
 ---
 
@@ -79,7 +79,7 @@ Results include:
 - Median upload latency under load
 - Download throughput
 - Upload throughput
-- Overall responsiveness grade
+- Overall bufferbloat grade
 - Plain-language diagnosis
 - Structured technical details
 - CSV export of the measurement record
@@ -90,13 +90,13 @@ is not treated as bufferbloat.
 
 ---
 
-## Why responsiveness matters
+## Why reliability matters
 
 Throughput tells you **how much** data your connection can move.
 
-Responsiveness tells you **how quickly** your connection continues to react while moving that data.
+Internet reliability tells you **whether** your connection continues to react quickly while moving that data.
 
-For many everyday applications, responsiveness has a greater impact on user experience than peak bandwidth.
+For many everyday applications, reliability under load has a greater impact on user experience than peak bandwidth.
 
 Examples include:
 
@@ -112,7 +112,7 @@ Examples include:
 
 ## Features
 
-- Browser-based latency-under-load measurement
+- Browser-based bufferbloat measurement
 - Open-source measurement engine
 - Download and upload stress testing
 - Median latency reporting
