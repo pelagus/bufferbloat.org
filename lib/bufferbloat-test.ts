@@ -370,11 +370,8 @@ function gradeResult(
     uploadDegradation * 1.15
   );
   const movement = Math.max(0, downloadDelta, uploadDelta);
+  const worstLoadedLatency = Math.max(downloadLatency ?? 0, uploadLatency ?? 0);
 
-  if (weightedWorst > 300) return "F";
-  if (weightedWorst > 150) return "D";
-  if (weightedWorst > 60) return "C";
-  if (weightedWorst > 25) return "B";
   if (
     idle !== null &&
     idle <= 50 &&
@@ -384,8 +381,36 @@ function gradeResult(
   ) {
     return "A+";
   }
+  if (
+    movement <= 30 &&
+    worstLoadedLatency <= 125 &&
+    weightedWorst <= 85
+  ) {
+    return "A";
+  }
+  if (
+    movement <= 60 &&
+    worstLoadedLatency <= 170 &&
+    weightedWorst <= 140
+  ) {
+    return "B";
+  }
+  if (
+    movement <= 130 &&
+    worstLoadedLatency <= 260 &&
+    weightedWorst <= 260
+  ) {
+    return "C";
+  }
+  if (
+    movement <= 260 &&
+    worstLoadedLatency <= 450 &&
+    weightedWorst <= 450
+  ) {
+    return "D";
+  }
 
-  return "A";
+  return "F";
 }
 
 export async function runBufferbloatTest(

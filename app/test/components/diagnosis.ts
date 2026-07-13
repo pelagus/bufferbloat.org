@@ -10,7 +10,8 @@ export function stageIndex(status: string) {
 export function severityClass(grade: Grade) {
   if (grade === "F" || grade === "D") return "bad";
   if (grade === "C") return "warn";
-  if (grade === "A+" || grade === "A" || grade === "B") return "good";
+  if (grade === "B") return "ok";
+  if (grade === "A+" || grade === "A") return "good";
   return "";
 }
 

@@ -8,7 +8,6 @@ export default function ResultCard({
   grade,
   diagnosis,
   measuredAt,
-  methodologyVersion,
   scorecardMetrics,
   finding,
   applicationRankings,
@@ -24,7 +23,6 @@ export default function ResultCard({
     bullets: string[];
   };
   measuredAt: string;
-  methodologyVersion: string;
   scorecardMetrics: Array<{
     label: string;
     value: string;
@@ -63,8 +61,7 @@ export default function ResultCard({
         <div className="result-brand-lockup" aria-label="Bufferbloat.org">
           <strong>Bufferbloat.org</strong>
           <span>
-            open source responsiveness test · Measured {formattedMeasuredAt} ·{" "}
-            {methodologyVersion}
+            open source responsiveness test · Measured {formattedMeasuredAt}
           </span>
         </div>
 
@@ -100,25 +97,27 @@ export default function ResultCard({
         </div>
       </div>
 
-      {chartSlot}
+      <div className="result-evidence-row">
+        <div className="result-chart-cell">{chartSlot}</div>
 
-      <div className="result-applications">
-        <div className="result-section-heading">
-          <span>Application fit, ranked</span>
+        <div className="result-applications">
+          <div className="result-section-heading">
+            <span>Application fit, ranked</span>
+          </div>
+
+          <ol className="application-ranking-list">
+            {applicationRankings.map((item, index) => (
+              <li className={item.tone} key={item.name}>
+                <span className="application-rank">{index + 1}</span>
+                <span className="reliability-symbol" aria-hidden="true">
+                  {item.symbol}
+                </span>
+                <strong>{item.name}</strong>
+                <em>{item.label}</em>
+              </li>
+            ))}
+          </ol>
         </div>
-
-        <ol className="application-ranking-list">
-          {applicationRankings.map((item, index) => (
-            <li className={item.tone} key={item.name}>
-              <span className="application-rank">{index + 1}</span>
-              <span className="reliability-symbol" aria-hidden="true">
-                {item.symbol}
-              </span>
-              <strong>{item.name}</strong>
-              <em>{item.label}</em>
-            </li>
-          ))}
-        </ol>
       </div>
 
       {signupSlot}

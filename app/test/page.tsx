@@ -17,7 +17,6 @@ const DOWNLOAD_TEST_SIZE = "100 MB file, repeated across 4 streams";
 const UPLOAD_TEST_SIZE = "1 MB chunks, repeated across 3 streams";
 const DOWNLOAD_STREAM_LABEL = "4 download streams";
 const UPLOAD_STREAM_LABEL = "3 upload streams";
-const METHODOLOGY_VERSION = "Browser latency-under-load v1";
 const FOREGROUND_ERROR =
   "The test paused because this tab was no longer visible.";
 
@@ -68,14 +67,6 @@ function formatDuration(seconds: number | null) {
   return `${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
-function niceLatencyCeiling(value: number) {
-  if (!Number.isFinite(value) || value <= 0) return 100;
-  if (value <= 100) return 100;
-  if (value <= 250) return Math.ceil(value / 50) * 50;
-  if (value <= 600) return Math.ceil(value / 100) * 100;
-  return Math.ceil(value / 250) * 250;
-}
-
 function smoothPath(points: Array<{ x: number; y: number }>) {
   if (points.length === 0) return "";
   if (points.length === 1) {
@@ -108,6 +99,33 @@ function smoothPath(points: Array<{ x: number; y: number }>) {
   }
 
   return commands.join(" ");
+}
+
+function sampleStandardDeviation(samples: number[]) {
+  if (samples.length < 2) return 0;
+
+  const mean = samples.reduce((total, sample) => total + sample, 0) / samples.length;
+  const variance =
+    samples.reduce((total, sample) => total + (sample - mean) ** 2, 0) /
+    samples.length;
+
+  return Math.sqrt(variance);
+}
+
+function smoothDisplaySamples(samples: number[]) {
+  if (samples.length < 4) return samples;
+
+  const median = sampleMedian(samples) ?? samples[0];
+  const deviation = sampleStandardDeviation(samples);
+  const upperBound = median + deviation * 1.25;
+  const clipped = samples.map((sample) => Math.min(sample, upperBound));
+
+  return clipped.map((sample, index) => {
+    const previous = clipped[Math.max(0, index - 1)];
+    const next = clipped[Math.min(clipped.length - 1, index + 1)];
+
+    return previous * 0.22 + sample * 0.56 + next * 0.22;
+  });
 }
 
 function samplePath(
@@ -144,6 +162,12 @@ function sampleMedian(samples: number[]) {
   }
 
   return (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function formatChartTick(value: number) {
+  if (!Number.isFinite(value)) return "0";
+  if (value < 100) return value.toFixed(1).replace(/\.0$/, "");
+  return Math.round(value).toString();
 }
 
 function stressMovement(downloadDelta: number | null, uploadDelta: number | null) {
@@ -692,7 +716,6 @@ export default function Page() {
           grade={grade}
           diagnosis={diagnosis}
           measuredAt={resultMeasuredAt ?? new Date().toISOString()}
-          methodologyVersion={METHODOLOGY_VERSION}
           scorecardMetrics={[
             {
               label: "Latency",
@@ -902,9 +925,30 @@ function LatencyPhaseChart({
   mode?: "live" | "result";
   activePhase?: TestPhase | "ready";
 }) {
+  const displaySamples =
+    mode === "result"
+      ? {
+          idle: smoothDisplaySamples(samples.idle),
+          download: smoothDisplaySamples(samples.download),
+          upload: smoothDisplaySamples(samples.upload),
+        }
+      : samples;
   const allSamples = [...samples.idle, ...samples.download, ...samples.upload];
-  const maxSample = allSamples.length ? Math.max(...allSamples) : 100;
-  const axisMax = niceLatencyCeiling(maxSample * 1.15);
+  const plottedSamples = [
+    ...displaySamples.idle,
+    ...displaySamples.download,
+    ...displaySamples.upload,
+  ];
+  const medianValues = [
+    sampleMedian(samples.idle),
+    sampleMedian(samples.download),
+    sampleMedian(samples.upload),
+  ].filter((value): value is number => value !== null);
+  const valuesPlottedForScale = [...plottedSamples, ...medianValues];
+  const maxPlottedSample = valuesPlottedForScale.length
+    ? Math.max(...valuesPlottedForScale)
+    : 100;
+  const axisMax = Math.max(1, maxPlottedSample);
   const axisMid = axisMax / 2;
   const chart = {
     left: 58,
@@ -921,14 +965,14 @@ function LatencyPhaseChart({
   } as const;
   const yFor = (sample: number) =>
     chart.top + chart.height - (Math.max(0, sample) / axisMax) * chart.height;
-  const idlePath = samplePath(samples.idle, phaseRanges.idle[0], phaseRanges.idle[1], yFor);
+  const idlePath = samplePath(displaySamples.idle, phaseRanges.idle[0], phaseRanges.idle[1], yFor);
   const downloadPath = samplePath(
-    samples.download,
+    displaySamples.download,
     phaseRanges.download[0],
     phaseRanges.download[1],
     yFor
   );
-  const uploadPath = samplePath(samples.upload, phaseRanges.upload[0], phaseRanges.upload[1], yFor);
+  const uploadPath = samplePath(displaySamples.upload, phaseRanges.upload[0], phaseRanges.upload[1], yFor);
   const phaseMedians = [
     { key: "idle", className: "median-idle", range: phaseRanges.idle, value: sampleMedian(samples.idle) },
     {
@@ -1001,13 +1045,17 @@ function LatencyPhaseChart({
           return (
             <g key={tick}>
               <line className="chart-grid" x1={chart.left} y1={y} x2={chart.left + chart.width} y2={y} />
-              <text className="chart-axis-label" x={12} y={y + 4}>{Math.round(tick)}</text>
+              <text className="chart-axis-label" x={12} y={y + 4}>{formatChartTick(tick)}</text>
             </g>
           );
         })}
         <text className="chart-axis-label" x={11} y={18}>ms</text>
         <line className="phase-break" x1={chart.left + phaseWidth} y1={chart.top} x2={chart.left + phaseWidth} y2={chart.bottom} />
         <line className="phase-break" x1={chart.left + phaseWidth * 2} y1={chart.top} x2={chart.left + phaseWidth * 2} y2={chart.bottom} />
+
+        {idlePath && <path className="latency-line line-idle" d={idlePath} />}
+        {revealDownload && downloadPath && <path className="latency-line line-download" d={downloadPath} />}
+        {revealUpload && uploadPath && <path className="latency-line line-upload" d={uploadPath} />}
 
         {mode === "result" &&
           hasSamples &&
@@ -1029,9 +1077,6 @@ function LatencyPhaseChart({
               />
             );
           })}
-        {idlePath && <path className="latency-line line-idle" d={idlePath} />}
-        {revealDownload && downloadPath && <path className="latency-line line-download" d={downloadPath} />}
-        {revealUpload && uploadPath && <path className="latency-line line-upload" d={uploadPath} />}
 
         {livePhaseCovers.map((phase) => (
             <g key={phase.key} className={`chart-phase-obscured ${phase.kind}`}>
