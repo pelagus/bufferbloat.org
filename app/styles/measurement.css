@@ -780,24 +780,26 @@
 }
 
 .latency-phase-chart .chart-phase-obscured rect {
-  fill: color-mix(in srgb, var(--bg) 82%, var(--line));
-  opacity: 0.92;
+  fill: color-mix(in srgb, var(--bg) 70%, var(--line));
+  opacity: 0.66;
+  transition: opacity 260ms ease, fill 260ms ease;
 }
 
 .latency-phase-chart .chart-phase-obscured.completed rect {
-  fill: color-mix(in srgb, var(--bg) 88%, var(--line));
-  opacity: 0.95;
+  fill: color-mix(in srgb, var(--bg) 76%, var(--line));
+  opacity: 0.72;
 }
 
 .latency-phase-chart .chart-phase-obscured text {
-  fill: color-mix(in srgb, var(--fg) 42%, var(--muted));
+  fill: color-mix(in srgb, var(--fg) 50%, var(--muted));
   font-family: var(--font-geist-mono), monospace;
   font-size: 12px;
   text-anchor: middle;
+  transition: opacity 260ms ease, fill 260ms ease;
 }
 
 .latency-phase-chart .chart-phase-obscured.completed text {
-  fill: color-mix(in srgb, var(--fg) 58%, var(--muted));
+  fill: color-mix(in srgb, var(--fg) 62%, var(--muted));
 }
 
 .latency-phase-legend {
@@ -1292,6 +1294,12 @@
   transform: translateX(-50%);
 }
 
+@media (min-width: 1200px) {
+  .result-screen {
+    width: min(1280px, calc(100vw - 48px));
+  }
+}
+
 .result-compact-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1600,7 +1608,7 @@
 
 @media (min-width: 900px) {
   .result-evidence-row {
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 280px;
     align-items: stretch;
   }
 
@@ -1609,7 +1617,7 @@
   }
 
   .latency-phase-chart.result svg {
-    height: 238px;
+    height: 300px;
   }
 
   .result-scorecard .result-applications {

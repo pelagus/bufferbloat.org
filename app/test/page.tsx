@@ -1042,8 +1042,12 @@ function LatencyPhaseChart({
   const maxPlottedSample = valuesPlottedForScale.length
     ? Math.max(...valuesPlottedForScale)
     : 100;
-  const axisMax = Math.max(1, maxPlottedSample);
-  const axisMid = axisMax / 2;
+  const minPlottedSample = valuesPlottedForScale.length
+    ? Math.min(...valuesPlottedForScale)
+    : 0;
+  const axisMin = mode === "result" ? minPlottedSample : 0;
+  const axisMax = Math.max(axisMin + 1, maxPlottedSample);
+  const axisMid = axisMin + (axisMax - axisMin) / 2;
   const chart = {
     left: 58,
     top: 28,
@@ -1058,7 +1062,7 @@ function LatencyPhaseChart({
     upload: [chart.left + phaseWidth * 2 + 10, chart.left + phaseWidth * 3],
   } as const;
   const yFor = (sample: number) =>
-    chart.top + chart.height - (Math.max(0, sample) / axisMax) * chart.height;
+    chart.top + chart.height - ((Math.max(axisMin, sample) - axisMin) / (axisMax - axisMin)) * chart.height;
   const idlePath = samplePath(displaySamples.idle, phaseRanges.idle[0], phaseRanges.idle[1], yFor);
   const downloadPath = samplePath(
     displaySamples.download,
@@ -1088,24 +1092,42 @@ function LatencyPhaseChart({
         : activePhase === "upload"
           ? 2
           : -1;
+  const idleCoverKind =
+    samples.download.length > 0 || samples.upload.length > 0
+      ? "completed"
+      : livePhaseIndex < 0
+        ? "pending"
+        : "";
+  const downloadCoverKind =
+    samples.upload.length > 0
+      ? "completed"
+      : livePhaseIndex < 1
+        ? "pending"
+        : "";
+  const uploadCoverKind = livePhaseIndex < 2 ? "pending" : "";
   const livePhaseCovers = [
     {
       key: "idle",
-      label: livePhaseIndex > 0 ? "quiet complete" : livePhaseIndex < 0 ? "quiet pending" : "",
+      label: idleCoverKind === "completed" ? "quiet complete" : idleCoverKind === "pending" ? "quiet pending" : "",
       x: chart.left,
-      kind: livePhaseIndex > 0 ? "completed" : livePhaseIndex < 0 ? "pending" : "",
+      kind: idleCoverKind,
     },
     {
       key: "download",
-      label: livePhaseIndex > 1 ? "download complete" : livePhaseIndex < 1 ? "download pending" : "",
+      label:
+        downloadCoverKind === "completed"
+          ? "download complete"
+          : downloadCoverKind === "pending"
+            ? "download pending"
+            : "",
       x: chart.left + phaseWidth,
-      kind: livePhaseIndex > 1 ? "completed" : livePhaseIndex < 1 ? "pending" : "",
+      kind: downloadCoverKind,
     },
     {
       key: "upload",
-      label: livePhaseIndex > 2 ? "upload complete" : livePhaseIndex < 2 ? "upload pending" : "",
+      label: uploadCoverKind === "pending" ? "upload pending" : "",
       x: chart.left + phaseWidth * 2,
-      kind: livePhaseIndex > 2 ? "completed" : livePhaseIndex < 2 ? "pending" : "",
+      kind: uploadCoverKind,
     },
   ].filter(
     (phase): phase is { key: string; label: string; x: number; kind: "completed" | "pending" } =>
@@ -1134,7 +1156,7 @@ function LatencyPhaseChart({
 
         <line className="chart-axis" x1={chart.left} y1={chart.bottom} x2={chart.left + chart.width} y2={chart.bottom} />
         <line className="chart-axis" x1={chart.left} y1={chart.top} x2={chart.left} y2={chart.bottom} />
-        {[axisMax, axisMid, 0].map((tick) => {
+        {[axisMax, axisMid, axisMin].map((tick) => {
           const y = yFor(tick);
           return (
             <g key={tick}>
