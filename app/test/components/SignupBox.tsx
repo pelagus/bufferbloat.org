@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type SignupResponse = {
   ok?: boolean;
   message?: string;
 };
 
-export default function SignupBox() {
+export default function SignupBox({ testCount }: { testCount: number }) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [hidden, setHidden] = useState(() => (
     typeof document !== "undefined" &&
     document.cookie.includes("bufferbloat_signup=1")
@@ -16,8 +17,27 @@ export default function SignupBox() {
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    if (hidden || state !== "idle") return;
+
+    const timer = window.setTimeout(() => {
+      inputRef.current?.focus({ preventScroll: true });
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [hidden, state]);
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
+
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      setState("error");
+      setMessage("Enter your email to get project updates.");
+      inputRef.current?.focus({ preventScroll: true });
+      return;
+    }
 
     setState("loading");
     setMessage("");
@@ -27,7 +47,7 @@ export default function SignupBox() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email: trimmedEmail, testCount }),
     });
 
     const data = (await response.json()) as SignupResponse;
@@ -61,7 +81,7 @@ export default function SignupBox() {
 
         <div>
           <h2>You’re on the list</h2>
-          <p>We’ll send occasional project updates as the test and methodology improve.</p>
+          <p>We’ll send concise project updates as the test and methodology improve.</p>
         </div>
       </section>
     );
@@ -72,26 +92,33 @@ export default function SignupBox() {
       <div className="signup-icon">✉</div>
 
       <div>
-        <h2>Follow Bufferbloat.org</h2>
-        <p>
-          Occasional notes on the open-source test and methodology.
-        </p>
+        <h2>Stay in the loop</h2>
       </div>
 
-      <form onSubmit={submit}>
+      <form onSubmit={submit} noValidate>
         <input
+          ref={inputRef}
           type="email"
-          required
-          placeholder="email@example.com"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="your@email.com"
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          aria-label="Email address for Bufferbloat.org project updates"
+          aria-invalid={state === "error"}
+          onChange={(event) => {
+            setEmail(event.target.value);
+            if (state === "error") {
+              setState("idle");
+              setMessage("");
+            }
+          }}
         />
 
         <button type="submit" disabled={state === "loading"}>
           {state === "loading" ? "Saving..." : "Subscribe"}
         </button>
 
-        <small>No spam. Project updates only.</small>
+        <small>No spam. We save rough location and test count, not precise location.</small>
       </form>
 
       {message && (

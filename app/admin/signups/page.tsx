@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Signup = {
   email: string;
   created_at: string;
   user_agent: string | null;
+  test_count: number | null;
+  country: string | null;
+  region: string | null;
+  city: string | null;
 };
 
 type SignupsResponse = {
@@ -24,39 +28,42 @@ function formatDate(value: string) {
   return date.toLocaleString();
 }
 
+function formatLocation(signup: Signup) {
+  return [signup.city, signup.region, signup.country]
+    .filter(Boolean)
+    .join(", ") || "unknown";
+}
+
 export default function SignupsAdminPage() {
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [signups, setSignups] = useState<Signup[] | null>(null);
 
-  async function loadSignups(event: React.FormEvent) {
-    event.preventDefault();
+  useEffect(() => {
+    async function loadSignups() {
+      setLoading(true);
+      setMessage("");
 
-    setLoading(true);
-    setMessage("");
+      const response = await fetch("/api/admin/signups", {
+        method: "POST",
+      });
 
-    const response = await fetch("/api/admin/signups", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ password }),
-    });
+      const data = (await response.json()) as SignupsResponse;
 
-    const data = (await response.json()) as SignupsResponse;
+      setLoading(false);
 
-    setLoading(false);
+      if (!response.ok || !data.ok) {
+        setSignups(null);
+        setMessage(data.message || "Unable to load signups.");
+        return;
+      }
 
-    if (!response.ok || !data.ok) {
-      setSignups(null);
-      setMessage(data.message || "Unable to load signups.");
-      return;
+      setSignups(data.signups || []);
+      setMessage("");
     }
 
-    setSignups(data.signups || []);
-    setMessage("");
-  }
+    void loadSignups();
+  }, []);
 
   return (
     <main className="page-shell admin-shell">
@@ -69,24 +76,9 @@ export default function SignupsAdminPage() {
       </p>
 
       <section className="terminal-card admin-panel">
-        <form onSubmit={loadSignups} className="admin-login-form">
-          <label htmlFor="signups-password">Password</label>
-
-          <div>
-            <input
-              id="signups-password"
-              type="password"
-              required
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-
-            <button type="submit" disabled={loading}>
-              {loading ? "Loading..." : "View signups"}
-            </button>
-          </div>
-        </form>
+        {loading && (
+          <p className="admin-message">Loading signups...</p>
+        )}
 
         {message && (
           <p className="admin-message bad">{message}</p>
@@ -108,6 +100,8 @@ export default function SignupsAdminPage() {
                     <tr>
                       <th>Email</th>
                       <th>Created</th>
+                      <th>Tests</th>
+                      <th>Location</th>
                       <th>User agent</th>
                     </tr>
                   </thead>
@@ -117,6 +111,8 @@ export default function SignupsAdminPage() {
                       <tr key={`${signup.email}-${signup.created_at}`}>
                         <td>{signup.email}</td>
                         <td>{formatDate(signup.created_at)}</td>
+                        <td>{signup.test_count ?? 0}</td>
+                        <td>{formatLocation(signup)}</td>
                         <td>{signup.user_agent || "unknown"}</td>
                       </tr>
                     ))}

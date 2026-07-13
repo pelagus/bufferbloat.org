@@ -9,6 +9,83 @@
   gap: 22px;
 }
 
+.admin-session-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 1120px;
+  margin: 0 auto 18px;
+  padding: 0 24px;
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 13px;
+}
+
+.admin-session-nav a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.admin-session-nav a:hover {
+  color: var(--fg);
+}
+
+.admin-logout-button {
+  margin: 0 0 0 auto;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  padding: 8px 10px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+}
+
+.admin-access-panel {
+  max-width: 620px;
+}
+
+.admin-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.admin-menu-card {
+  display: grid;
+  gap: 12px;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.admin-menu-card span,
+.admin-menu-card em {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-style: normal;
+  text-transform: uppercase;
+}
+
+.admin-menu-card strong {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 560;
+  line-height: 1;
+}
+
+.admin-menu-card p {
+  max-width: 54ch;
+  margin: 0;
+  color: color-mix(in srgb, var(--fg) 76%, var(--muted));
+  line-height: 1.5;
+}
+
+.admin-menu-card em {
+  color: var(--fg);
+  text-transform: none;
+}
+
 .admin-login-form {
   display: grid;
   gap: 10px;
@@ -103,12 +180,247 @@
   word-break: break-word;
 }
 
+.analytics-results {
+  gap: 22px;
+}
+
+.analytics-period-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.analytics-period-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 14px;
+}
+
+.analytics-period-card h2 {
+  margin: 0;
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 15px;
+  font-weight: 560;
+  letter-spacing: 0;
+}
+
+.analytics-period-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--line);
+}
+
+.analytics-period-metrics div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.analytics-period-metrics div:nth-child(2n) {
+  border-right: 0;
+}
+
+.analytics-period-metrics div:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.analytics-period-metrics span {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 10px;
+  font-weight: 520;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.analytics-period-metrics strong {
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 560;
+  line-height: 1;
+}
+
+.analytics-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.analytics-summary-grid div {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 16px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.analytics-summary-grid div:nth-child(3n) {
+  border-right: 0;
+}
+
+.analytics-summary-grid div:nth-last-child(-n + 3) {
+  border-bottom: 0;
+}
+
+.analytics-summary-grid span,
+.analytics-breakdown h2 {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  font-weight: 520;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.analytics-summary-grid strong {
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(22px, 3vw, 36px);
+  font-weight: 560;
+  line-height: 1;
+}
+
+.analytics-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.analytics-breakdown {
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.analytics-breakdown h2 {
+  margin: 0;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.analytics-breakdown ol {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analytics-breakdown li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: baseline;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.analytics-breakdown li:last-child {
+  border-bottom: 0;
+}
+
+.analytics-breakdown li span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytics-breakdown li strong {
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 560;
+}
+
+.analytics-breakdown li em {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.analytics-table {
+  min-width: 1560px;
+}
+
+.analytics-table td span {
+  color: var(--muted);
+}
+
 @media (max-width: 767px) {
+  .admin-session-nav {
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    padding-inline: 18px;
+  }
+
+  .admin-logout-button {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .admin-menu-grid {
+    grid-template-columns: 1fr;
+  }
+
   .admin-login-form > div {
     grid-template-columns: 1fr;
   }
 
   .admin-login-form button {
     width: 100%;
+  }
+
+  .analytics-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analytics-summary-grid div:nth-child(n) {
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .analytics-summary-grid div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .analytics-summary-grid div:last-child {
+    border-bottom: 0;
+  }
+
+  .analytics-period-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1180px) {
+  .analytics-period-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-period-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .analytics-period-metrics div:nth-child(n) {
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+  }
+
+  .analytics-period-metrics div:last-child {
+    border-right: 0;
+  }
+
+  .analytics-breakdown-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

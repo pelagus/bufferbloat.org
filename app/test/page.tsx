@@ -19,6 +19,8 @@ const DOWNLOAD_STREAM_LABEL = "4 download streams";
 const UPLOAD_STREAM_LABEL = "3 upload streams";
 const FOREGROUND_ERROR =
   "The test paused because this tab was no longer visible.";
+const TEST_COUNT_STORAGE_KEY = "bufferbloat_test_count";
+const ANALYTICS_SESSION_STORAGE_KEY = "bufferbloat_analytics_session";
 
 function emptyLatencySamples(): LatencySamplesByPhase {
   return {
@@ -70,6 +72,160 @@ function formatDuration(seconds: number | null) {
 function formatLatencyRange(samples: number[]) {
   if (samples.length === 0) return "—";
   return `${formatLatency(Math.min(...samples))}–${formatLatency(Math.max(...samples))}`;
+}
+
+function readStoredTestCount() {
+  if (typeof window === "undefined") return 0;
+
+  const value = Number.parseInt(window.localStorage.getItem(TEST_COUNT_STORAGE_KEY) || "0", 10);
+
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function randomClientId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function analyticsSessionId() {
+  if (typeof window === "undefined") return randomClientId();
+
+  const stored = window.sessionStorage.getItem(ANALYTICS_SESSION_STORAGE_KEY);
+  if (stored) return stored;
+
+  const id = randomClientId();
+  window.sessionStorage.setItem(ANALYTICS_SESSION_STORAGE_KEY, id);
+
+  return id;
+}
+
+function bucketViewport() {
+  if (typeof window === "undefined") return "unknown";
+
+  const bucket = (value: number) => Math.max(0, Math.round(value / 100) * 100);
+
+  return `${bucket(window.innerWidth)}x${bucket(window.innerHeight)}`;
+}
+
+function browserName(userAgent: string) {
+  if (/Edg\//.test(userAgent)) return "Edge";
+  if (/OPR\//.test(userAgent)) return "Opera";
+  if (/CriOS\//.test(userAgent)) return "Chrome iOS";
+  if (/Chrome\//.test(userAgent)) return "Chrome";
+  if (/Firefox\//.test(userAgent)) return "Firefox";
+  if (/Safari\//.test(userAgent)) return "Safari";
+
+  return "Other";
+}
+
+function osName(userAgent: string) {
+  if (/Android/.test(userAgent)) return "Android";
+  if (/iPhone|iPad|iPod/.test(userAgent)) return "iOS";
+  if (/Mac OS X|Macintosh/.test(userAgent)) return "macOS";
+  if (/Windows NT/.test(userAgent)) return "Windows";
+  if (/Linux/.test(userAgent)) return "Linux";
+
+  return "Other";
+}
+
+function deviceType(userAgent: string) {
+  if (/Mobi|Android|iPhone|iPod/.test(userAgent)) return "phone";
+  if (/iPad|Tablet/.test(userAgent)) return "tablet";
+
+  return "desktop";
+}
+
+function referrerHost() {
+  if (typeof document === "undefined" || !document.referrer) return null;
+
+  try {
+    return new URL(document.referrer).host;
+  } catch {
+    return null;
+  }
+}
+
+type AnalyticsEventPayload = {
+  sessionId: string;
+  runId: string;
+  eventType: "session" | "started" | "completed" | "failed";
+  path: string;
+  referrerHost: string | null;
+  testCount: number;
+  device: {
+    type: string;
+    os: string;
+    browser: string;
+    viewport: string;
+  };
+  result?: {
+    success?: boolean;
+    grade?: Grade;
+    error?: string;
+    durationSeconds?: number | null;
+    idleMs?: number | null;
+    downloadLatencyMs?: number | null;
+    uploadLatencyMs?: number | null;
+    downloadStressMs?: number | null;
+    uploadStressMs?: number | null;
+    downloadMbps?: number | null;
+    uploadMbps?: number | null;
+    quietSamples?: number | null;
+    downloadSamples?: number | null;
+    uploadSamples?: number | null;
+  };
+};
+
+function analyticsPayload(
+  runId: string,
+  eventType: AnalyticsEventPayload["eventType"],
+  testCount: number,
+  result?: AnalyticsEventPayload["result"]
+): AnalyticsEventPayload {
+  const userAgent = typeof navigator === "undefined" ? "" : navigator.userAgent;
+
+  return {
+    sessionId: analyticsSessionId(),
+    runId,
+    eventType,
+    path: typeof window === "undefined" ? "/test" : window.location.pathname,
+    referrerHost: referrerHost(),
+    testCount,
+    device: {
+      type: deviceType(userAgent),
+      os: osName(userAgent),
+      browser: browserName(userAgent),
+      viewport: bucketViewport(),
+    },
+    result,
+  };
+}
+
+function sendAnalyticsEvent(payload: AnalyticsEventPayload) {
+  const body = JSON.stringify(payload);
+
+  if (typeof navigator !== "undefined" && "sendBeacon" in navigator) {
+    const sent = navigator.sendBeacon(
+      "/api/analytics/test-event",
+      new Blob([body], { type: "application/json" })
+    );
+
+    if (sent) return;
+  }
+
+  void fetch("/api/analytics/test-event", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body,
+    keepalive: true,
+  }).catch(() => {
+    // Analytics must never interrupt or invalidate a measurement.
+  });
 }
 
 function smoothPath(points: Array<{ x: number; y: number }>) {
@@ -340,10 +496,18 @@ export default function Page() {
   const [resultMeasuredAt, setResultMeasuredAt] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [resultDurationSeconds, setResultDurationSeconds] = useState<number | null>(null);
+  const [completedTestCount, setCompletedTestCount] = useState(0);
 
   const diagnosisRef = useRef<HTMLDivElement | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const testStartedAtRef = useRef<number | null>(null);
+  const testRunIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    sendAnalyticsEvent(
+      analyticsPayload(analyticsSessionId(), "session", readStoredTestCount())
+    );
+  }, []);
 
   useEffect(() => {
     if (!running) return;
@@ -399,7 +563,22 @@ export default function Page() {
   const runTest = useCallback(async function runTest() {
     abortControllerRef.current?.abort();
     const abortController = new AbortController();
+    const runId = randomClientId();
+    const startingTestCount = readStoredTestCount();
+    const latestMetrics = {
+      idle: null as number | null,
+      downloadLatency: null as number | null,
+      uploadLatency: null as number | null,
+      downloadMbps: null as number | null,
+      uploadMbps: null as number | null,
+      sampleCounts: {
+        idle: 0,
+        download: 0,
+        upload: 0,
+      },
+    };
     abortControllerRef.current = abortController;
+    testRunIdRef.current = runId;
 
     try {
       setError(null);
@@ -423,6 +602,9 @@ export default function Page() {
       setResultDurationSeconds(null);
       testStartedAtRef.current = Date.now();
       setLatencySamples(emptyLatencySamples());
+      sendAnalyticsEvent(
+        analyticsPayload(runId, "started", startingTestCount)
+      );
 
       const result = await runBufferbloatTest(
         (update) => {
@@ -436,11 +618,17 @@ export default function Page() {
           setUploadMbps(update.uploadMbps);
           setLatencySamples(cloneLatencySamples(update.latencySamples));
           setLatencySampleCount(update.latencySampleCount);
+          latestMetrics.idle = update.idle;
+          latestMetrics.downloadLatency = update.downloadLatency;
+          latestMetrics.uploadLatency = update.uploadLatency;
+          latestMetrics.downloadMbps = update.downloadMbps;
+          latestMetrics.uploadMbps = update.uploadMbps;
           if (
             update.phase === "idle" ||
             update.phase === "download" ||
             update.phase === "upload"
           ) {
+            latestMetrics.sampleCounts[update.phase] = update.latencySampleCount;
             setSampleCounts((current) => ({
               ...current,
               [update.phase]: update.latencySampleCount,
@@ -467,8 +655,10 @@ export default function Page() {
 
       await wait(3200);
 
+      let finalDuration: number | null = null;
+
       if (testStartedAtRef.current !== null) {
-        const finalDuration = Math.max(
+        finalDuration = Math.max(
           0,
           Math.round((Date.now() - testStartedAtRef.current) / 1000)
         );
@@ -477,18 +667,61 @@ export default function Page() {
       }
 
       setAnalyzing(false);
+      setCompletedTestCount(() => {
+        const nextCount = readStoredTestCount() + 1;
+
+        window.localStorage.setItem(TEST_COUNT_STORAGE_KEY, String(nextCount));
+        sendAnalyticsEvent(
+          analyticsPayload(runId, "completed", nextCount, {
+            success: true,
+            grade: result.grade,
+            durationSeconds: finalDuration,
+            idleMs: result.idle,
+            downloadLatencyMs: result.downloadLatency,
+            uploadLatencyMs: result.uploadLatency,
+            downloadStressMs: latencyDelta(result.idle, result.downloadLatency),
+            uploadStressMs: latencyDelta(result.idle, result.uploadLatency),
+            downloadMbps: result.downloadMbps,
+            uploadMbps: result.uploadMbps,
+            quietSamples: result.latencySamples.idle.length,
+            downloadSamples: result.latencySamples.download.length,
+            uploadSamples: result.latencySamples.upload.length,
+          })
+        );
+
+        return nextCount;
+      });
       setFinished(true);
     } catch (err) {
       const stoppedForForeground =
         abortController.signal.aborted &&
         abortController.signal.reason === FOREGROUND_ERROR;
 
-      setError(
-        stoppedForForeground
-          ? FOREGROUND_ERROR
-          : err instanceof Error
-            ? err.message
-            : "Unknown test error"
+      const errorMessage = stoppedForForeground
+        ? FOREGROUND_ERROR
+        : err instanceof Error
+          ? err.message
+          : "Unknown test error";
+
+      setError(errorMessage);
+      sendAnalyticsEvent(
+        analyticsPayload(runId, "failed", startingTestCount, {
+          success: false,
+          error: errorMessage,
+          durationSeconds: testStartedAtRef.current === null
+            ? null
+            : Math.max(0, Math.round((Date.now() - testStartedAtRef.current) / 1000)),
+          idleMs: latestMetrics.idle,
+          downloadLatencyMs: latestMetrics.downloadLatency,
+          uploadLatencyMs: latestMetrics.uploadLatency,
+          downloadStressMs: latencyDelta(latestMetrics.idle, latestMetrics.downloadLatency),
+          uploadStressMs: latencyDelta(latestMetrics.idle, latestMetrics.uploadLatency),
+          downloadMbps: latestMetrics.downloadMbps,
+          uploadMbps: latestMetrics.uploadMbps,
+          quietSamples: latestMetrics.sampleCounts.idle,
+          downloadSamples: latestMetrics.sampleCounts.download,
+          uploadSamples: latestMetrics.sampleCounts.upload,
+        })
       );
       setRunning(false);
       setAnalyzing(false);
@@ -499,6 +732,9 @@ export default function Page() {
     } finally {
       if (abortControllerRef.current === abortController) {
         abortControllerRef.current = null;
+      }
+      if (testRunIdRef.current === runId) {
+        testRunIdRef.current = null;
       }
     }
   }, []);
@@ -723,7 +959,7 @@ export default function Page() {
       section: "Privacy",
       metric: "Export contents",
       value: "Measurement data only",
-      note: "No IP address, location, browser fingerprint, or device identity is included.",
+      note: "The CSV export excludes IP address, location, browser fingerprint, and device identity.",
     },
   ];
 
@@ -912,31 +1148,11 @@ export default function Page() {
             downloadMbps
           )}
           applicationRankings={applicationRankingsResult}
-          scoredMeasurements={[
-            {
-              label: "Idle median",
-              median: `${formatLatency(idle)} ms`,
-              delta: "starting point",
-              detail: "Response time before extra traffic was added.",
-            },
-            {
-              label: "Download median",
-              median: `${formatLatency(downloadLatency)} ms`,
-              delta: formatUserDelta(downloadDelta),
-              detail: "Response time while the browser was receiving traffic.",
-            },
-            {
-              label: "Upload median",
-              median: `${formatLatency(uploadLatency)} ms`,
-              delta: formatUserDelta(uploadDelta),
-              detail: "Response time while the browser was sending traffic.",
-            },
-          ]}
           chartSlot={
             <LatencyPhaseChart samples={latencySamples} mode="result" grade={grade} />
           }
           technicalRows={technicalRows}
-          signupSlot={<SignupBox />}
+          signupSlot={<SignupBox testCount={completedTestCount} />}
         />
       </div>
     </>

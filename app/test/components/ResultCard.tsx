@@ -23,7 +23,6 @@ export default function ResultCard({
   scorecardMetrics,
   finding,
   applicationRankings,
-  scoredMeasurements,
   chartSlot,
   technicalRows,
   signupSlot,
@@ -47,12 +46,6 @@ export default function ResultCard({
     label: string;
     tone: "excellent" | "good" | "fair" | "poor";
     score: number;
-  }>;
-  scoredMeasurements: Array<{
-    label: string;
-    median: string;
-    delta: string;
-    detail: string;
   }>;
   chartSlot?: ReactNode;
   technicalRows: TechnicalRow[];
@@ -157,32 +150,25 @@ export default function ResultCard({
 
       <details className="technical-details">
         <summary>
-          <span className="technical-summary-label">Technical details</span>
+          <span className="technical-summary-label">
+            Technical details, exportable as CSV
+          </span>
+        </summary>
+
+        <div className="technical-table-header">
+          <span>Measurement record</span>
           <button
             aria-label="Export technical details as CSV"
             className="technical-export-button"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              exportTechnicalDetails();
-            }}
+            onClick={exportTechnicalDetails}
             title="Export technical details as CSV"
             type="button"
           >
             <span aria-hidden="true">⇩</span>
-            CSV
+            Export CSV
           </button>
-        </summary>
-        <div className="result-summary-grid scored">
-          {scoredMeasurements.map((item) => (
-            <article key={item.label}>
-              <span>{item.label}</span>
-              <strong>{item.median}</strong>
-              <em>{item.delta}</em>
-              <p>{item.detail}</p>
-            </article>
-          ))}
         </div>
+
         <table>
           <thead>
             <tr>

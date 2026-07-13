@@ -1,6 +1,6 @@
-import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
-import { getPrivateConfig } from "../../../../lib/private-config";
+import { adminRequestIsAuthenticated } from "../../../../lib/admin-auth";
+import { d1Query } from "../../../../lib/d1";
 
 export const runtime = "nodejs";
 
@@ -8,85 +8,52 @@ const noStoreHeaders = {
   "Cache-Control": "no-store",
 };
 
-type AdminSignupsBody = {
-  password?: unknown;
-};
-
 type SignupRow = {
   email: string;
   created_at: string;
   user_agent: string | null;
+  test_count: number | null;
+  country: string | null;
+  region: string | null;
+  city: string | null;
 };
 
-type D1QueryResponse = {
-  errors?: Array<{
-    code?: number;
-    message?: string;
-  }>;
-  result?: Array<{
-    results?: SignupRow[];
-  }>;
-  success?: boolean;
-};
+const signupMetadataColumns = [
+  "ALTER TABLE signups ADD COLUMN test_count INTEGER DEFAULT 0",
+  "ALTER TABLE signups ADD COLUMN country TEXT",
+  "ALTER TABLE signups ADD COLUMN region TEXT",
+  "ALTER TABLE signups ADD COLUMN city TEXT",
+];
 
-function passwordMatches(value: string) {
-  const expected = getPrivateConfig("SIGNUPS_ADMIN_PASSWORD");
+async function ensureSignupMetadataColumns() {
+  for (const sql of signupMetadataColumns) {
+    try {
+      await d1Query(sql);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
 
-  if (!expected) return false;
-
-  const suppliedBuffer = Buffer.from(value);
-  const expectedBuffer = Buffer.from(expected);
-
-  if (suppliedBuffer.length !== expectedBuffer.length) {
-    return false;
+      if (!message.toLowerCase().includes("duplicate column")) {
+        throw error;
+      }
+    }
   }
-
-  return timingSafeEqual(suppliedBuffer, expectedBuffer);
 }
 
 async function fetchSignups() {
-  const accountId = getPrivateConfig("CLOUDFLARE_ACCOUNT_ID");
-  const databaseId = getPrivateConfig("CLOUDFLARE_D1_DATABASE_ID");
-  const apiToken = getPrivateConfig("CLOUDFLARE_D1_API_TOKEN");
+  await ensureSignupMetadataColumns();
 
-  if (!accountId || !databaseId || !apiToken) {
-    throw new Error("Missing D1 configuration");
-  }
-
-  const response = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sql: `
-          SELECT email, created_at, user_agent
-          FROM signups
-          ORDER BY created_at DESC
-          LIMIT 500
-        `,
-      }),
-    }
-  );
-
-  const data = (await response.json()) as D1QueryResponse;
-
-  if (!response.ok || data.success === false) {
-    const detail = data.errors?.[0]?.message || "D1 read failed";
-    throw new Error(detail);
-  }
+  const data = await d1Query<SignupRow>(`
+    SELECT email, created_at, user_agent, test_count, country, region, city
+    FROM signups
+    ORDER BY created_at DESC
+    LIMIT 500
+  `);
 
   return data.result?.[0]?.results || [];
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => null)) as AdminSignupsBody | null;
-  const password = String(body?.password || "").trim();
-
-  if (!passwordMatches(password)) {
+  if (!adminRequestIsAuthenticated(request)) {
     return NextResponse.json(
       { ok: false, message: "Unauthorized." },
       { status: 401, headers: noStoreHeaders }

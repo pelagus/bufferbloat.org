@@ -110,6 +110,14 @@ export default function Page() {
           or device identity.
         </p>
 
+        <p>
+          Bufferbloat.org records first-party operational analytics for test
+          quality: session/test events, success or failure, coarse location from
+          hosting headers, broad browser/OS/device category, bucketed viewport,
+          and measured results. It does not store IP addresses, precise
+          geolocation, full user-agent strings, or fingerprinting signals.
+        </p>
+
         <div className="resource-links">
           <a
             href="https://github.com/pelagus/bufferbloat.org/blob/main/MEASUREMENT_METHODOLOGY.md"
