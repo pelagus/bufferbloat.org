@@ -11,7 +11,7 @@ export default function ResultCard({
   methodologyVersion,
   scorecardMetrics,
   finding,
-  reliabilityGroups,
+  applicationRankings,
   scoredMeasurements,
   chartSlot,
   technicalRows,
@@ -31,14 +31,12 @@ export default function ResultCard({
     tone?: "primary" | "secondary";
   }>;
   finding: string;
-  reliabilityGroups: Array<{
-    title: string;
-    tone: "reliable" | "unstable";
-    items: Array<{
-      symbol: string;
-      name: string;
-      label: string;
-    }>;
+  applicationRankings: Array<{
+    symbol: string;
+    name: string;
+    label: string;
+    tone: "excellent" | "good" | "fair" | "poor";
+    score: number;
   }>;
   scoredMeasurements: Array<{
     label: string;
@@ -64,21 +62,27 @@ export default function ResultCard({
       <div className="result-compact-header">
         <div className="result-brand-lockup" aria-label="Bufferbloat.org">
           <strong>Bufferbloat.org</strong>
-          <span>open source responsiveness test</span>
+          <span>
+            open source responsiveness test · Measured {formattedMeasuredAt} ·{" "}
+            {methodologyVersion}
+          </span>
         </div>
 
-        <div className="result-report-title">
-          <h2>Latency under load</h2>
-          <p>
-            Measured {formattedMeasuredAt} · {methodologyVersion}
-          </p>
-        </div>
+        <button
+          className="result-print-button"
+          type="button"
+          onClick={() => window.print()}
+        >
+          Print
+        </button>
       </div>
 
       <div className="result-scorecard-grid">
         <div className="result-grade">
           <p>grade</p>
-          <strong className={severityClass(grade)}>{grade}</strong>
+          <strong className={`${severityClass(grade)} ${grade === "A+" ? "grade-plus" : ""}`}>
+            {grade}
+          </strong>
           <span>{diagnosis.label}</span>
         </div>
 
@@ -100,27 +104,21 @@ export default function ResultCard({
 
       <div className="result-applications">
         <div className="result-section-heading">
-          <span>What this network should handle</span>
+          <span>Application fit, ranked</span>
         </div>
 
-        <div className="reliability-groups">
-          {reliabilityGroups.map((group) => (
-            <section className={`reliability-group ${group.tone}`} key={group.title}>
-              <h3>{group.title}</h3>
-              <ul>
-                {group.items.map((item) => (
-                  <li key={item.name}>
-                    <span className="reliability-symbol" aria-hidden="true">
-                      {item.symbol}
-                    </span>
-                    <strong>{item.name}</strong>
-                    <em>{item.label}</em>
-                  </li>
-                ))}
-              </ul>
-            </section>
+        <ol className="application-ranking-list">
+          {applicationRankings.map((item, index) => (
+            <li className={item.tone} key={item.name}>
+              <span className="application-rank">{index + 1}</span>
+              <span className="reliability-symbol" aria-hidden="true">
+                {item.symbol}
+              </span>
+              <strong>{item.name}</strong>
+              <em>{item.label}</em>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
 
       {signupSlot}

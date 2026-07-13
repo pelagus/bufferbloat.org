@@ -184,7 +184,7 @@ function findingFor(
         ? "Both loaded phases contributed to the added delay."
         : "Neither loaded phase added meaningful delay.";
 
-  if (grade === "D" || grade === "C") {
+  if (grade === "F" || grade === "D" || grade === "C") {
     return `Latency rose from ${typical} to ${underLoad} under load. Download was ${downloadText}; upload was ${uploadText}. ${direction}`;
   }
 
@@ -192,7 +192,11 @@ function findingFor(
     return `Latency rose from ${typical} to ${underLoad} under load. Download was ${downloadText}; upload was ${uploadText}. ${direction}`;
   }
 
-  if (grade === "A") {
+  if (grade === "A+" || grade === "A") {
+    if (grade === "A+") {
+      return `Exceptional result. Latency stayed near ${typical} under load, with worst loaded latency at ${underLoad}.`;
+    }
+
     if ((idle ?? 0) < 100) {
       return `Excellent bufferbloat result. Latency stayed close to ${typical} under load, with worst loaded latency at ${underLoad}.`;
     }
@@ -207,8 +211,7 @@ function findingFor(
   return `This run measured ${formatSpeed(downloadMbps)} Mbps download, but did not produce a complete latency-under-load result.`;
 }
 
-function reliabilityGroupsFor(
-  grade: Grade,
+function applicationRankingsFor(
   idle: number | null,
   downloadLatency: number | null,
   uploadLatency: number | null,
@@ -220,106 +223,63 @@ function reliabilityGroupsFor(
   const baseline = idle ?? 0;
   const worstLoadedLatency = Math.max(downloadLatency ?? 0, uploadLatency ?? 0);
   const movement = stressMovement(downloadDelta, uploadDelta);
-  const enoughStreamingCapacity = (downloadMbps ?? 0) >= 25;
-  const enoughCallUpload = (uploadMbps ?? 0) >= 5;
-  const stable = grade === "A" || (grade === "B" && movement <= 60);
-  const strained = grade === "D" || grade === "C" || movement > 100 || worstLoadedLatency > 180;
-  type ReliabilityItem = { symbol: string; name: string; label: string };
-  type ReliabilityGroup = {
-    title: string;
-    tone: "reliable" | "unstable";
-    items: ReliabilityItem[];
+  const down = downloadMbps ?? 0;
+  const up = uploadMbps ?? 0;
+  const clampScore = (score: number) => Math.max(0, Math.min(100, Math.round(score)));
+  const speedScore = (value: number, good: number, usable: number) => {
+    if (value >= good) return 100;
+    if (value >= usable) return 72 + ((value - usable) / (good - usable)) * 20;
+    return Math.max(22, (value / usable) * 62);
+  };
+  const labelFor = (score: number) => {
+    if (score >= 85) return { label: "Very reliable", tone: "excellent" as const };
+    if (score >= 70) return { label: "Reliable", tone: "good" as const };
+    if (score >= 50) return { label: "Unstable", tone: "fair" as const };
+    return { label: "Poor", tone: "poor" as const };
   };
 
-  if (strained) {
-    return [
-      {
-        title: "Should work reliably",
-        tone: "reliable" as const,
-        items: [
-          {
-            symbol: "▶",
-            name: "Streaming",
-            label: enoughStreamingCapacity ? "Usually OK" : "May suffer",
-          },
-        ],
-      },
-      {
-        title: "May suffer under load",
-        tone: "unstable" as const,
-        items: [
-          { symbol: "⌁", name: "Browsing", label: "May suffer" },
-          { symbol: "☎", name: "Voice calls", label: "May suffer" },
-          { symbol: "◉", name: "Video calls", label: "Poor under load" },
-          { symbol: "◆", name: "Gaming", label: "Poor under load" },
-          { symbol: "⇧", name: "Large uploads", label: "Disruptive" },
-        ],
-      },
-    ];
-  }
-
-  if (!stable) {
-    return [
-      {
-        title: "Should work reliably",
-        tone: "reliable" as const,
-        items: [
-          {
-            symbol: "▶",
-            name: "Streaming",
-            label: enoughStreamingCapacity ? "Works well" : "Usually OK",
-          },
-          { symbol: "⌁", name: "Browsing", label: "Usually OK" },
-          {
-            symbol: "☎",
-            name: "Voice calls",
-            label: enoughCallUpload ? "Usually OK" : "May suffer",
-          },
-        ],
-      },
-      {
-        title: "May suffer under load",
-        tone: "unstable" as const,
-        items: [
-          { symbol: "◉", name: "Video calls", label: "May suffer" },
-          { symbol: "◆", name: "Gaming", label: "May suffer" },
-          { symbol: "⇧", name: "Large uploads", label: "May disrupt" },
-        ],
-      },
-    ];
-  }
-
-  const reliableItems: ReliabilityItem[] = [
-    { symbol: "▶", name: "Streaming", label: enoughStreamingCapacity ? "Works well" : "Usually OK" },
-    { symbol: "⌁", name: "Browsing", label: "Works well" },
-    { symbol: "☎", name: "Voice calls", label: enoughCallUpload ? "Works well" : "Usually OK" },
-    { symbol: "◉", name: "Video calls", label: baseline <= 120 ? "Works well" : "Usually OK" },
-  ];
-  const unstableItems: ReliabilityItem[] = [];
-
-  if (baseline < 100) {
-    reliableItems.push({ symbol: "◆", name: "Gaming", label: baseline <= 60 ? "Works well" : "Good" });
-  } else {
-    unstableItems.push({ symbol: "◆", name: "Competitive gaming", label: "Baseline delay" });
-  }
-
-  const groups: ReliabilityGroup[] = [
+  return [
     {
-      title: "Should work reliably",
-      tone: "reliable" as const,
-      items: reliableItems,
+      symbol: "⌁",
+      name: "Web browsing",
+      score: clampScore(96 - movement * 0.28 - Math.max(0, worstLoadedLatency - 160) * 0.25),
     },
-  ];
-
-  if (unstableItems.length > 0) {
-    groups.push({
-      title: stable ? "Latency-sensitive uses" : "May suffer under load",
-      tone: "unstable" as const,
-      items: unstableItems,
-    });
-  }
-
-  return groups;
+    {
+      symbol: "▶",
+      name: "Video streaming",
+      score: clampScore(speedScore(down, 25, 8) - movement * 0.06),
+    },
+    {
+      symbol: "☎",
+      name: "Voice calls",
+      score: clampScore(
+        96 - Math.max(0, baseline - 90) * 0.2 - movement * 0.45 - Math.max(0, 1 - up) * 18
+      ),
+    },
+    {
+      symbol: "◉",
+      name: "Video calls",
+      score: clampScore(
+        94 -
+          Math.max(0, baseline - 80) * 0.22 -
+          movement * 0.5 -
+          Math.max(0, 10 - down) * 2 -
+          Math.max(0, 3 - up) * 10
+      ),
+    },
+    {
+      symbol: "◆",
+      name: "Online gaming",
+      score: clampScore(96 - Math.max(0, baseline - 40) * 0.4 - movement * 0.5),
+    },
+    {
+      symbol: "⇧",
+      name: "Cloud backup",
+      score: clampScore(speedScore(up, 10, 2) - movement * 0.35),
+    },
+  ]
+    .map((item) => ({ ...item, ...labelFor(item.score) }))
+    .sort((a, b) => b.score - a.score);
 }
 
 export default function Page() {
@@ -727,7 +687,7 @@ export default function Page() {
 
       {finished && (
         <>
-      <div ref={diagnosisRef}>
+      <div ref={diagnosisRef} className="result-screen">
         <ResultCard
           grade={grade}
           diagnosis={diagnosis}
@@ -735,16 +695,16 @@ export default function Page() {
           methodologyVersion={METHODOLOGY_VERSION}
           scorecardMetrics={[
             {
-              label: "Median ping, normal",
+              label: "Latency",
               value: `${formatLatency(idle)} ms`,
-            },
-            {
-              label: "Ping under download",
-              value: `${formatLatency(downloadLatency)} ms`,
             },
             {
               label: "Download stress",
               value: formatDelta(downloadDelta),
+            },
+            {
+              label: "Upload stress",
+              value: formatDelta(uploadDelta),
             },
             {
               label: "Download speed",
@@ -770,8 +730,7 @@ export default function Page() {
             uploadLatency,
             downloadMbps
           )}
-          reliabilityGroups={reliabilityGroupsFor(
-            grade,
+          applicationRankings={applicationRankingsFor(
             idle,
             downloadLatency,
             uploadLatency,
@@ -884,7 +843,7 @@ export default function Page() {
           />
 
           <div className="live-chart-layout">
-            <LatencyPhaseChart samples={latencySamples} mode="live" grade={grade} />
+            <LatencyPhaseChart samples={latencySamples} mode="live" grade={grade} activePhase={phase} />
 
             {activeLiveStage && (
               <ActiveMeasurementCard
@@ -895,6 +854,13 @@ export default function Page() {
                 sampleCount={activeLiveStage.sampleCount}
                 speed={activeLiveStage.speed}
                 speedLabel={activeLiveStage.speedLabel}
+                phaseState={
+                  status.includes("settling") || status.includes("starting")
+                    ? "settling"
+                    : activeLiveStage.sampleCount === 0
+                      ? "starting"
+                      : "recording"
+                }
               />
             )}
           </div>
@@ -929,10 +895,12 @@ function LatencyPhaseChart({
   samples,
   grade,
   mode = "live",
+  activePhase = "ready",
 }: {
   samples: LatencySamplesByPhase;
   grade?: Grade;
   mode?: "live" | "result";
+  activePhase?: TestPhase | "ready";
 }) {
   const allSamples = [...samples.idle, ...samples.download, ...samples.upload];
   const maxSample = allSamples.length ? Math.max(...allSamples) : 100;
@@ -974,36 +942,40 @@ function LatencyPhaseChart({
   const hasSamples = allSamples.length > 0;
   const revealDownload = mode === "result" || samples.download.length > 0;
   const revealUpload = mode === "result" || samples.upload.length > 0;
-  const completedLivePhases =
-    mode === "live"
-      ? [
-          samples.download.length > 0
-            ? { key: "idle", x: chart.left, width: phaseWidth }
-            : null,
-          samples.upload.length > 0
-            ? { key: "download", x: chart.left + phaseWidth, width: phaseWidth }
-            : null,
-        ].filter((phase): phase is { key: string; x: number; width: number } => phase !== null)
-      : [];
-  const hiddenPhases = [
-    !revealDownload
-      ? {
-          key: "download",
-          label: "download pending",
-          x: chart.left + phaseWidth,
-        }
-      : null,
-    !revealUpload
-      ? {
-          key: "upload",
-          label: "upload pending",
-          x: chart.left + phaseWidth * 2,
-        }
-      : null,
-  ].filter((phase): phase is { key: string; label: string; x: number } => phase !== null);
+  const livePhaseIndex =
+    activePhase === "idle"
+      ? 0
+      : activePhase === "download"
+        ? 1
+        : activePhase === "upload"
+          ? 2
+          : -1;
+  const livePhaseCovers = [
+    {
+      key: "idle",
+      label: livePhaseIndex > 0 ? "quiet complete" : livePhaseIndex < 0 ? "quiet pending" : "",
+      x: chart.left,
+      kind: livePhaseIndex > 0 ? "completed" : livePhaseIndex < 0 ? "pending" : "",
+    },
+    {
+      key: "download",
+      label: livePhaseIndex > 1 ? "download complete" : livePhaseIndex < 1 ? "download pending" : "",
+      x: chart.left + phaseWidth,
+      kind: livePhaseIndex > 1 ? "completed" : livePhaseIndex < 1 ? "pending" : "",
+    },
+    {
+      key: "upload",
+      label: livePhaseIndex > 2 ? "upload complete" : livePhaseIndex < 2 ? "upload pending" : "",
+      x: chart.left + phaseWidth * 2,
+      kind: livePhaseIndex > 2 ? "completed" : livePhaseIndex < 2 ? "pending" : "",
+    },
+  ].filter(
+    (phase): phase is { key: string; label: string; x: number; kind: "completed" | "pending" } =>
+      mode === "live" && (phase.kind === "completed" || phase.kind === "pending")
+  );
   const gradeClass =
     mode === "result" && grade && grade !== "—"
-      ? `grade-${grade.toLowerCase()}`
+      ? `grade-${grade === "A+" ? "a-plus" : grade.toLowerCase()}`
       : "";
 
   return (
@@ -1061,20 +1033,8 @@ function LatencyPhaseChart({
         {revealDownload && downloadPath && <path className="latency-line line-download" d={downloadPath} />}
         {revealUpload && uploadPath && <path className="latency-line line-upload" d={uploadPath} />}
 
-        {completedLivePhases.map((phase) => (
-          <rect
-            key={phase.key}
-            className="chart-phase-completed-layer"
-            x={phase.x}
-            y={chart.top}
-            width={phase.width}
-            height={chart.height}
-          />
-        ))}
-
-        {mode === "live" &&
-          hiddenPhases.map((phase) => (
-            <g key={phase.key} className="chart-phase-obscured">
+        {livePhaseCovers.map((phase) => (
+            <g key={phase.key} className={`chart-phase-obscured ${phase.kind}`}>
               <rect x={phase.x} y={chart.top} width={phaseWidth} height={chart.height} />
               <text x={phase.x + phaseWidth / 2} y={chart.top + chart.height / 2}>
                 {phase.label}
@@ -1165,8 +1125,8 @@ function ForegroundRunNotice({ elapsedSeconds }: { elapsedSeconds: number }) {
     <div className="foreground-run-notice" role="status" aria-live="polite">
       <strong>{formatDuration(elapsedSeconds)}</strong>
       <span>
-        Keep this tab in the foreground. Do not worry, the test usually takes
-        less than 1 minute.
+        Keep this tab in the foreground. The test usually takes less than 1
+        minute.
       </span>
     </div>
   );
@@ -1298,6 +1258,7 @@ function ActiveMeasurementCard({
   sampleCount,
   speed,
   speedLabel,
+  phaseState,
 }: {
   title: string;
   theme: "baseline" | "download" | "upload";
@@ -1306,6 +1267,7 @@ function ActiveMeasurementCard({
   sampleCount: number;
   speed?: number | null;
   speedLabel?: string | null;
+  phaseState: "settling" | "starting" | "recording";
 }) {
   const speedTitle =
     theme === "download"
@@ -1338,7 +1300,7 @@ function ActiveMeasurementCard({
 
         <div>
           <dt>Phase</dt>
-          <dd>{ping === null ? "warming" : "recording"}</dd>
+          <dd>{phaseState}</dd>
         </div>
 
         <div>

@@ -30,7 +30,7 @@ export type TestResult = {
   downloadMbps: number | null;
   uploadMbps: number | null;
 
-  grade: "A" | "B" | "C" | "D";
+  grade: "A+" | "A" | "B" | "C" | "D" | "F";
   latencySamples: LatencySamplesByPhase;
 };
 
@@ -356,20 +356,34 @@ function degradationPercent(base: number | null, loaded: number | null) {
 function gradeResult(
   idle: number | null,
   downloadLatency: number | null,
-  uploadLatency: number | null
+  uploadLatency: number | null,
+  downloadMbps: number | null,
+  uploadMbps: number | null
 ) {
   const downloadDegradation = degradationPercent(idle, downloadLatency);
   const uploadDegradation = degradationPercent(idle, uploadLatency);
+  const downloadDelta = downloadLatency !== null && idle !== null ? downloadLatency - idle : 0;
+  const uploadDelta = uploadLatency !== null && idle !== null ? uploadLatency - idle : 0;
 
   const weightedWorst = Math.max(
     downloadDegradation,
     uploadDegradation * 1.15
   );
+  const movement = Math.max(0, downloadDelta, uploadDelta);
 
-  if (weightedWorst > 300) return "D";
+  if (weightedWorst > 300) return "F";
   if (weightedWorst > 150) return "D";
   if (weightedWorst > 60) return "C";
   if (weightedWorst > 25) return "B";
+  if (
+    idle !== null &&
+    idle <= 50 &&
+    movement <= 8 &&
+    (downloadMbps ?? 0) >= 25 &&
+    (uploadMbps ?? 0) >= 10
+  ) {
+    return "A+";
+  }
 
   return "A";
 }
@@ -653,7 +667,7 @@ export async function runBufferbloatTest(
     uploadLatency,
     downloadMbps,
     uploadMbps,
-    grade: gradeResult(idle, downloadLatency, uploadLatency),
+    grade: gradeResult(idle, downloadLatency, uploadLatency, downloadMbps, uploadMbps),
     latencySamples,
   };
 }

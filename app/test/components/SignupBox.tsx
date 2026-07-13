@@ -72,10 +72,9 @@ export default function SignupBox() {
       <div className="signup-icon">✉</div>
 
       <div>
-        <h2>Follow the project</h2>
+        <h2>Follow Bufferbloat.org</h2>
         <p>
-          Get occasional updates as the open-source test and methodology
-          improve.
+          Occasional notes on the open-source test and methodology.
         </p>
       </div>
 
