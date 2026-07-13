@@ -17,6 +17,11 @@ const DOWNLOAD_TEST_SIZE = "100 MB file, repeated across 4 streams";
 const UPLOAD_TEST_SIZE = "1 MB chunks, repeated across 3 streams";
 const DOWNLOAD_STREAM_LABEL = "4 download streams";
 const UPLOAD_STREAM_LABEL = "3 upload streams";
+const DOWNLOAD_STREAM_COUNT = 4;
+const UPLOAD_STREAM_COUNT = 3;
+const DOWNLOAD_PAYLOAD_MB = 100;
+const UPLOAD_CHUNK_MB = 1;
+const LOAD_SETTLING_SECONDS = 4;
 const FOREGROUND_ERROR =
   "The test paused because this tab was no longer visible.";
 const TEST_COUNT_STORAGE_KEY = "bufferbloat_test_count";
@@ -926,15 +931,31 @@ export default function Page() {
     },
     {
       section: "Method",
-      metric: "Download load",
-      value: DOWNLOAD_STREAM_LABEL,
-      note: DOWNLOAD_TEST_SIZE,
+      metric: "Download stream count",
+      value: String(DOWNLOAD_STREAM_COUNT),
+      unit: "streams",
+      note: "Parallel download requests used to create downstream load.",
     },
     {
       section: "Method",
-      metric: "Upload load",
-      value: UPLOAD_STREAM_LABEL,
-      note: UPLOAD_TEST_SIZE,
+      metric: "Download payload size",
+      value: String(DOWNLOAD_PAYLOAD_MB),
+      unit: "MB",
+      note: "Payload file size requested by each download stream.",
+    },
+    {
+      section: "Method",
+      metric: "Upload stream count",
+      value: String(UPLOAD_STREAM_COUNT),
+      unit: "streams",
+      note: "Parallel upload requests used to create upstream load.",
+    },
+    {
+      section: "Method",
+      metric: "Upload chunk size",
+      value: String(UPLOAD_CHUNK_MB),
+      unit: "MB",
+      note: "Payload chunk size sent repeatedly by each upload stream.",
     },
     {
       section: "Method",
@@ -945,8 +966,9 @@ export default function Page() {
     {
       section: "Method",
       metric: "Settling period",
-      value: "First 4 seconds excluded",
-      note: "Download and upload traffic reaches a steadier rate before loaded medians are scored.",
+      value: String(LOAD_SETTLING_SECONDS),
+      unit: "sec",
+      note: "Initial loaded interval excluded before loaded medians are scored.",
     },
     ...applicationRankingsResult.map((item, index) => ({
       section: "Application fit",
@@ -1218,7 +1240,7 @@ export default function Page() {
       )}
 
       {finished && (
-        <button onClick={runTest}>Run another test</button>
+        <button className="result-rerun-button" onClick={runTest}>Run another test</button>
       )}
     </main>
   );
@@ -1425,14 +1447,12 @@ function LatencyPhaseChart({
       </svg>
 
       <div className="latency-phase-legend" aria-hidden="true">
-        <span className="idle">quiet</span>
-        <span className="download">download</span>
-        <span className="upload">upload</span>
+        <span className="idle">quiet line</span>
+        <span className="download">download stress</span>
+        <span className="upload">upload stress</span>
         {mode === "result" ? (
           <span className="reference">final medians</span>
-        ) : (
-          <span className="pending">pending phases hidden</span>
-        )}
+        ) : null}
       </div>
     </section>
   );

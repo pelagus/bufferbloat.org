@@ -783,6 +783,56 @@
   line-height: 1.5;
 }
 
+.technical-field-table-wrap {
+  margin-top: 18px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+}
+
+.technical-field-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  background: var(--bg);
+}
+
+.technical-field-table th,
+.technical-field-table td {
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  padding: 10px 12px;
+  color: color-mix(in srgb, var(--fg) 78%, var(--muted));
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+  vertical-align: top;
+}
+
+.technical-field-table th:last-child,
+.technical-field-table td:last-child {
+  border-right: 0;
+}
+
+.technical-field-table tr:last-child th,
+.technical-field-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.technical-field-table thead th {
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.technical-field-table tbody th {
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-weight: 460;
+  overflow-wrap: anywhere;
+}
+
 .guide-test-callout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 0.55fr);

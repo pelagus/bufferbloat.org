@@ -44,11 +44,12 @@ export default function Page() {
         </p>
 
         <p>
-          This gap has been known for years. In a 2011 ACM Queue discussion on
-          bufferbloat with Vint Cerf, Van Jacobson, Nick Weaver, and Jim Gettys,
-          the participants made the core measurement problem clear: if you test
-          only bandwidth or only idle latency, you miss how the network behaves
-          when it is actually busy.
+          This gap has been known for years. In a 2011 ACM Queue discussion,
+          Vint Cerf, Van Jacobson, Nick Weaver, and Jim Gettys discussed
+          bufferbloat as a real weakness in how the internet is experienced and
+          measured. The core lesson still matters: if you test only bandwidth
+          or only idle latency, you miss how the network behaves when it is
+          actually busy.
         </p>
 
         <p>
@@ -71,6 +72,14 @@ export default function Page() {
           that principle. The code is open. The methodology is public. The
           limitations are documented. The goal is to make internet reliability
           easier to measure, easier to understand, and easier to discuss.
+        </p>
+
+        <p>
+          I have spent more than two decades working on internet products and
+          infrastructure, and the same pattern keeps coming back: the web gets
+          better when important systems can be inspected, measured, questioned,
+          and improved in public. Bufferbloat.org is my attempt to apply that
+          idea to internet reliability.
         </p>
 
         <p className="mission-closing">
@@ -99,7 +108,7 @@ export default function Page() {
 
         <article>
           <span>03</span>
-          <h2>Citable method</h2>
+          <h2>Public method</h2>
           <p>
             Measurements should be reproducible, methodology should be public,
             and implementation should never be a black box.

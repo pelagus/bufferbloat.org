@@ -378,7 +378,20 @@
 }
 
 .procedure-stage-grid li.active.idle {
-  box-shadow: inset 0 -3px 0 var(--fg);
+  box-shadow: inset 0 -3px 0 var(--quiet);
+}
+
+.procedure-stage-grid li.complete.idle > i,
+.procedure-stage-grid li.active.idle > i {
+  background:
+    repeating-linear-gradient(
+      110deg,
+      transparent 0,
+      transparent 8px,
+      color-mix(in srgb, var(--bg) 40%, transparent) 8px,
+      color-mix(in srgb, var(--bg) 40%, transparent) 15px
+    ),
+    var(--quiet);
 }
 
 .procedure-stage-grid li.active.download {
@@ -436,10 +449,36 @@
   color: var(--blue);
 }
 
+.procedure-stage-grid li.complete.download > span {
+  background: var(--blue);
+  color: #ffffff;
+}
+
+.procedure-stage-grid li.complete.idle > span,
+.procedure-stage-grid li.active.idle > span {
+  border-color: var(--quiet);
+  color: var(--quiet);
+}
+
+.procedure-stage-grid li.complete.idle > span {
+  background: var(--quiet);
+  color: #ffffff;
+}
+
 .procedure-stage-grid li.complete.upload > span,
 .procedure-stage-grid li.active.upload > span {
   border-color: var(--purple);
   color: var(--purple);
+}
+
+.procedure-stage-grid li.complete.upload > span {
+  background: var(--purple);
+  color: #ffffff;
+}
+
+.procedure-stage-grid li.active.idle strong,
+.procedure-stage-grid li.active.idle em {
+  color: var(--quiet);
 }
 
 .procedure-stage-grid li.active.download strong,
@@ -705,6 +744,10 @@
   fill: color-mix(in srgb, var(--fg) 5%, transparent);
 }
 
+.latency-phase-chart.live .phase-zone-idle {
+  fill: color-mix(in srgb, var(--quiet) 12%, transparent);
+}
+
 .latency-phase-chart .phase-zone-download {
   fill: color-mix(in srgb, var(--blue) 10%, transparent);
 }
@@ -742,16 +785,16 @@
 
 .latency-phase-chart .latency-median-line {
   stroke: var(--bad);
-  stroke-dasharray: none;
-  stroke-linecap: square;
-  stroke-width: 2.2;
+  stroke-dasharray: 5 5;
+  stroke-linecap: butt;
+  stroke-width: 2.6;
 }
 
 .latency-phase-chart .latency-line {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 4;
+  stroke-width: 3;
   vector-effect: non-scaling-stroke;
 }
 
@@ -766,11 +809,15 @@
   opacity: 1;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 4;
+  stroke-width: 3;
 }
 
 .latency-phase-chart .line-idle {
   stroke: var(--fg);
+}
+
+.latency-phase-chart.live .line-idle {
+  stroke: var(--quiet);
 }
 
 .latency-phase-chart .line-download {
@@ -832,6 +879,10 @@
   content: "";
   width: 18px;
   border-top: 3px solid var(--fg);
+}
+
+.latency-phase-chart.live .latency-phase-legend .idle::before {
+  border-color: var(--quiet);
 }
 
 .latency-phase-legend .download::before {
@@ -1372,6 +1423,30 @@
   color: var(--fg);
 }
 
+.result-rerun-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 32px;
+  margin: 12px auto 0;
+  border: 1px solid color-mix(in srgb, var(--action-strong) 58%, var(--line));
+  background: color-mix(in srgb, var(--action) 10%, var(--bg));
+  color: var(--action-strong);
+  padding: 5px 9px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 13px;
+  font-weight: 460;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.result-rerun-button:hover {
+  border-color: var(--action-strong);
+  background: color-mix(in srgb, var(--action) 16%, var(--bg));
+  color: var(--action-strong);
+}
+
 .result-scorecard-grid {
   display: grid;
   grid-template-columns: 116px minmax(0, 1fr);
@@ -1467,6 +1542,12 @@
 
 .result-metric-grid article.secondary {
   background: color-mix(in srgb, var(--fg) 2.5%, var(--bg));
+}
+
+.result-metric-grid article.secondary strong {
+  color: color-mix(in srgb, var(--fg) 72%, var(--muted));
+  font-size: clamp(14px, 1.55vw, 18px);
+  font-weight: 360;
 }
 
 .result-metric-grid strong {
@@ -1886,8 +1967,91 @@
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {
+  .test-shell {
+    width: min(1120px, calc(100vw - 24px));
+    padding-top: 12px;
+  }
+
+  .instrument-panel {
+    gap: 8px;
+    padding: 8px !important;
+  }
+
+  .procedure-stage-grid li {
+    min-height: 40px;
+    padding: 6px;
+  }
+
+  .procedure-current {
+    padding: 11px 14px;
+  }
+
+  .procedure-current h2 {
+    font-size: clamp(22px, 3.1vw, 32px);
+  }
+
+  .latency-phase-chart-header {
+    padding: 8px 10px;
+  }
+
+  .latency-phase-legend {
+    padding-bottom: 10px;
+  }
+
+  .latency-phase-chart.live svg {
+    height: clamp(230px, 33vh, 320px);
+  }
+
+  .live-chart-layout {
+    gap: 8px;
+  }
+
+  .live-chart-layout .live-measurement-grid dd {
+    font-size: clamp(13px, 1.45vw, 16px);
+  }
+
   .result-screen {
-    width: min(1000px, calc(100vw - 24px));
+    width: min(1120px, calc(100vw - 24px));
+    margin-top: -18px;
+  }
+
+  .result-compact-header {
+    padding: 8px 12px;
+  }
+
+  .result-brand-lockup strong {
+    font-size: clamp(32px, 5vw, 46px);
+  }
+
+  .result-scorecard-grid {
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+
+  .result-scorecard .result-grade {
+    min-height: 112px;
+    padding: 9px 11px;
+  }
+
+  .result-scorecard .result-grade strong {
+    font-size: clamp(62px, 8vw, 82px);
+  }
+
+  .result-finding {
+    min-height: 0;
+    padding: 11px 14px;
+    font-size: clamp(16px, 2.1vw, 22px);
+  }
+
+  .result-metric-grid article {
+    padding: 7px 10px;
+  }
+
+  .result-metric-grid strong {
+    font-size: clamp(16px, 2vw, 21px);
+  }
+
+  .result-metric-grid article.secondary strong {
+    font-size: clamp(14px, 1.7vw, 18px);
   }
 
   .result-scorecard .technical-details summary {
@@ -1920,19 +2084,139 @@
 
   .result-scorecard .technical-details table th:nth-child(1),
   .result-scorecard .technical-details table td:nth-child(1) {
-    width: 18%;
+    width: 44%;
   }
 
   .result-scorecard .technical-details table th:nth-child(2),
   .result-scorecard .technical-details table td:nth-child(2) {
-    width: 24%;
+    width: 56%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 899px) {
+  .live-chart-layout {
+    grid-template-columns: 1fr;
   }
 
-  .result-scorecard .technical-details table th:nth-child(3),
-  .result-scorecard .technical-details table td:nth-child(3),
-  .result-scorecard .technical-details table th:nth-child(4),
-  .result-scorecard .technical-details table td:nth-child(4) {
-    width: 12%;
+  .live-chart-layout .live-measurement-strip {
+    grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+  }
+
+  .live-chart-layout .live-measurement-strip .active-measurement-header {
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+  }
+
+  .live-chart-layout .live-measurement-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .live-chart-layout .live-measurement-grid div {
+    border-bottom: 0;
+  }
+
+  .live-chart-layout .live-measurement-grid div:nth-child(2n) {
+    border-right: 1px solid var(--line);
+  }
+
+  .live-chart-layout .live-measurement-grid div:last-child {
+    border-right: 0;
+  }
+
+  .result-evidence-row {
+    grid-template-columns: 1fr;
+  }
+
+  .result-chart-cell {
+    min-height: 0;
+  }
+
+  .latency-phase-chart.result svg {
+    height: clamp(300px, 38vh, 380px);
+  }
+
+  .result-scorecard .result-applications {
+    display: grid;
+    padding: 9px 10px;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .result-scorecard .result-section-heading {
+    margin-bottom: 7px;
+  }
+
+  .application-ranking-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .application-ranking-list li {
+    grid-template-columns: 20px 20px minmax(0, 1fr);
+    gap: 2px 6px;
+    padding: 7px;
+  }
+
+  .application-ranking-list li:nth-child(3n) {
+    border-right: 0;
+  }
+
+  .application-ranking-list li:nth-last-child(-n + 3) {
+    border-bottom: 0;
+  }
+
+  .application-ranking-list em {
+    grid-column: 3;
+    justify-self: start;
+  }
+
+  .result-scorecard .signup-card {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .result-scorecard .signup-card form {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .live-chart-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(238px, 0.28fr);
+  }
+
+  .result-evidence-row {
+    grid-template-columns: minmax(0, 1fr) minmax(238px, 0.26fr);
+  }
+
+  .result-chart-cell {
+    min-height: 320px;
+  }
+
+  .latency-phase-chart.result svg {
+    height: clamp(320px, 36vh, 390px);
+  }
+
+  .result-scorecard .result-applications {
+    padding: 8px;
+  }
+
+  .application-ranking-list li {
+    grid-template-columns: 18px 18px minmax(0, 1fr);
+    gap: 2px 6px;
+    padding: 6px;
+  }
+
+  .application-ranking-list strong {
+    font-size: 11px;
+  }
+
+  .application-ranking-list em {
+    font-size: 8px;
+  }
+
+  .result-scorecard .signup-card {
+    grid-template-columns: 40px minmax(0, 0.8fr) minmax(260px, 1fr);
+    padding: 14px;
   }
 }
 
@@ -2348,10 +2632,10 @@
 
   .site-nav,
   .result-print-button,
+  .result-rerun-button,
   .result-scorecard .signup-card,
   .result-scorecard .technical-details,
-  .result-scorecard .methodology-row,
-  .result-screen + button {
+  .result-scorecard .methodology-row {
     display: none !important;
   }
 

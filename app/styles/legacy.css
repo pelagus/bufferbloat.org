@@ -10,6 +10,7 @@
   --bad: #ff6266;
   --blue: #45a3ff;
   --purple: #b86cff;
+  --quiet: #d87916;
   --action: #167a3e;
   --action-strong: #0f5f30;
 }
@@ -22,6 +23,7 @@
     --soft: #101010;
     --line: #303030;
     --line-strong: #eeeeee;
+    --quiet: #f59a2f;
     --action: #2fa866;
     --action-strong: #45c17d;
   }

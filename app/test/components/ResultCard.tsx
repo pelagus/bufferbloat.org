@@ -16,6 +16,23 @@ function csvCell(value: string) {
   return `"${value.replace(/"/g, '""')}"`;
 }
 
+function variableName(row: TechnicalRow) {
+  const baseName = row.metric
+    .trim()
+    .replace(/^\d+\.\s*/, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  if (row.unit === "ms" && !baseName.endsWith("_ms")) return `${baseName}_ms`;
+  if (row.unit === "Mbps" && !baseName.endsWith("_mbps")) return `${baseName}_mbps`;
+  if (row.unit === "MB" && !baseName.endsWith("_mb")) return `${baseName}_mb`;
+  if (row.unit === "sec" && !baseName.endsWith("_sec")) return `${baseName}_sec`;
+  if (row.unit === "/100" && !baseName.endsWith("_score")) return `${baseName}_score`;
+
+  return baseName;
+}
+
 export default function ResultCard({
   grade,
   diagnosis,
@@ -58,13 +75,10 @@ export default function ResultCard({
 
   function exportTechnicalDetails() {
     const rows = [
-      ["Section", "Metric", "Value", "Unit", "Notes"],
+      ["Variable", "Value"],
       ...technicalRows.map((row) => [
-        row.section,
-        row.metric,
+        variableName(row),
         row.value,
-        row.unit ?? "",
-        row.note,
       ]),
     ];
     const csv = `${rows.map((row) => row.map(csvCell).join(",")).join("\n")}\n`;
@@ -172,21 +186,15 @@ export default function ResultCard({
         <table>
           <thead>
             <tr>
-              <th>Section</th>
-              <th>Metric</th>
+              <th>Variable</th>
               <th>Value</th>
-              <th>Unit</th>
-              <th>Notes</th>
             </tr>
           </thead>
           <tbody>
             {technicalRows.map((row) => (
               <tr key={`${row.section}-${row.metric}`}>
-                <th scope="row">{row.section}</th>
-                <td>{row.metric}</td>
+                <th scope="row">{variableName(row)}</th>
                 <td>{row.value}</td>
-                <td>{row.unit ?? "—"}</td>
-                <td>{row.note}</td>
               </tr>
             ))}
           </tbody>

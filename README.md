@@ -10,19 +10,13 @@ Most internet speed tests measure **throughput**: how many megabits per second y
 
 ## Why this exists
 
-I built Bufferbloat.org because I couldn't find the tool I wanted.
-
-Most people are told to judge their internet connection by download speed. More technical users know to look at ping. Both are useful, but neither fully explains a question millions of people ask every day:
+Bufferbloat.org exists because ordinary internet speed tests leave an important question unanswered:
 
 > **"Why is my internet still laggy if I have 500 Mbps?"**
 
-A connection can deliver hundreds of megabits per second while video calls freeze, games stutter, websites hesitate and remote desktops become frustrating to use. The problem is often not bandwidth, but **latency under load**.
+A connection can deliver hundreds of megabits per second while video calls freeze, games stutter, websites hesitate and remote desktops become frustrating to use. The problem is often not bandwidth, but **latency under load**: how much latency increases while the connection is busy.
 
-Networking researchers have understood this for years. Yet, despite excellent research and commercial products, I was surprised by how few open, transparent and browser-based tools existed to measure it.
-
-I wanted a tool whose methodology anyone could inspect, whose implementation anyone could verify, and whose measurements anyone could improve.
-
-So I built one.
+This repository provides an open, browser-based implementation of that measurement. The longer project story is on the [mission page](https://bufferbloat.org/mission).
 
 ---
 
@@ -40,11 +34,7 @@ This project focuses on measuring **internet reliability under load**, not just 
 
 ## Why open source?
 
-Internet measurement should be transparent.
-
-Measurements should be reproducible. Methodology should be public. Implementation should never be a black box.
-
-Bufferbloat.org is built around those principles.
+Internet measurement should be transparent. Measurements should be reproducible. Methodology should be public. Implementation should never be a black box.
 
 The project provides:
 
@@ -195,20 +185,13 @@ data/signups.json
 
 Bufferbloat.org is an independent project created and maintained by **Emanuele Brandi**.
 
-I've spent more than two decades trying to make the web work a little better. Somewhere along the way, I developed an obsession with things that are measurable, transparent and useful, and lost almost all patience for black boxes.
-
-Bufferbloat.org is an independent open-source project. I built it because I
-believe the web needs transparent and community-owned tools more than ever, and
-because the tools we use to measure the web should themselves be open to
-inspection, scrutiny and improvement.
-
-I hope you find it useful. If you do, whether as an individual or an organisation, please consider contributing.
+I've spent more than two decades working on internet products and infrastructure, and I care deeply about tools that are measurable, transparent and useful.
 
 - Website: https://bufferbloat.org
+- Mission: https://bufferbloat.org/mission
 - GitHub: https://github.com/pelagus
 - LinkedIn: https://linkedin.com/in/ebrandi
 
-  
 ## License
 
 MIT
