@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Bufferbloat Speed Test",
+  title: "Bufferbloat Test",
   description:
-    "A bufferbloat speed test measures whether latency and ping stay stable while a connection is busy, not just peak download or upload throughput.",
+    "Run an open-source bufferbloat test that measures whether latency and ping stay stable while a connection is busy, not just peak download or upload throughput.",
   alternates: {
     canonical: "https://bufferbloat.org/learn/bufferbloat-speed-test",
   },
   openGraph: {
-    title: "Bufferbloat Speed Test",
+    title: "Bufferbloat Test",
     description:
       "Learn why a normal speed test can look fast while the connection still feels laggy under load.",
     url: "https://bufferbloat.org/learn/bufferbloat-speed-test",

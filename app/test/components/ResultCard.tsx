@@ -43,7 +43,6 @@ export default function ResultCard({
   grade,
   diagnosis,
   measuredAt,
-  scorecardMetrics,
   finding,
   applicationRankings,
   chartSlot,
@@ -58,11 +57,6 @@ export default function ResultCard({
     bullets: string[];
   };
   measuredAt: string;
-  scorecardMetrics: Array<{
-    label: string;
-    value: string;
-    tone?: "primary" | "secondary" | "download" | "upload";
-  }>;
   finding: string;
   applicationRankings: Array<{
     symbol: string;
@@ -126,15 +120,6 @@ export default function ResultCard({
 
         <div className="result-scorecard-body">
           <p className="result-finding">{finding}</p>
-
-          <div className="result-metric-grid">
-            {scorecardMetrics.map((item) => (
-              <article className={item.tone ?? "primary"} key={item.label}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-              </article>
-            ))}
-          </div>
         </div>
       </div>
 

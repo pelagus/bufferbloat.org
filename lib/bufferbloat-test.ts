@@ -451,20 +451,46 @@ export async function runBufferbloatTest(
     upload: [],
   };
 
-  onUpdate({
-    phase: "warmup",
+  let currentUpdateMeta = {
+    phase: "warmup" as TestPhase,
     status: "warmup",
     message: "Warming the test path before recording samples.",
     progress: 3,
-    idle,
-    downloadLatency,
-    uploadLatency,
-    downloadMbps,
-    uploadMbps,
-    recentLatencySamples,
-    latencySampleCount,
-    latencySamples,
-  });
+  };
+
+  function emitCurrent() {
+    onUpdate({
+      ...currentUpdateMeta,
+      idle,
+      downloadLatency,
+      uploadLatency,
+      downloadMbps,
+      uploadMbps,
+      recentLatencySamples,
+      latencySampleCount,
+      latencySamples,
+    });
+  }
+
+  function emit(phase: TestPhase, status: string, message: string, progress: number) {
+    currentUpdateMeta = { phase, status, message, progress };
+    emitCurrent();
+  }
+
+  let lastThroughputEmitAt = 0;
+
+  function emitThroughputUpdate() {
+    const now = performance.now();
+
+    if (now - lastThroughputEmitAt < 250) {
+      return;
+    }
+
+    lastThroughputEmitAt = now;
+    emitCurrent();
+  }
+
+  emit("warmup", "warmup", "Warming the test path before recording samples.", 3);
 
   throwIfAborted(signal);
 
@@ -475,37 +501,11 @@ export async function runBufferbloatTest(
 
   throwIfAborted(signal);
 
-  onUpdate({
-    phase: "idle",
-    status: "quiet settling",
-    message: "Warming quiet-line ping before recording baseline samples.",
-    progress: 8,
-    idle,
-    downloadLatency,
-    uploadLatency,
-    downloadMbps,
-    uploadMbps,
-    recentLatencySamples,
-    latencySampleCount,
-    latencySamples,
-  });
+  emit("idle", "quiet settling", "Warming quiet-line ping before recording baseline samples.", 8);
 
   await warmUpLatencyPath(IDLE_SETTLE_MS, signal);
 
-  onUpdate({
-    phase: "idle",
-    status: "quiet measuring",
-    message: "Measuring baseline response time.",
-    progress: 12,
-    idle,
-    downloadLatency,
-    uploadLatency,
-    downloadMbps,
-    uploadMbps,
-    recentLatencySamples,
-    latencySampleCount,
-    latencySamples,
-  });
+  emit("idle", "quiet measuring", "Measuring baseline response time.", 12);
 
   const idleSamples = await sampleLatency(IDLE_DURATION_MS, (sample) => {
     idle = sample;
@@ -513,81 +513,30 @@ export async function runBufferbloatTest(
     recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
     latencySampleCount += 1;
 
-    onUpdate({
-      phase: "idle",
-      status: "quiet measuring",
-      message: "Sampling quiet-line ping.",
-      progress: 24,
-      idle,
-      downloadLatency,
-      uploadLatency,
-      downloadMbps,
-      uploadMbps,
-      recentLatencySamples,
-      latencySampleCount,
-      latencySamples,
-    });
+    emit("idle", "quiet measuring", "Sampling quiet-line ping.", 24);
   }, signal);
 
   idle = trimmedMedian(idleSamples);
 
-  onUpdate({
-    phase: "download",
-    status: "download starting",
-    message: "Starting download pressure before recording loaded ping.",
-    progress: 34,
-    idle,
-    downloadLatency,
-    uploadLatency,
-    downloadMbps,
-    uploadMbps,
-    recentLatencySamples,
-    latencySampleCount,
-    latencySamples,
-  });
+  emit("download", "download starting", "Starting download pressure before recording loaded ping.", 34);
 
   recentLatencySamples = [];
   latencySampleCount = 0;
 
   const downloadPressure = startDownloadPressure((mbps) => {
     downloadMbps = mbps;
+    emitThroughputUpdate();
   });
   const stopDownloadOnAbort = () => downloadPressure.stop();
   signal?.addEventListener("abort", stopDownloadOnAbort, { once: true });
 
   let downloadSamples: number[] = [];
   try {
-    onUpdate({
-      phase: "download",
-      status: "download settling",
-      message: "Letting download pressure settle before recording samples.",
-      progress: 44,
-      idle,
-      downloadLatency,
-      uploadLatency,
-      downloadMbps,
-      uploadMbps,
-      recentLatencySamples,
-      latencySampleCount,
-      latencySamples,
-    });
+    emit("download", "download settling", "Letting download pressure settle before recording samples.", 44);
 
     await warmUpLatencyPath(LOADED_SETTLE_MS, signal);
 
-    onUpdate({
-      phase: "download",
-      status: "download measuring",
-      message: "Sampling ping under established download pressure.",
-      progress: 58,
-      idle,
-      downloadLatency,
-      uploadLatency,
-      downloadMbps,
-      uploadMbps,
-      recentLatencySamples,
-      latencySampleCount,
-      latencySamples,
-    });
+    emit("download", "download measuring", "Sampling ping under established download pressure.", 58);
 
     downloadSamples = await sampleLatency(LOADED_RECORDING_MS, (sample) => {
       downloadLatency = sample;
@@ -595,20 +544,7 @@ export async function runBufferbloatTest(
       recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
       latencySampleCount += 1;
 
-      onUpdate({
-        phase: "download",
-        status: "download measuring",
-        message: "Sampling ping under established download pressure.",
-        progress: 58,
-        idle,
-        downloadLatency,
-        uploadLatency,
-        downloadMbps,
-        uploadMbps,
-        recentLatencySamples,
-        latencySampleCount,
-        latencySamples,
-      });
+      emit("download", "download measuring", "Sampling ping under established download pressure.", 58);
     }, signal);
   } finally {
     signal?.removeEventListener("abort", stopDownloadOnAbort);
@@ -618,63 +554,25 @@ export async function runBufferbloatTest(
 
   downloadLatency = trimmedMedian(downloadSamples);
 
-  onUpdate({
-    phase: "upload",
-    status: "upload starting",
-    message: "Starting upload pressure before recording loaded ping.",
-    progress: 68,
-    idle,
-    downloadLatency,
-    uploadLatency,
-    downloadMbps,
-    uploadMbps,
-    recentLatencySamples,
-    latencySampleCount,
-    latencySamples,
-  });
+  emit("upload", "upload starting", "Starting upload pressure before recording loaded ping.", 68);
 
   recentLatencySamples = [];
   latencySampleCount = 0;
 
   const uploadPressure = startUploadPressure((mbps) => {
     uploadMbps = mbps;
+    emitThroughputUpdate();
   });
   const stopUploadOnAbort = () => uploadPressure.stop();
   signal?.addEventListener("abort", stopUploadOnAbort, { once: true });
 
   let uploadSamples: number[] = [];
   try {
-    onUpdate({
-      phase: "upload",
-      status: "upload settling",
-      message: "Letting upload pressure settle before recording samples.",
-      progress: 76,
-      idle,
-      downloadLatency,
-      uploadLatency,
-      downloadMbps,
-      uploadMbps,
-      recentLatencySamples,
-      latencySampleCount,
-      latencySamples,
-    });
+    emit("upload", "upload settling", "Letting upload pressure settle before recording samples.", 76);
 
     await warmUpLatencyPath(LOADED_SETTLE_MS, signal);
 
-    onUpdate({
-      phase: "upload",
-      status: "upload measuring",
-      message: "Sampling ping under established upload pressure.",
-      progress: 88,
-      idle,
-      downloadLatency,
-      uploadLatency,
-      downloadMbps,
-      uploadMbps,
-      recentLatencySamples,
-      latencySampleCount,
-      latencySamples,
-    });
+    emit("upload", "upload measuring", "Sampling ping under established upload pressure.", 88);
 
     uploadSamples = await sampleLatency(LOADED_RECORDING_MS, (sample) => {
       uploadLatency = sample;
@@ -682,20 +580,7 @@ export async function runBufferbloatTest(
       recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
       latencySampleCount += 1;
 
-      onUpdate({
-        phase: "upload",
-        status: "upload measuring",
-        message: "Sampling ping under established upload pressure.",
-        progress: 88,
-        idle,
-        downloadLatency,
-        uploadLatency,
-        downloadMbps,
-        uploadMbps,
-        recentLatencySamples,
-        latencySampleCount,
-        latencySamples,
-      });
+      emit("upload", "upload measuring", "Sampling ping under established upload pressure.", 88);
     }, signal);
   } finally {
     signal?.removeEventListener("abort", stopUploadOnAbort);
@@ -705,20 +590,7 @@ export async function runBufferbloatTest(
 
   uploadLatency = trimmedMedian(uploadSamples);
 
-  onUpdate({
-    phase: "analysis",
-    status: "analysis",
-    message: "Computing diagnosis from stable median samples.",
-    progress: 96,
-    idle,
-    downloadLatency,
-    uploadLatency,
-    downloadMbps,
-    uploadMbps,
-    recentLatencySamples,
-    latencySampleCount,
-    latencySamples,
-  });
+  emit("analysis", "analysis", "Computing diagnosis from stable median samples.", 96);
 
   await wait(FREEZE_FINAL_MS, signal);
 

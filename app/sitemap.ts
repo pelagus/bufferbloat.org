@@ -35,6 +35,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.72,
     },
     {
+      url: "https://bufferbloat.org/learn/internet-latency-test",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
+    {
+      url: "https://bufferbloat.org/learn/internet-reliability-test",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
+    {
+      url: "https://bufferbloat.org/learn/internet-stability-test",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
+    {
       url: "https://bufferbloat.org/learn/bufferbloat-speed-test",
       lastModified,
       changeFrequency: "monthly",

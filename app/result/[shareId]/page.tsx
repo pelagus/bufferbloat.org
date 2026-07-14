@@ -476,10 +476,6 @@ function SharedLatencyChart({
     <section className="latency-phase-chart result" aria-label="Shared latency / ping chart">
       <div className="latency-phase-chart-header">
         <strong>Latency / Ping in milliseconds</strong>
-        <div className="chart-throughput" aria-label="Average throughput during load phases">
-          <span className="download">download {formatSpeed(downloadMbps)} Mb/s</span>
-          <span className="upload">upload {formatSpeed(uploadMbps)} Mb/s</span>
-        </div>
         <div className="latency-phase-legend" aria-hidden="true">
           <span className="idle">quiet line</span>
           <span className="download">download stress</span>
@@ -583,6 +579,10 @@ function SharedLatencyChart({
         <text className="chart-phase-label" x={chart.left + phaseWidth + 10} y={354}>download</text>
         <text className="chart-phase-label" x={chart.left + phaseWidth * 2 + 10} y={354}>upload</text>
       </svg>
+      <div className="chart-throughput" aria-label="Average throughput during load phases">
+        <span className="download">download {formatSpeed(downloadMbps)} Mb/s</span>
+        <span className="upload">upload {formatSpeed(uploadMbps)} Mb/s</span>
+      </div>
     </section>
   );
 }
@@ -726,12 +726,6 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
               <p className="result-finding">
                 {sharedFindingFor(grade, idleMs, downloadStressMs, uploadStressMs, downloadMbps, uploadMbps)}
               </p>
-
-              <div className="result-metric-grid">
-                <article><span>Quiet line ping</span><strong>{formatLatency(idleMs)} ms</strong></article>
-                <article><span>Download stress</span><strong>{formatDelta(downloadStressMs)}</strong></article>
-                <article><span>Upload stress</span><strong>{formatDelta(uploadStressMs)}</strong></article>
-              </div>
             </div>
           </div>
 

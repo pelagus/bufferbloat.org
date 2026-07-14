@@ -127,6 +127,45 @@ export default function Page() {
 
         <div className="learning-resource-list">
           <article>
+            <span>Common search</span>
+            <h3>
+              <Link href="/learn/internet-latency-test">
+                Internet latency test
+              </Link>
+            </h3>
+            <p>
+              Why useful latency testing compares normal ping with ping during
+              download and upload load.
+            </p>
+          </article>
+
+          <article>
+            <span>Common search</span>
+            <h3>
+              <Link href="/learn/internet-reliability-test">
+                Internet reliability test
+              </Link>
+            </h3>
+            <p>
+              How to check whether a fast-looking connection stays usable when
+              calls, browsing, uploads, and shared use are active.
+            </p>
+          </article>
+
+          <article>
+            <span>Common search</span>
+            <h3>
+              <Link href="/learn/internet-stability-test">
+                Internet stability test
+              </Link>
+            </h3>
+            <p>
+              What connection stability means when latency changes under real
+              download and upload pressure.
+            </p>
+          </article>
+
+          <article>
             <span>Technical signal</span>
             <h3>
               <Link href="/learn/latency-under-load">

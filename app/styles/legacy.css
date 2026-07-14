@@ -1,10 +1,11 @@
 :root {
-  --page: #ffffff;
-  --bg: #ffffff;
-  --fg: #16181a;
-  --muted: #555b61;
-  --soft: #f5f6f7;
-  --line: #d8dce1;
+  color-scheme: light only;
+  --page: #f1f3f5;
+  --bg: #fbfcfd;
+  --fg: #15181c;
+  --muted: #565e66;
+  --soft: #e8ecef;
+  --line: #cfd5da;
   --line-strong: #2a2d31;
   --good: #22c55e;
   --warn: #facc15;
@@ -21,16 +22,23 @@
 }
 
 html {
-  color-scheme: light;
+  color-scheme: light only;
   background: var(--page);
 }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--page);
   color: var(--fg);
   font-family: var(--font-geist-sans), Arial, sans-serif;
   font-weight: 360;
+}
+
+button,
+input,
+textarea,
+select {
+  color-scheme: light only;
 }
 
 a {

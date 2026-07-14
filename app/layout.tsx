@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Nav from "./components/Nav";
@@ -48,6 +48,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://bufferbloat.org",
   },
+};
+
+export const viewport: Viewport = {
+  colorScheme: "light",
+  themeColor: "#f1f3f5",
 };
 
 export default function RootLayout({

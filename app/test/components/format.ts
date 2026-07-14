@@ -7,8 +7,3 @@ export function formatSpeed(value: number | null) {
 export function formatLatency(value: number | null) {
   return value === null ? "—" : String(Math.round(value));
 }
-
-export function speedWidth(value: number | null) {
-  if (value === null) return 2;
-  return Math.min(100, Math.max(3, value * 2.5));
-}

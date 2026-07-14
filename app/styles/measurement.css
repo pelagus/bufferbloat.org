@@ -41,7 +41,7 @@
   display: grid;
   gap: 4px;
   max-width: 1320px;
-  margin: 0 auto 14px;
+  margin: 0 auto clamp(8px, 1.4vh, 14px);
   padding-left: 16px;
   border-left: 2px solid color-mix(in srgb, var(--fg) 42%, var(--line));
 }
@@ -58,10 +58,23 @@
   margin: 0;
   color: var(--fg);
   font-family: var(--font-geist-sans), Arial, sans-serif;
-  font-size: clamp(24px, 3.2vw, 42px);
+  font-size: clamp(24px, 3vw, 40px);
   font-weight: 430;
   line-height: 1.08;
   letter-spacing: 0;
+}
+
+.test-shell.interstitial-active .test-page-heading {
+  margin-bottom: 6px;
+}
+
+.test-shell.interstitial-active {
+  padding-bottom: 0;
+}
+
+.test-shell.interstitial-active .test-page-heading h1 {
+  font-size: clamp(20px, 2vw, 30px);
+  line-height: 1;
 }
 
 .test-shell .hero-panel {
@@ -184,7 +197,7 @@
   max-width: 760px;
   margin: 5px 0 0;
   font-family: var(--font-geist-sans), Arial, sans-serif;
-  font-size: clamp(22px, 2.45vw, 32px);
+  font-size: clamp(20px, 2.15vw, 30px);
   font-weight: 430;
   line-height: 1.12;
 }
@@ -202,7 +215,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
-  margin: 14px 0 0;
+  margin: 10px 0 0;
   padding: 0;
   border-top: 1px solid var(--line);
   border-left: 1px solid var(--line);
@@ -211,7 +224,7 @@
 
 .preflight-caveats li {
   min-width: 0;
-  padding: 8px 12px 8px 32px;
+  padding: 7px 12px 7px 32px;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: var(--bg);
@@ -245,10 +258,10 @@
   gap: 2px 12px;
   align-items: center;
   width: 100%;
-  margin-top: 14px;
+  margin-top: 10px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--soft) 54%, var(--bg));
-  padding: 10px 12px;
+  padding: 8px 12px;
   font-family: var(--font-geist-mono), monospace;
   text-align: left;
 }
@@ -258,8 +271,8 @@
   display: grid;
   place-items: center;
   grid-row: span 2;
-  width: 58px;
-  height: 58px;
+  width: 52px;
+  height: 52px;
   border: 1px solid var(--line);
   border-radius: 0;
   background:
@@ -270,7 +283,7 @@
     ),
     var(--bg);
   color: var(--fg);
-  font-size: 28px;
+  font-size: 25px;
   font-weight: 500;
   line-height: 1;
   text-align: center;
@@ -309,7 +322,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .preflight-actions button {
@@ -331,7 +344,7 @@
 }
 
 .preflight-stage {
-  min-height: min(560px, calc(100vh - 108px));
+  min-height: 0;
 }
 
 .preflight-underlay {
@@ -392,12 +405,15 @@
 
 .test-stop-stage {
   position: relative;
-  min-height: min(640px, calc(100vh - 100px));
-  margin-top: 8px;
+  height: clamp(400px, calc(100svh - 126px), 640px);
+  min-height: 0;
+  margin-top: 4px;
+  overflow: hidden;
 }
 
 .stopped-test-underlay {
-  min-height: inherit;
+  height: 100%;
+  min-height: 0;
   opacity: 0.48;
   filter: saturate(0.72) blur(0.5px);
   pointer-events: none;
@@ -405,17 +421,19 @@
 }
 
 .stopped-test-underlay .instrument-panel {
-  min-height: inherit;
+  height: 100%;
+  min-height: 0;
 }
 
 .test-stop-overlay {
   position: absolute;
   inset: 0;
-  min-height: 100%;
+  min-height: 0;
+  height: 100%;
   display: grid;
   place-items: center;
   margin: 0;
-  padding: 18px;
+  padding: clamp(10px, 2.2vh, 18px);
   border: 1px solid var(--line);
   background:
     linear-gradient(
@@ -433,9 +451,10 @@
 
 .test-stop-card {
   width: min(760px, 100%);
+  max-height: 100%;
   background: color-mix(in srgb, var(--bg) 74%, transparent) !important;
   backdrop-filter: blur(7px);
-  padding: clamp(18px, 3vw, 30px);
+  padding: clamp(14px, 2.2vw, 24px);
   justify-items: start;
   margin: 0;
   text-align: left;
@@ -443,8 +462,8 @@
 
 .test-stop-screen {
   display: grid;
-  grid-template-columns: 170px minmax(0, 1fr);
-  gap: 10px 22px;
+  grid-template-columns: minmax(112px, 150px) minmax(0, 1fr);
+  gap: 8px 18px;
   align-items: center;
   align-content: center;
   min-height: 0;
@@ -467,7 +486,7 @@
   display: block;
   color: var(--fg);
   font-family: var(--font-geist-sans), Arial, sans-serif;
-  font-size: clamp(24px, 3vw, 36px);
+  font-size: clamp(21px, 2.6vw, 32px);
   font-weight: 440;
   line-height: 1.05;
 }
@@ -476,8 +495,8 @@
   max-width: 520px;
   margin: 0;
   color: color-mix(in srgb, var(--fg) 76%, var(--muted));
-  font-size: 15px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.38;
 }
 
 .test-stop-card button {
@@ -599,6 +618,17 @@
 }
 
 @media (min-width: 768px) {
+  .test-shell {
+    padding-top: clamp(12px, 2vh, 26px);
+    padding-bottom: clamp(16px, 2vh, 28px);
+  }
+
+  .instrument-panel {
+    grid-template-rows: auto auto minmax(0, 1fr);
+    max-height: calc(100svh - 170px);
+    overflow: hidden;
+  }
+
   .foreground-run-notice {
     gap: 9px;
     padding: 10px 12px;
@@ -612,6 +642,25 @@
   .foreground-run-notice .test-progress-meta strong {
     font-size: 15px;
     font-weight: 520;
+  }
+
+  .live-chart-layout {
+    min-height: 0;
+  }
+
+  .live-chart-layout .latency-phase-chart.live,
+  .live-chart-layout .live-measurement-strip {
+    height: 100%;
+  }
+}
+
+@media (min-width: 900px) {
+  .test-procedure-panel:not(.auxiliary-warmup):not(.auxiliary-analysis) .procedure-current {
+    display: none;
+  }
+
+  .live-chart-layout .side-procedure-current {
+    display: block;
   }
 }
 
@@ -631,7 +680,7 @@
 .test-procedure-panel {
   display: grid;
   gap: 0;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .procedure-stage-grid li {
@@ -935,6 +984,10 @@
     var(--bg);
 }
 
+.side-procedure-current {
+  display: none;
+}
+
 .procedure-current em,
 .procedure-stage-grid em {
   font-size: 10px;
@@ -1120,20 +1173,64 @@
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.34fr);
   gap: 8px;
   align-items: stretch;
+  min-height: 0;
   margin-top: 8px;
 }
 
 .live-chart-layout .latency-phase-chart.live {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   margin-top: 0;
+  min-height: 0;
 }
 
 .live-chart-layout .live-measurement-strip {
   grid-template-columns: 1fr;
+  min-height: 0;
 }
 
 .live-chart-layout .live-measurement-strip .active-measurement-header {
   border-right: 0;
   border-bottom: 1px solid var(--line);
+}
+
+.side-procedure-current {
+  padding: 12px 12px 13px;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, currentColor 7%, transparent),
+      transparent 72%
+    ),
+    var(--bg);
+  color: var(--fg);
+}
+
+.side-procedure-current span {
+  display: block;
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1.2;
+}
+
+.side-procedure-current h2 {
+  margin: 4px 0 7px;
+  color: color-mix(in srgb, currentColor 88%, var(--fg));
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(17px, 1.3vw, 21px);
+  font-weight: 450;
+  line-height: 1.08;
+}
+
+.side-procedure-current p {
+  margin: 0;
+  color: color-mix(in srgb, var(--fg) 78%, var(--muted));
+  font-size: 12px;
+  font-weight: 340;
+  line-height: 1.38;
 }
 
 .live-chart-layout .live-measurement-grid {
@@ -1280,38 +1377,6 @@
   word-break: normal;
 }
 
-.live-speedometer {
-  display: grid;
-  grid-template-columns: 118px minmax(0, 1fr);
-  gap: 2px 12px;
-  align-items: center;
-  padding: 8px 10px 10px;
-  border-top: 1px solid var(--line);
-  font-family: var(--font-geist-mono), monospace;
-}
-
-.live-speedometer .speedometer {
-  grid-row: span 2;
-  width: 118px !important;
-  height: 70px !important;
-}
-
-.live-speedometer strong {
-  align-self: end;
-  color: currentColor;
-  font-size: clamp(20px, 2.1vw, 27px);
-  font-weight: 460;
-  line-height: 0.95;
-}
-
-.live-speedometer span {
-  align-self: start;
-  color: color-mix(in srgb, currentColor 78%, var(--muted));
-  font-size: 10px;
-  font-weight: 420;
-  line-height: 1.15;
-}
-
 .latency-phase-chart {
   border: 1px solid var(--line);
   background:
@@ -1329,8 +1394,17 @@
 
 .latency-phase-chart.result {
   margin: 0;
+  border: 0;
   border-right: 0;
   border-left: 0;
+}
+
+.latency-phase-chart.result .latency-phase-chart-header {
+  border-bottom: 0;
+}
+
+.latency-phase-chart.result .chart-throughput {
+  border-top: 0;
 }
 
 .latency-phase-chart.result.grade-a-plus,
@@ -1391,20 +1465,26 @@
 }
 
 .chart-throughput {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
   align-items: center;
-  margin-left: auto;
+  width: 100%;
+  padding: 7px 10px;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--fg) 1.4%, var(--bg));
 }
 
 .chart-throughput span {
   display: inline-flex;
+  justify-content: center;
   align-items: center;
-  min-height: 22px;
+  min-height: 24px;
+  min-width: min(190px, 44%);
   border: 1px solid color-mix(in srgb, currentColor 28%, var(--line));
   background: color-mix(in srgb, currentColor 8%, var(--bg));
-  padding: 2px 7px;
+  padding: 3px 10px;
   font-size: 10px;
   font-weight: 460;
   line-height: 1;
@@ -1428,7 +1508,8 @@
 }
 
 .latency-phase-chart.live svg {
-  height: auto;
+  height: 100%;
+  aspect-ratio: auto;
   min-height: 0;
 }
 
@@ -2109,8 +2190,8 @@
   }
 
   .preflight-card {
-    margin-top: 10px;
-    padding: 16px;
+    margin-top: 0;
+    padding: 13px;
   }
 
   .preflight-layout {
@@ -2118,21 +2199,23 @@
   }
 
   .preflight-card h1 {
-    font-size: clamp(21px, 6vw, 28px);
+    font-size: clamp(19px, 5.5vw, 25px);
   }
 
   .preflight-card p {
-    font-size: 14px;
+    font-size: 13px;
+    line-height: 1.32;
   }
 
   .preflight-caveats {
     grid-template-columns: 1fr;
-    margin-top: 14px;
+    margin-top: 8px;
   }
 
   .preflight-caveats li {
-    padding: 9px 10px 9px 30px;
-    font-size: 12px;
+    padding: 6px 9px 6px 28px;
+    font-size: 11.5px;
+    line-height: 1.25;
   }
 
   .preflight-actions button {
@@ -2146,7 +2229,8 @@
   }
 
   .test-stop-stage {
-    min-height: calc(100vh - 86px);
+    height: clamp(360px, calc(100svh - 78px), 640px);
+    min-height: 0;
   }
 
   .test-stop-overlay {
@@ -2155,12 +2239,13 @@
 
   .test-stop-screen {
     grid-template-columns: 1fr;
+    gap: 7px;
     justify-items: start;
   }
 
   .test-stop-illustration {
     grid-row: auto;
-    width: min(180px, 72%);
+    width: min(118px, 48%);
     justify-self: center;
   }
 
@@ -2430,8 +2515,8 @@
 }
 
 .result-scorecard-body {
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  align-items: stretch;
   min-width: 0;
 }
 
@@ -2568,14 +2653,16 @@
 }
 
 .result-finding {
+  display: flex;
+  align-items: center;
+  width: 100%;
   margin: 0;
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--line);
+  padding: 18px 20px;
   background: color-mix(in srgb, var(--fg) 2.5%, var(--bg));
   color: color-mix(in srgb, var(--fg) 96%, var(--muted));
-  font-size: clamp(17px, 1.95vw, 24px);
+  font-size: clamp(18px, 2.05vw, 25px);
   font-weight: 450;
-  line-height: 1.25;
+  line-height: 1.28;
 }
 
 .result-evidence-row {
@@ -3356,6 +3443,11 @@
 
 @media (max-width: 767px) {
   .instrument-panel {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .instrument-panel {
     gap: 6px;
     padding: 6px !important;
   }
@@ -3443,8 +3535,13 @@
 
   .result-compact-header {
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px;
-    padding: 9px 10px;
+    gap: 6px;
+    align-items: start;
+    padding: 8px 9px;
+  }
+
+  .result-header-actions {
+    justify-self: end;
   }
 
   .result-brand-lockup {
@@ -3452,11 +3549,13 @@
   }
 
   .result-brand-lockup strong {
-    font-size: clamp(23px, 8vw, 31px);
+    font-size: clamp(20px, 6vw, 26px);
+    line-height: 1;
+    white-space: nowrap;
   }
 
   .result-brand-lockup span {
-    font-size: 8.5px;
+    font-size: clamp(7.5px, 2.2vw, 8.5px);
     line-height: 1.2;
   }
 
@@ -3465,9 +3564,9 @@
   }
 
   .result-header-actions .result-icon-button {
-    width: 38px;
-    height: 38px;
-    min-height: 38px;
+    width: clamp(34px, 10vw, 38px);
+    height: clamp(34px, 10vw, 38px);
+    min-height: clamp(34px, 10vw, 38px);
   }
 
   .result-header-actions .result-icon-button svg {
@@ -3567,8 +3666,9 @@
   }
 
   .application-ranking-list li {
-    grid-template-columns: 1fr;
-    gap: 5px;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 4px 9px;
+    align-items: center;
     min-height: 58px;
     padding: 7px 8px;
     border-right: 1px solid var(--line);
@@ -3592,8 +3692,9 @@
 
   .application-icon,
   .reliability-symbol {
-    display: block;
-    text-align: left;
+    display: grid;
+    place-items: center;
+    text-align: center;
   }
 
   .application-icon svg {
@@ -3781,11 +3882,14 @@
 
   .result-chart-cell {
     align-self: stretch !important;
+    display: flex;
+    align-items: center;
     min-height: 0 !important;
   }
 
   .latency-phase-chart.result {
     height: auto !important;
+    width: 100%;
   }
 
   .latency-phase-chart.result svg {
@@ -3863,6 +3967,102 @@
   .result-scorecard .result-applications {
     border-right: 0;
     border-bottom: 1px solid var(--line);
+  }
+}
+
+@media (max-height: 620px) {
+  .test-shell.interstitial-active {
+    padding-top: 8px;
+  }
+
+  .test-shell.interstitial-active .test-page-heading {
+    display: none;
+  }
+
+  .test-stop-stage {
+    height: calc(100svh - 62px);
+    margin-top: 0;
+  }
+
+  .test-stop-overlay {
+    padding: 8px;
+  }
+
+  .test-stop-card {
+    padding: 11px;
+  }
+
+  .test-stop-illustration {
+    display: none;
+  }
+
+  .test-stop-screen,
+  .preflight-card.test-stop-screen {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .preflight-card .preflight-caveats,
+  .preflight-card .preflight-countdown,
+  .preflight-card .preflight-actions,
+  .analysis-interstitial .analysis-progress {
+    grid-column: 1;
+  }
+
+  .test-stop-card strong {
+    font-size: clamp(17px, 4.3vh, 23px);
+    line-height: 1.05;
+  }
+
+  .test-stop-card p {
+    font-size: 12px;
+    line-height: 1.28;
+  }
+
+  .preflight-caveats {
+    margin-top: 4px;
+  }
+
+  .preflight-caveats li {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    font-size: 11px;
+    line-height: 1.14;
+  }
+
+  .preflight-caveats li::before {
+    top: 5px;
+  }
+
+  .preflight-countdown {
+    grid-template-columns: auto minmax(0, 1fr);
+    margin-top: 5px;
+    padding: 6px 8px;
+  }
+
+  .preflight-countdown strong {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .preflight-countdown span {
+    font-size: 12px;
+  }
+
+  .preflight-countdown em {
+    font-size: 9px;
+  }
+
+  .preflight-actions {
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .preflight-actions button,
+  .test-stop-card button {
+    min-height: 30px;
+    font-size: 11px;
   }
 }
 

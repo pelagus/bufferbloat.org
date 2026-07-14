@@ -11,7 +11,7 @@ import { type Grade } from "../../lib/test-copy";
 import ResultCard from "./components/ResultCard";
 import SignupBox from "./components/SignupBox";
 import PrintResultButton from "./components/PrintResultButton";
-import { formatLatency, formatSpeed, speedWidth } from "./components/format";
+import { formatLatency, formatSpeed } from "./components/format";
 import { diagnosisFor, stageIndex } from "./components/diagnosis";
 
 const DOWNLOAD_TEST_SIZE = "100 MB file, repeated across 4 streams";
@@ -1260,8 +1260,10 @@ export default function Page() {
     },
   ];
 
+  const interstitialActive = showPreflight || Boolean(error) || analyzing;
+
   return (
-    <main className="test-shell">
+    <main className={`test-shell ${interstitialActive ? "interstitial-active" : ""}`}>
       {!finished && (
         <header className="test-page-heading">
           <span>Bufferbloat test</span>
@@ -1400,6 +1402,7 @@ export default function Page() {
                       title={activeLiveStage.title}
                       theme={activeLiveStage.theme}
                       icon={activeLiveStage.icon}
+                      phaseDetail={phaseDetail}
                       ping={activeLiveStage.ping}
                       sampleCount={activeLiveStage.sampleCount}
                       speed={activeLiveStage.speed}
@@ -1472,20 +1475,6 @@ export default function Page() {
           grade={grade}
           diagnosis={diagnosis}
           measuredAt={resultMeasuredAt ?? new Date().toISOString()}
-          scorecardMetrics={[
-            {
-              label: "Quiet line ping",
-              value: `${formatLatency(idle)} ms`,
-            },
-            {
-              label: "Download stress",
-              value: formatDelta(downloadDelta),
-            },
-            {
-              label: "Upload stress",
-              value: formatDelta(uploadDelta),
-            },
-          ]}
           finding={findingFor(
             grade,
             idle,
@@ -1571,6 +1560,7 @@ export default function Page() {
                   title={activeLiveStage.title}
                   theme={activeLiveStage.theme}
                   icon={activeLiveStage.icon}
+                  phaseDetail={phaseDetail}
                   ping={activeLiveStage.ping}
                   sampleCount={activeLiveStage.sampleCount}
                   speed={activeLiveStage.speed}
@@ -1862,12 +1852,6 @@ function LatencyPhaseChart({
     <section className={`latency-phase-chart ${mode} ${gradeClass}`} aria-label="Latency / ping samples by test phase">
       <div className="latency-phase-chart-header">
         <strong>Latency / Ping in milliseconds</strong>
-        {mode === "result" ? (
-          <div className="chart-throughput" aria-label="Average throughput during load phases">
-            <span className="download">download {formatSpeed(downloadMbps)} Mb/s</span>
-            <span className="upload">upload {formatSpeed(uploadMbps)} Mb/s</span>
-          </div>
-        ) : null}
         <div className="latency-phase-legend" aria-hidden="true">
           <span className="idle">quiet line</span>
           <span className="download">download stress</span>
@@ -1992,6 +1976,12 @@ function LatencyPhaseChart({
         <text className="chart-phase-label" x={chart.left + phaseWidth * 2 + 10} y={354}>upload</text>
       </svg>
 
+      {mode === "result" ? (
+        <div className="chart-throughput" aria-label="Average throughput during load phases">
+          <span className="download">download {formatSpeed(downloadMbps)} Mb/s</span>
+          <span className="upload">upload {formatSpeed(uploadMbps)} Mb/s</span>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -2213,6 +2203,7 @@ function ActiveMeasurementCard({
   title,
   theme,
   icon,
+  phaseDetail,
   ping,
   sampleCount,
   speed,
@@ -2222,6 +2213,7 @@ function ActiveMeasurementCard({
   title: string;
   theme: "baseline" | "download" | "upload";
   icon: string;
+  phaseDetail: ReturnType<typeof getPhaseDetail>;
   ping: number | null;
   sampleCount: number;
   speed?: number | null;
@@ -2234,10 +2226,14 @@ function ActiveMeasurementCard({
       : theme === "upload"
         ? "Upload speed"
         : "Added traffic";
-  const showSpeedGauge = speedLabel && (theme === "download" || theme === "upload");
-
   return (
     <section className={`active-measurement-card live-measurement-strip ${theme}`} aria-live="polite">
+      <div className="side-procedure-current">
+        <span>{phaseDetail.eyebrow}</span>
+        <h2>{phaseDetail.title}</h2>
+        <p>{phaseDetail.detail}</p>
+      </div>
+
       <div className="active-measurement-header">
         <div className="stage-icon">{icon}</div>
 
@@ -2269,51 +2265,7 @@ function ActiveMeasurementCard({
         </div>
       </dl>
 
-      {showSpeedGauge && (
-        <SpeedGauge
-          label={speedTitle}
-          value={speed ?? null}
-        />
-      )}
     </section>
-  );
-}
-
-function SpeedGauge({
-  label,
-  value,
-}: {
-  label: string;
-  value: number | null;
-}) {
-  const width = speedWidth(value);
-  const angle = -96 + (width / 100) * 192;
-  const radians = (angle * Math.PI) / 180;
-  const needleLength = 34;
-  const needleX = 70 + Math.cos(radians) * needleLength;
-  const needleY = 66 + Math.sin(radians) * needleLength;
-
-  return (
-    <div
-      className="live-speedometer"
-      aria-label={`${label}: ${value == null ? "measuring" : `${formatSpeed(value)} megabits per second`}`}
-    >
-      <svg className="speedometer" viewBox="0 0 140 82" aria-hidden="true">
-        <path className="speedometer-bg" d="M22 66 A48 48 0 0 1 118 66" pathLength="100" />
-        <path
-          className="speedometer-fill"
-          d="M22 66 A48 48 0 0 1 118 66"
-          pathLength="100"
-          style={{ strokeDasharray: `${width} 100` }}
-        />
-        <line className="speedometer-needle" x1="70" y1="66" x2={needleX} y2={needleY} />
-        <circle className="speedometer-dot" cx="70" cy="66" r="5" />
-        <text x="22" y="79">0</text>
-        <text x="104" y="79">40+</text>
-      </svg>
-      <strong>{value == null ? "measuring" : `${formatSpeed(value)} Mb/s`}</strong>
-      <span>{label}</span>
-    </div>
   );
 }
 
