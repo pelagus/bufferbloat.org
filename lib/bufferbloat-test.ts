@@ -47,6 +47,7 @@ const UPLOAD_URL = "https://speed.cloudflare.com/__up";
 const IDLE_DURATION_MS = 8000;
 const LOADED_DURATION_MS = 16000;
 const MIN_PHASE_WARMUP_MS = 3000;
+const IDLE_SETTLE_MS = MIN_PHASE_WARMUP_MS;
 const LOADED_SETTLE_MS = Math.max(4000, MIN_PHASE_WARMUP_MS);
 const LOADED_RECORDING_MS = LOADED_DURATION_MS - LOADED_SETTLE_MS;
 const SAMPLE_DELAY_MS = 250;
@@ -157,6 +158,23 @@ async function sampleLatency(
   }
 
   return samples;
+}
+
+async function warmUpLatencyPath(durationMs: number, signal?: AbortSignal) {
+  const end = performance.now() + durationMs;
+
+  while (performance.now() < end) {
+    throwIfAborted(signal);
+
+    try {
+      await probeLatency();
+      throwIfAborted(signal);
+    } catch (error) {
+      if (isAbortError(error)) throw error;
+    }
+
+    await wait(SAMPLE_DELAY_MS, signal);
+  }
 }
 
 async function warmUpDownload() {
@@ -459,9 +477,26 @@ export async function runBufferbloatTest(
 
   onUpdate({
     phase: "idle",
+    status: "quiet settling",
+    message: "Warming quiet-line ping before recording baseline samples.",
+    progress: 8,
+    idle,
+    downloadLatency,
+    uploadLatency,
+    downloadMbps,
+    uploadMbps,
+    recentLatencySamples,
+    latencySampleCount,
+    latencySamples,
+  });
+
+  await warmUpLatencyPath(IDLE_SETTLE_MS, signal);
+
+  onUpdate({
+    phase: "idle",
     status: "quiet measuring",
     message: "Measuring baseline response time.",
-    progress: 8,
+    progress: 12,
     idle,
     downloadLatency,
     uploadLatency,

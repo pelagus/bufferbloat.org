@@ -19,6 +19,11 @@ warms DNS/TLS/CORS/fetch paths with small ping, download, and upload requests,
 then gives the connection a brief moment to settle. Warm-up samples are not
 included in the reported medians.
 
+Immediately before quiet-line scoring, the browser also sends a short series of
+unscored latency probes. These warm the baseline ping path without adding
+download or upload pressure. The reported quiet median is calculated only from
+the scored samples collected after that quiet-line warm-up.
+
 Latency probes use a small Cloudflare Speed endpoint instead of the large
 download-file origin. This avoids treating same-origin browser/CDN contention as
 network latency under load.
@@ -46,7 +51,9 @@ producing a questionable result.
 
 The quiet-line phase measures baseline response time before intentionally adding traffic pressure.
 
-This establishes the reference point for later comparison.
+The browser first warms the latency probe path with unscored quiet pings. It
+then records the scored quiet samples that establish the reference point for
+later comparison.
 
 ## Download latency under load
 

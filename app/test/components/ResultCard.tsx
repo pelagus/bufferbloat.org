@@ -59,7 +59,7 @@ export default function ResultCard({
   scorecardMetrics: Array<{
     label: string;
     value: string;
-    tone?: "primary" | "secondary";
+    tone?: "primary" | "secondary" | "download" | "upload";
   }>;
   finding: string;
   applicationRankings: Array<{

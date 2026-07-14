@@ -1203,6 +1203,41 @@
   word-break: normal;
 }
 
+.live-speed-gauge {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.live-speed-gauge span {
+  display: block;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, currentColor 34%, var(--line));
+  background:
+    linear-gradient(to right, color-mix(in srgb, currentColor 12%, transparent) 1px, transparent 1px),
+    color-mix(in srgb, currentColor 5%, var(--bg));
+  background-size: 18px 100%;
+}
+
+.live-speed-gauge i {
+  display: block;
+  height: 100%;
+  min-width: 3%;
+  background: currentColor;
+  transition: width 260ms ease;
+}
+
+.live-speed-gauge em {
+  color: color-mix(in srgb, currentColor 86%, var(--muted));
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 420;
+  line-height: 1.15;
+}
+
 .latency-phase-chart {
   border: 1px solid var(--line);
   background:
@@ -1334,6 +1369,28 @@
 
 .latency-phase-chart .variation-upload {
   fill: color-mix(in srgb, var(--purple) 72%, transparent);
+}
+
+.latency-phase-chart .latency-variation-label text {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 10.5px;
+  font-weight: 520;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 5px;
+  text-anchor: middle;
+}
+
+.latency-phase-chart .latency-variation-label.variation-idle text {
+  fill: color-mix(in srgb, var(--fg) 74%, var(--muted));
+}
+
+.latency-phase-chart .latency-variation-label.variation-download text {
+  fill: color-mix(in srgb, var(--blue) 86%, var(--fg));
+}
+
+.latency-phase-chart .latency-variation-label.variation-upload text {
+  fill: color-mix(in srgb, var(--purple) 88%, var(--fg));
 }
 
 .latency-phase-chart .chart-axis {
@@ -2303,7 +2360,7 @@
   border-right: 0;
 }
 
-.result-metric-grid article:nth-last-child(-n + 4) {
+.result-metric-grid article:nth-last-child(-n + 2) {
   border-bottom: 0;
 }
 
@@ -2311,8 +2368,30 @@
   background: color-mix(in srgb, var(--fg) 2.5%, var(--bg));
 }
 
+.result-metric-grid article.download,
+.result-metric-grid article.upload {
+  grid-column: span 2;
+  background: color-mix(in srgb, currentColor 7%, var(--bg));
+}
+
+.result-metric-grid article.download {
+  color: var(--blue);
+}
+
+.result-metric-grid article.upload {
+  color: var(--purple);
+  border-right: 0;
+}
+
 .result-metric-grid article.secondary strong {
   color: color-mix(in srgb, var(--fg) 72%, var(--muted));
+  font-size: clamp(14px, 1.55vw, 18px);
+  font-weight: 360;
+}
+
+.result-metric-grid article.download strong,
+.result-metric-grid article.upload strong {
+  color: currentColor;
   font-size: clamp(14px, 1.55vw, 18px);
   font-weight: 360;
 }
@@ -2347,6 +2426,7 @@
 }
 
 .result-chart-cell {
+  align-self: start;
   min-width: 0;
 }
 
@@ -3180,6 +3260,11 @@
     padding: 6px;
   }
 
+  .result-metric-grid article.download,
+  .result-metric-grid article.upload {
+    grid-column: span 1;
+  }
+
   .result-metric-grid article:nth-child(n) {
     border-right: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
@@ -3426,6 +3511,70 @@
 .result-metric-grid strong,
 .application-ranking-list strong {
   font-weight: 500;
+}
+
+@media screen and (min-width: 768px) {
+  .result-evidence-row {
+    grid-template-columns: minmax(220px, clamp(230px, 28vw, 360px)) minmax(0, 1fr) !important;
+    align-items: start !important;
+  }
+
+  .result-chart-cell {
+    align-self: start !important;
+    min-height: 0 !important;
+  }
+
+  .latency-phase-chart.result {
+    height: auto !important;
+  }
+
+  .latency-phase-chart.result svg {
+    aspect-ratio: 2 / 1;
+    width: 100%;
+    height: auto !important;
+    min-height: 0;
+  }
+
+  .result-scorecard .result-applications {
+    display: grid !important;
+    align-content: start;
+    padding: 10px;
+    border-right: 1px solid var(--line);
+    border-bottom: 0 !important;
+  }
+
+  .application-ranking-list {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: none !important;
+    height: auto !important;
+  }
+
+  .application-ranking-list li {
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    min-height: 50px;
+    padding: 8px;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--line) !important;
+  }
+
+  .application-ranking-list li:last-child {
+    border-bottom: 0 !important;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .result-evidence-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .result-chart-cell {
+    min-height: 0;
+  }
+
+  .result-scorecard .result-applications {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
 }
 
 @media print {

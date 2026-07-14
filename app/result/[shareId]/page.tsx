@@ -247,22 +247,59 @@ function SharedLatencyChart({ samples }: { samples: LatencySamples }) {
     upload: [chart.left + phaseWidth * 2 + 10, chart.left + phaseWidth * 3],
   } as const;
   const values = [...samples.idle, ...samples.download, ...samples.upload].filter(Number.isFinite);
-  const variationValues = [
-    phaseLatencyVariation(samples.idle),
-    phaseLatencyVariation(samples.download),
-    phaseLatencyVariation(samples.upload),
-  ].filter((value): value is number => value !== null);
-  const worstVariation = variationValues.length ? Math.max(...variationValues) : null;
-  const variationBounds = [
-    { median: sampleMedian(samples.idle), variation: phaseLatencyVariation(samples.idle) },
-    { median: sampleMedian(samples.download), variation: phaseLatencyVariation(samples.download) },
-    { median: sampleMedian(samples.upload), variation: phaseLatencyVariation(samples.upload) },
-  ].flatMap((item) =>
+  const variationBands = [
+    {
+      key: "idle",
+      className: "variation-idle",
+      range: ranges.idle,
+      median: sampleMedian(samples.idle),
+      variation: phaseLatencyVariation(samples.idle),
+    },
+    {
+      key: "download",
+      className: "variation-download",
+      range: ranges.download,
+      median: sampleMedian(samples.download),
+      variation: phaseLatencyVariation(samples.download),
+    },
+    {
+      key: "upload",
+      className: "variation-upload",
+      range: ranges.upload,
+      median: sampleMedian(samples.upload),
+      variation: phaseLatencyVariation(samples.upload),
+    },
+  ] as const;
+  const variationBounds = variationBands.flatMap((item) =>
     item.median === null || item.variation === null
       ? []
       : [Math.max(0, item.median - item.variation), item.median + item.variation]
   );
-  const valuesForScale = [...values, ...variationBounds];
+  const variationLabels = variationBands
+    .map((band) => {
+      if (band.variation === null) {
+        return null;
+      }
+
+      return {
+        key: band.key,
+        className: band.className,
+        x: band.range[0] + (band.range[1] - band.range[0]) / 2,
+        y: chart.top + 18,
+        text: `variation ${formatLatency(band.variation)} ms`,
+      };
+    })
+    .filter((label): label is {
+      key: "idle" | "download" | "upload";
+      className: "variation-idle" | "variation-download" | "variation-upload";
+      x: number;
+      y: number;
+      text: string;
+    } => label !== null);
+  const medianValues = variationBands
+    .map((item) => item.median)
+    .filter((value): value is number => value !== null);
+  const valuesForScale = [...values, ...variationBounds, ...medianValues];
   const axisMax = chartAxisMax(valuesForScale.length ? Math.max(...valuesForScale) : 100);
   const axisMid = axisMax / 2;
   const yFor = (sample: number) => {
@@ -335,6 +372,7 @@ function SharedLatencyChart({ samples }: { samples: LatencySamples }) {
           <span className="idle">quiet line</span>
           <span className="download">download stress</span>
           <span className="upload">upload stress</span>
+          <span className="variation">variation band</span>
           <span className="reference">median ping</span>
         </div>
       </div>
@@ -355,14 +393,36 @@ function SharedLatencyChart({ samples }: { samples: LatencySamples }) {
           );
         })}
         <text className="chart-axis-label" x={11} y={18}>ms</text>
-        {worstVariation !== null ? (
-          <g className="chart-variation-callout">
-            <rect x={524} y={chart.top + 10} width={150} height={29} rx={0} />
-            <text x={536} y={chart.top + 29}>worst variation {formatLatency(worstVariation)} ms</text>
-          </g>
-        ) : null}
         <line className="phase-break" x1={chart.left + phaseWidth} y1={chart.top} x2={chart.left + phaseWidth} y2={chart.bottom} />
         <line className="phase-break" x1={chart.left + phaseWidth * 2} y1={chart.top} x2={chart.left + phaseWidth * 2} y2={chart.bottom} />
+
+        {variationBands.map((band) => {
+          if (band.median === null || band.variation === null) {
+            return null;
+          }
+
+          const upperY = yFor(band.median + band.variation);
+          const lowerY = yFor(Math.max(0, band.median - band.variation));
+          const height = Math.max(2, lowerY - upperY);
+
+          return (
+            <rect
+              aria-label={`${band.key} variation band: ${formatLatency(band.variation)} ms`}
+              className={`latency-variation-band ${band.className}`}
+              key={band.key}
+              x={band.range[0]}
+              y={upperY}
+              width={band.range[1] - band.range[0]}
+              height={height}
+            />
+          );
+        })}
+
+        {variationLabels.map((label) => (
+          <g className={`latency-variation-label ${label.className}`} key={label.key}>
+            <text x={label.x} y={label.y}>{label.text}</text>
+          </g>
+        ))}
 
         <polyline className="latency-line line-idle" points={pointsFor(samples.idle, ranges.idle[0], ranges.idle[1], yFor)} />
         <polyline className="latency-line line-download" points={pointsFor(samples.download, ranges.download[0], ranges.download[1], yFor)} />
@@ -501,7 +561,7 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
   const medianVariation = variationValues.length > 0 ? sampleMedian(variationValues) : null;
   const technicalRows: TechnicalRow[] = [
     { metric: "Grade", value: grade },
-    { metric: "Latency / ping", value: `${formatLatency(idleMs)} ms`, unit: "ms" },
+    { metric: "Quiet line ping", value: `${formatLatency(idleMs)} ms`, unit: "ms" },
     { metric: "Download latency / ping", value: `${formatLatency(downloadLatencyMs)} ms`, unit: "ms" },
     { metric: "Upload latency / ping", value: `${formatLatency(uploadLatencyMs)} ms`, unit: "ms" },
     { metric: "Download stress", value: formatDelta(downloadStressMs), unit: "ms" },
@@ -513,6 +573,7 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
     { metric: "Download speed", value: `${formatSpeed(downloadMbps)} Mbps`, unit: "Mbps" },
     { metric: "Upload speed", value: `${formatSpeed(uploadMbps)} Mbps`, unit: "Mbps" },
     { metric: "Test duration", value: formatDuration(durationSeconds), unit: "sec" },
+    { metric: "Quiet warm-up period", value: "3 sec", unit: "sec" },
     { metric: "Quiet samples", value: String(samples.idle.length) },
     { metric: "Download samples", value: String(samples.download.length) },
     { metric: "Upload samples", value: String(samples.upload.length) },
@@ -554,19 +615,17 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
               </p>
 
               <div className="result-metric-grid">
-                <article><span>Latency / ping</span><strong>{formatLatency(idleMs)} ms</strong></article>
+                <article><span>Quiet line ping</span><strong>{formatLatency(idleMs)} ms</strong></article>
                 <article><span>Download stress</span><strong>{formatDelta(downloadStressMs)}</strong></article>
                 <article><span>Upload stress</span><strong>{formatDelta(uploadStressMs)}</strong></article>
                 <article><span>Median latency variation</span><strong>{formatLatency(medianVariation)} ms</strong></article>
+                <article className="download"><span>Avg download speed</span><strong>{formatSpeed(downloadMbps)} Mb/s</strong></article>
+                <article className="upload"><span>Avg upload speed</span><strong>{formatSpeed(uploadMbps)} Mb/s</strong></article>
               </div>
             </div>
           </div>
 
           <div className="result-evidence-row">
-            <div className="result-chart-cell">
-              <SharedLatencyChart samples={samples} />
-            </div>
-
             <div className="result-applications">
               <div className="result-section-heading">
                 <span>Application performance</span>
@@ -583,6 +642,10 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
                   </li>
                 ))}
               </ol>
+            </div>
+
+            <div className="result-chart-cell">
+              <SharedLatencyChart samples={samples} />
             </div>
           </div>
 

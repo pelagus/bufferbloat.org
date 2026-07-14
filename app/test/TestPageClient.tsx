@@ -11,7 +11,7 @@ import { type Grade } from "../../lib/test-copy";
 import ResultCard from "./components/ResultCard";
 import SignupBox from "./components/SignupBox";
 import PrintResultButton from "./components/PrintResultButton";
-import { formatLatency, formatSpeed } from "./components/format";
+import { formatLatency, formatSpeed, speedWidth } from "./components/format";
 import { diagnosisFor, stageIndex } from "./components/diagnosis";
 
 const DOWNLOAD_TEST_SIZE = "100 MB file, repeated across 4 streams";
@@ -22,6 +22,7 @@ const DOWNLOAD_STREAM_COUNT = 4;
 const UPLOAD_STREAM_COUNT = 3;
 const DOWNLOAD_PAYLOAD_MB = 100;
 const UPLOAD_CHUNK_MB = 1;
+const QUIET_WARMUP_SECONDS = 3;
 const LOAD_SETTLING_SECONDS = 4;
 const PREFLIGHT_SECONDS = 7;
 const FOREGROUND_ERROR =
@@ -1152,6 +1153,13 @@ export default function Page() {
     },
     {
       section: "Method",
+      metric: "Quiet warm-up period",
+      value: String(QUIET_WARMUP_SECONDS),
+      unit: "sec",
+      note: "Unscored quiet-line ping probes excluded before baseline samples are recorded.",
+    },
+    {
+      section: "Method",
       metric: "Settling period",
       value: String(LOAD_SETTLING_SECONDS),
       unit: "sec",
@@ -1376,7 +1384,7 @@ export default function Page() {
           measuredAt={resultMeasuredAt ?? new Date().toISOString()}
           scorecardMetrics={[
             {
-              label: "Latency / ping",
+              label: "Quiet line ping",
               value: `${formatLatency(idle)} ms`,
             },
             {
@@ -1390,6 +1398,16 @@ export default function Page() {
             {
               label: "Median latency variation",
               value: `${formatLatency(medianVariation)} ms`,
+            },
+            {
+              label: "Avg download speed",
+              value: `${formatSpeed(downloadMbps)} Mb/s`,
+              tone: "download",
+            },
+            {
+              label: "Avg upload speed",
+              value: `${formatSpeed(uploadMbps)} Mb/s`,
+              tone: "upload",
             },
           ]}
           finding={findingFor(
@@ -1604,10 +1622,27 @@ function LatencyPhaseChart({
       variation: phaseLatencyVariation(samples.upload),
     },
   ] as const;
-  const variationValues = variationBands
-    .map((band) => band.variation)
-    .filter((value): value is number => value !== null);
-  const worstVariation = variationValues.length ? Math.max(...variationValues) : null;
+  const variationLabels = variationBands
+    .map((band) => {
+      if (band.variation === null) {
+        return null;
+      }
+
+      return {
+        key: band.key,
+        className: band.className,
+        x: band.range[0] + (band.range[1] - band.range[0]) / 2,
+        y: chart.top + 18,
+        text: `variation ${formatLatency(band.variation)} ms`,
+      };
+    })
+    .filter((label): label is {
+      key: "idle" | "download" | "upload";
+      className: "variation-idle" | "variation-download" | "variation-upload";
+      x: number;
+      y: number;
+      text: string;
+    } => label !== null);
   const phaseMedians = [
     { key: "idle", className: "median-idle", range: phaseRanges.idle, value: sampleMedian(samples.idle) },
     {
@@ -1765,12 +1800,6 @@ function LatencyPhaseChart({
           );
         })}
         <text className="chart-axis-label" x={11} y={18}>ms</text>
-        {mode === "result" && worstVariation !== null ? (
-          <g className="chart-variation-callout">
-            <rect x={524} y={chart.top + 10} width={150} height={29} rx={0} />
-            <text x={536} y={chart.top + 29}>worst variation {formatLatency(worstVariation)} ms</text>
-          </g>
-        ) : null}
         <line className="phase-break" x1={chart.left + phaseWidth} y1={chart.top} x2={chart.left + phaseWidth} y2={chart.bottom} />
         <line className="phase-break" x1={chart.left + phaseWidth * 2} y1={chart.top} x2={chart.left + phaseWidth * 2} y2={chart.bottom} />
 
@@ -1796,6 +1825,13 @@ function LatencyPhaseChart({
               />
             );
           })}
+
+        {mode === "result" &&
+          variationLabels.map((label) => (
+            <g className={`latency-variation-label ${label.className}`} key={label.key}>
+              <text x={label.x} y={label.y}>{label.text}</text>
+            </g>
+          ))}
 
         {idlePath && <path className="latency-line line-idle" d={idlePath} />}
         {revealDownload && downloadPath && <path className="latency-line line-download" d={downloadPath} />}
@@ -1869,11 +1905,14 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
   }
 
   if (phase === "idle") {
+    const settling = status.includes("settling") || status.includes("starting");
+
     return {
       eyebrow: "Step 1 of 3",
-      title: "Measuring your baseline",
-      detail:
-        "First we record latency / ping before adding any download or upload load.",
+      title: settling ? "Warming up baseline ping" : "Measuring your baseline",
+      detail: settling
+        ? "The browser is sending a few quiet pings first. These are excluded from the result."
+        : "Now we record latency / ping before adding any download or upload load.",
     };
   }
 
@@ -2094,6 +2133,7 @@ function ActiveMeasurementCard({
       : theme === "upload"
         ? "Upload speed"
         : "Added traffic";
+  const showSpeedGauge = speedLabel && (theme === "download" || theme === "upload");
 
   return (
     <section className={`active-measurement-card live-measurement-strip ${theme}`} aria-live="polite">
@@ -2127,6 +2167,15 @@ function ActiveMeasurementCard({
           <dd>{speedLabel ? (speed == null ? "measuring" : `${formatSpeed(speed)} Mb/s`) : "none"}</dd>
         </div>
       </dl>
+
+      {showSpeedGauge && (
+        <div className="live-speed-gauge" aria-label={`${speedTitle}: ${speed == null ? "measuring" : `${formatSpeed(speed)} megabits per second`}`}>
+          <span>
+            <i style={{ width: `${speedWidth(speed ?? null)}%` }} />
+          </span>
+          <em>{speed == null ? "measuring throughput" : `${formatSpeed(speed)} Mb/s average`}</em>
+        </div>
+      )}
     </section>
   );
 }

@@ -176,7 +176,13 @@ const technicalDetailFields = [
     variable: "warm_up",
     value: "inclusion rule",
     description:
-      "Indicates that pre-measurement warm-up requests are excluded from the scored medians.",
+      "Indicates that session warm-up and quiet-line ping warm-up requests are excluded from the scored medians.",
+  },
+  {
+    variable: "quiet_warmup_period_sec",
+    value: "seconds",
+    description:
+      "Unscored quiet-line latency probe interval excluded before baseline latency samples are recorded.",
   },
   {
     variable: "settling_period_sec",
@@ -246,8 +252,9 @@ export default function Page() {
           <span>phase 1</span>
           <h2>Warm-up</h2>
           <p>
-            Small preflight ping, download, and upload requests prepare the
-            browser path. These samples are excluded from final medians.
+            Small preflight ping, download, upload, and quiet-line ping requests
+            prepare the browser path. These samples are excluded from final
+            medians.
           </p>
         </article>
 
@@ -255,8 +262,8 @@ export default function Page() {
           <span>phase 2</span>
           <h2>Quiet latency</h2>
           <p>
-            The test samples baseline latency before adding download or upload
-            pressure.
+            The test first warms the quiet ping path, then samples baseline
+            latency before adding download or upload pressure.
           </p>
         </article>
 
