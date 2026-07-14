@@ -38,6 +38,12 @@ type ApplicationScore = {
   score: number;
 };
 
+type TechnicalRow = {
+  metric: string;
+  value: string;
+  unit?: string;
+};
+
 const analyticsSchema = `
   CREATE TABLE IF NOT EXISTS analytics_events (
     id TEXT PRIMARY KEY,
@@ -106,6 +112,35 @@ function formatDuration(seconds: number | null) {
   return `${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
+function formatDelta(value: number | null) {
+  if (value === null) return "—";
+  const rounded = Math.round(value);
+
+  return `${rounded > 0 ? "+" : ""}${rounded} ms`;
+}
+
+function formatSampleList(samples: number[]) {
+  return samples.length ? samples.map((sample) => Math.round(sample)).join(", ") : "—";
+}
+
+function csvCell(value: string) {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+function variableName(row: TechnicalRow) {
+  const baseName = row.metric
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  if (row.unit === "ms" && !baseName.endsWith("_ms")) return `${baseName}_ms`;
+  if (row.unit === "Mbps" && !baseName.endsWith("_mbps")) return `${baseName}_mbps`;
+  if (row.unit === "sec" && !baseName.endsWith("_sec")) return `${baseName}_sec`;
+
+  return baseName;
+}
+
 function sharedFindingFor(
   grade: Grade,
   idle: number | null,
@@ -163,6 +198,16 @@ function sampleMedian(samples: number[]) {
     : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
+function phaseLatencyVariation(samples: number[]) {
+  if (samples.length < 2) return null;
+
+  const totalMovement = samples
+    .slice(1)
+    .reduce((total, sample, index) => total + Math.abs(sample - samples[index]), 0);
+
+  return totalMovement / (samples.length - 1);
+}
+
 function chartAxisMax(value: number) {
   if (!Number.isFinite(value) || value <= 100) return 100;
   if (value <= 200) return Math.ceil(value / 25) * 25;
@@ -194,7 +239,7 @@ function severityClass(grade: Grade | null) {
 }
 
 function SharedLatencyChart({ samples }: { samples: LatencySamples }) {
-  const chart = { left: 58, top: 28, width: 628, height: 248, bottom: 276 };
+  const chart = { left: 58, top: 24, width: 628, height: 314, bottom: 338 };
   const phaseWidth = chart.width / 3;
   const ranges = {
     idle: [chart.left, chart.left + phaseWidth - 10],
@@ -202,7 +247,23 @@ function SharedLatencyChart({ samples }: { samples: LatencySamples }) {
     upload: [chart.left + phaseWidth * 2 + 10, chart.left + phaseWidth * 3],
   } as const;
   const values = [...samples.idle, ...samples.download, ...samples.upload].filter(Number.isFinite);
-  const axisMax = chartAxisMax(values.length ? Math.max(...values) : 100);
+  const variationValues = [
+    phaseLatencyVariation(samples.idle),
+    phaseLatencyVariation(samples.download),
+    phaseLatencyVariation(samples.upload),
+  ].filter((value): value is number => value !== null);
+  const worstVariation = variationValues.length ? Math.max(...variationValues) : null;
+  const variationBounds = [
+    { median: sampleMedian(samples.idle), variation: phaseLatencyVariation(samples.idle) },
+    { median: sampleMedian(samples.download), variation: phaseLatencyVariation(samples.download) },
+    { median: sampleMedian(samples.upload), variation: phaseLatencyVariation(samples.upload) },
+  ].flatMap((item) =>
+    item.median === null || item.variation === null
+      ? []
+      : [Math.max(0, item.median - item.variation), item.median + item.variation]
+  );
+  const valuesForScale = [...values, ...variationBounds];
+  const axisMax = chartAxisMax(valuesForScale.length ? Math.max(...valuesForScale) : 100);
   const axisMid = axisMax / 2;
   const yFor = (sample: number) => {
     const bounded = Math.min(axisMax, Math.max(0, sample));
@@ -274,10 +335,10 @@ function SharedLatencyChart({ samples }: { samples: LatencySamples }) {
           <span className="idle">quiet line</span>
           <span className="download">download stress</span>
           <span className="upload">upload stress</span>
-          <span className="reference">median dots</span>
+          <span className="reference">median ping</span>
         </div>
       </div>
-      <svg viewBox="0 0 720 330" role="img" aria-label="Latency samples by phase">
+      <svg viewBox="0 0 720 360" role="img" aria-label="Latency samples by phase">
         <rect className="phase-zone phase-zone-idle" x={chart.left} y={chart.top} width={phaseWidth} height={chart.height} />
         <rect className="phase-zone phase-zone-download" x={chart.left + phaseWidth} y={chart.top} width={phaseWidth} height={chart.height} />
         <rect className="phase-zone phase-zone-upload" x={chart.left + phaseWidth * 2} y={chart.top} width={phaseWidth} height={chart.height} />
@@ -294,6 +355,12 @@ function SharedLatencyChart({ samples }: { samples: LatencySamples }) {
           );
         })}
         <text className="chart-axis-label" x={11} y={18}>ms</text>
+        {worstVariation !== null ? (
+          <g className="chart-variation-callout">
+            <rect x={524} y={chart.top + 10} width={150} height={29} rx={0} />
+            <text x={536} y={chart.top + 29}>worst variation {formatLatency(worstVariation)} ms</text>
+          </g>
+        ) : null}
         <line className="phase-break" x1={chart.left + phaseWidth} y1={chart.top} x2={chart.left + phaseWidth} y2={chart.bottom} />
         <line className="phase-break" x1={chart.left + phaseWidth * 2} y1={chart.top} x2={chart.left + phaseWidth * 2} y2={chart.bottom} />
 
@@ -340,9 +407,9 @@ function SharedLatencyChart({ samples }: { samples: LatencySamples }) {
           </g>
         ))}
 
-        <text className="chart-phase-label" x={chart.left + 10} y={310}>quiet</text>
-        <text className="chart-phase-label" x={chart.left + phaseWidth + 10} y={310}>download</text>
-        <text className="chart-phase-label" x={chart.left + phaseWidth * 2 + 10} y={310}>upload</text>
+        <text className="chart-phase-label" x={chart.left + 10} y={354}>quiet</text>
+        <text className="chart-phase-label" x={chart.left + phaseWidth + 10} y={354}>download</text>
+        <text className="chart-phase-label" x={chart.left + phaseWidth * 2 + 10} y={354}>upload</text>
       </svg>
     </section>
   );
@@ -405,6 +472,9 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
     uploadStressMs: number;
     downloadMbps: number;
     uploadMbps: number;
+    quietVariationMs: number;
+    downloadVariationMs: number;
+    uploadVariationMs: number;
     quietJitterMs: number;
     downloadJitterMs: number;
     uploadJitterMs: number;
@@ -413,14 +483,48 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
   const applications = safeJson<ApplicationScore[]>(row.application_scores_json, []);
   const grade = (saved.grade || row.grade || "F") as Grade;
   const idleMs = saved.idleMs ?? row.idle_ms;
+  const downloadLatencyMs = saved.downloadLatencyMs ?? row.download_latency_ms;
+  const uploadLatencyMs = saved.uploadLatencyMs ?? row.upload_latency_ms;
   const downloadStressMs = saved.downloadStressMs ?? row.download_stress_ms;
   const uploadStressMs = saved.uploadStressMs ?? row.upload_stress_ms;
-  const jitterValues = [
-    saved.quietJitterMs,
-    saved.downloadJitterMs,
-    saved.uploadJitterMs,
+  const downloadMbps = saved.downloadMbps ?? row.download_mbps;
+  const uploadMbps = saved.uploadMbps ?? row.upload_mbps;
+  const durationSeconds = saved.durationSeconds ?? row.duration_seconds;
+  const quietVariation = saved.quietVariationMs ?? saved.quietJitterMs ?? null;
+  const downloadVariation = saved.downloadVariationMs ?? saved.downloadJitterMs ?? null;
+  const uploadVariation = saved.uploadVariationMs ?? saved.uploadJitterMs ?? null;
+  const variationValues = [
+    quietVariation,
+    downloadVariation,
+    uploadVariation,
   ].filter((value): value is number => typeof value === "number" && Number.isFinite(value));
-  const worstJitter = jitterValues.length > 0 ? Math.max(...jitterValues) : null;
+  const medianVariation = variationValues.length > 0 ? sampleMedian(variationValues) : null;
+  const technicalRows: TechnicalRow[] = [
+    { metric: "Grade", value: grade },
+    { metric: "Latency / ping", value: `${formatLatency(idleMs)} ms`, unit: "ms" },
+    { metric: "Download latency / ping", value: `${formatLatency(downloadLatencyMs)} ms`, unit: "ms" },
+    { metric: "Upload latency / ping", value: `${formatLatency(uploadLatencyMs)} ms`, unit: "ms" },
+    { metric: "Download stress", value: formatDelta(downloadStressMs), unit: "ms" },
+    { metric: "Upload stress", value: formatDelta(uploadStressMs), unit: "ms" },
+    { metric: "Quiet latency variation", value: `${formatLatency(quietVariation)} ms`, unit: "ms" },
+    { metric: "Download latency variation", value: `${formatLatency(downloadVariation)} ms`, unit: "ms" },
+    { metric: "Upload latency variation", value: `${formatLatency(uploadVariation)} ms`, unit: "ms" },
+    { metric: "Median latency variation", value: `${formatLatency(medianVariation)} ms`, unit: "ms" },
+    { metric: "Download speed", value: `${formatSpeed(downloadMbps)} Mbps`, unit: "Mbps" },
+    { metric: "Upload speed", value: `${formatSpeed(uploadMbps)} Mbps`, unit: "Mbps" },
+    { metric: "Test duration", value: formatDuration(durationSeconds), unit: "sec" },
+    { metric: "Quiet samples", value: String(samples.idle.length) },
+    { metric: "Download samples", value: String(samples.download.length) },
+    { metric: "Upload samples", value: String(samples.upload.length) },
+    { metric: "Quiet ping samples", value: formatSampleList(samples.idle), unit: "ms" },
+    { metric: "Download ping samples", value: formatSampleList(samples.download), unit: "ms" },
+    { metric: "Upload ping samples", value: formatSampleList(samples.upload), unit: "ms" },
+  ];
+  const technicalCsv = `${[
+    ["Variable", "Value"],
+    ...technicalRows.map((item) => [variableName(item), item.value]),
+  ].map((csvRow) => csvRow.map(csvCell).join(",")).join("\n")}\n`;
+  const technicalCsvHref = `data:text/csv;charset=utf-8,${encodeURIComponent(technicalCsv)}`;
   const measuredAt = new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -450,10 +554,10 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
               </p>
 
               <div className="result-metric-grid">
-                <article><span>Download speed</span><strong>{formatSpeed(saved.downloadMbps ?? row.download_mbps)} Mbps</strong></article>
-                <article><span>Upload speed</span><strong>{formatSpeed(saved.uploadMbps ?? row.upload_mbps)} Mbps</strong></article>
-                <article><span>Worst jitter</span><strong>{formatLatency(worstJitter)} ms</strong></article>
-                <article><span>Test duration</span><strong>{formatDuration(saved.durationSeconds ?? row.duration_seconds)}</strong></article>
+                <article><span>Latency / ping</span><strong>{formatLatency(idleMs)} ms</strong></article>
+                <article><span>Download stress</span><strong>{formatDelta(downloadStressMs)}</strong></article>
+                <article><span>Upload stress</span><strong>{formatDelta(uploadStressMs)}</strong></article>
+                <article><span>Median latency variation</span><strong>{formatLatency(medianVariation)} ms</strong></article>
               </div>
             </div>
           </div>
@@ -482,16 +586,59 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
             </div>
           </div>
 
-          <Link className="methodology-row" href="/docs">
-            Public measurement methodology
-            <span aria-hidden="true">›</span>
-          </Link>
+          <details className="technical-details">
+            <summary>
+              <span className="technical-summary-label">
+                Technical details, exportable as CSV
+              </span>
+            </summary>
+
+            <div className="technical-table-header">
+              <a
+                className="technical-methodology-link"
+                href="/docs#technical-detail-export-fields"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Public methodology for these variables
+              </a>
+              <a
+                aria-label="Export technical details as CSV"
+                className="technical-export-button"
+                download={`bufferbloat-test-details-${shareId}.csv`}
+                href={technicalCsvHref}
+                title="Export technical details as CSV"
+              >
+                <span aria-hidden="true">⇩</span>
+                Export CSV
+              </a>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Variable</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {technicalRows.map((item) => (
+                  <tr key={item.metric}>
+                    <th scope="row">
+                      {item.unit ? `${item.metric} (${item.unit})` : item.metric}
+                    </th>
+                    <td>{item.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
         </section>
 
         <div className="result-share-actions">
           <div className="result-action-buttons">
             <Link className="result-rerun-button" href="/test?start=1">
-              Run your own test
+              Run bufferbloat test
             </Link>
             <PrintResultButton />
           </div>

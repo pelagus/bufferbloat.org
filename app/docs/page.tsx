@@ -89,22 +89,22 @@ const technicalDetailFields = [
       "Higher of the download-loaded and upload-loaded median latency values.",
   },
   {
-    variable: "quiet_jitter_ms",
+    variable: "quiet_latency_variation_ms",
     value: "milliseconds",
     description:
-      "Standard deviation of scored latency / ping samples during the quiet phase. This helps show how consistent the connection was before intentional load.",
+      "Average absolute change between consecutive scored latency / ping samples during the quiet phase. This helps show how consistent the connection was before intentional load.",
   },
   {
-    variable: "download_jitter_ms",
+    variable: "download_latency_variation_ms",
     value: "milliseconds",
     description:
-      "Standard deviation of scored latency / ping samples during download load. This is used as a supporting signal for application performance.",
+      "Average absolute change between consecutive scored latency / ping samples during download load. This is used as a supporting signal for application performance.",
   },
   {
-    variable: "upload_jitter_ms",
+    variable: "upload_latency_variation_ms",
     value: "milliseconds",
     description:
-      "Standard deviation of scored latency / ping samples during upload load. This is used as a supporting signal for application performance.",
+      "Average absolute change between consecutive scored latency / ping samples during upload load. This is used as a supporting signal for application performance.",
   },
   {
     variable: "download_throughput_mbps",
@@ -188,7 +188,7 @@ const technicalDetailFields = [
     variable: "web_browsing_score",
     value: "0-100 score",
     description:
-      "Application-fit score for web browsing, derived from loaded latency, latency movement, and a light jitter adjustment.",
+      "Application-fit score for web browsing, derived from loaded latency, latency movement, and a light latency-variation adjustment.",
   },
   {
     variable: "video_streaming_score",
@@ -200,19 +200,19 @@ const technicalDetailFields = [
     variable: "voice_calls_score",
     value: "0-100 score",
     description:
-      "Application-fit score for voice calls, derived from baseline latency, latency movement, jitter, and minimum upload capacity.",
+      "Application-fit score for voice calls, derived from baseline latency, latency movement, latency variation, and minimum upload capacity.",
   },
   {
     variable: "video_calls_score",
     value: "0-100 score",
     description:
-      "Application-fit score for video calls, derived from baseline latency, latency movement, jitter, download throughput, and upload throughput.",
+      "Application-fit score for video calls, derived from baseline latency, latency movement, latency variation, download throughput, and upload throughput.",
   },
   {
     variable: "online_gaming_score",
     value: "0-100 score",
     description:
-      "Application-fit score for online gaming, weighted toward low baseline latency, low added latency under load, and low jitter.",
+      "Application-fit score for online gaming, weighted toward low baseline latency, low added latency under load, and low latency variation.",
   },
   {
     variable: "cloud_backup_score",
@@ -297,7 +297,8 @@ export default function Page() {
           streams, and repeated 1 MB upload chunks across three streams. The
           result grade is primarily about latency stability under load; low
           throughput is reported separately and is not automatically treated as
-          bufferbloat. Jitter is computed from the scored latency samples as a
+          bufferbloat. Latency variation is computed from the scored latency
+          samples as the average sample-to-sample change, and used as a
           supporting signal, especially for application-performance estimates.
         </p>
 
@@ -321,7 +322,7 @@ export default function Page() {
         <p>
           The technical-details drawer contains the structured measurement
           record used by the scorecard: phase medians, stress deltas,
-          jitter, throughput estimates, scored sample counts, raw scored
+          latency variation, throughput estimates, scored sample counts, raw scored
           latency sample lists, sample ranges, method notes, and
           application-performance scoring. The same record can be exported as
           CSV for review.

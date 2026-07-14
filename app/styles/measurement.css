@@ -1284,16 +1284,18 @@
 .latency-phase-chart svg {
   display: block;
   width: 100%;
+  aspect-ratio: 2 / 1;
+  height: auto;
   min-height: 220px;
 }
 
 .latency-phase-chart.live svg {
-  height: 150px;
+  height: auto;
   min-height: 0;
 }
 
 .latency-phase-chart.result svg {
-  height: clamp(250px, 28vw, 390px);
+  height: auto;
   min-height: 0;
 }
 
@@ -1317,20 +1319,20 @@
   fill: color-mix(in srgb, var(--purple) 10%, transparent);
 }
 
-.latency-phase-chart .latency-jitter-band {
+.latency-phase-chart .latency-variation-band {
   opacity: 0.28;
   vector-effect: non-scaling-stroke;
 }
 
-.latency-phase-chart .jitter-idle {
+.latency-phase-chart .variation-idle {
   fill: color-mix(in srgb, var(--fg) 48%, transparent);
 }
 
-.latency-phase-chart .jitter-download {
+.latency-phase-chart .variation-download {
   fill: color-mix(in srgb, var(--blue) 72%, transparent);
 }
 
-.latency-phase-chart .jitter-upload {
+.latency-phase-chart .variation-upload {
   fill: color-mix(in srgb, var(--purple) 72%, transparent);
 }
 
@@ -1474,7 +1476,7 @@
   stroke: var(--purple);
 }
 
-.latency-phase-legend .jitter::before {
+.latency-phase-legend .variation::before {
   background: color-mix(in srgb, var(--fg) 28%, var(--bg));
   opacity: 0.8;
 }
@@ -1484,6 +1486,20 @@
   fill: var(--muted);
   font-family: var(--font-geist-mono), monospace;
   font-size: 12px;
+}
+
+.latency-phase-chart .chart-variation-callout rect {
+  fill: color-mix(in srgb, var(--bg) 86%, transparent);
+  stroke: color-mix(in srgb, var(--fg) 16%, var(--line));
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.latency-phase-chart .chart-variation-callout text {
+  fill: color-mix(in srgb, var(--fg) 74%, var(--muted));
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-weight: 520;
 }
 
 .latency-phase-chart .chart-phase-obscured rect {
@@ -1871,10 +1887,10 @@
 .technical-details th,
 .technical-details td {
   border: 1px solid var(--line);
-  padding: 10px;
+  padding: 8px 10px;
   color: var(--fg);
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 11.5px;
+  line-height: 1.35;
   text-align: left;
   vertical-align: top;
   overflow-wrap: anywhere;
@@ -1882,12 +1898,13 @@
 
 .technical-details thead th {
   color: var(--muted);
-  font-weight: 800;
+  font-weight: 520;
 }
 
 .technical-details tbody th {
   width: 28%;
-  font-weight: 800;
+  color: color-mix(in srgb, var(--fg) 78%, var(--muted));
+  font-weight: 430;
 }
 
 @media (max-width: 767px) {
@@ -2472,7 +2489,7 @@
   }
 
   .latency-phase-chart.result svg {
-    height: clamp(340px, 34vh, 430px);
+    height: auto;
   }
 
   .result-scorecard .result-applications {
@@ -2788,7 +2805,7 @@
   }
 
   .latency-phase-chart.live svg {
-    height: clamp(230px, 33vh, 320px);
+    height: auto;
   }
 
   .live-chart-layout {
@@ -2870,9 +2887,9 @@
 
   .result-scorecard .technical-details th,
   .result-scorecard .technical-details td {
-    padding: 12px;
-    font-size: 13px;
-    line-height: 1.45;
+    padding: 9px 11px;
+    font-size: 12px;
+    line-height: 1.35;
   }
 
   .result-scorecard .technical-details table th:nth-child(1),
@@ -2925,7 +2942,7 @@
   }
 
   .latency-phase-chart.result svg {
-    height: clamp(360px, 42vh, 500px);
+    height: auto;
   }
 
   .result-scorecard .result-applications {
@@ -2983,7 +3000,7 @@
   }
 
   .latency-phase-chart.result svg {
-    height: clamp(390px, 46vh, 540px);
+    height: auto;
   }
 
   .result-scorecard .result-applications {
@@ -3062,11 +3079,11 @@
   }
 
   .latency-phase-chart.live svg {
-    height: 136px;
+    height: auto;
   }
 
   .latency-phase-chart.result svg {
-    height: clamp(220px, 32vh, 285px);
+    height: auto;
   }
 
   .latency-phase-chart-header {
@@ -3343,7 +3360,7 @@
   }
 
   .latency-phase-chart.result svg {
-    height: clamp(220px, 38vh, 320px);
+    height: auto;
   }
 
   .latency-phase-chart-header {
@@ -3531,7 +3548,7 @@
   }
 
   .latency-phase-chart.result svg {
-    height: 106mm !important;
+    height: auto !important;
     min-height: 0 !important;
   }
 

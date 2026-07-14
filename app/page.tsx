@@ -68,22 +68,38 @@ export default function Home() {
             aria-label="Example bufferbloat test result"
           >
             <div className="instrument-header">
-              <span>example scorecard trace</span>
-              <strong>Latency / Ping in milliseconds</strong>
+              <span>example scorecard</span>
+              <strong>Bufferbloat grade</strong>
+            </div>
+
+            <div className="instrument-grade-row">
+              <div className="instrument-grade">
+                <span>grade</span>
+                <strong>B</strong>
+                <em>Some delay</em>
+              </div>
+              <p>
+                Solid connection, but upload load adds enough latency to matter
+                for calls or games when the line is busy.
+              </p>
             </div>
 
             <dl className="instrument-metrics">
               <div>
-                <dt>Download speed</dt>
-                <dd>22 Mbps</dd>
+                <dt>Latency / ping</dt>
+                <dd>80 ms</dd>
               </div>
               <div>
-                <dt>Upload speed</dt>
-                <dd>10 Mbps</dd>
+                <dt>Download stress</dt>
+                <dd>+6 ms</dd>
               </div>
               <div>
-                <dt>Test duration</dt>
-                <dd>47 sec</dd>
+                <dt>Upload stress</dt>
+                <dd>+34 ms</dd>
+              </div>
+              <div>
+                <dt>Latency variation</dt>
+                <dd>12 ms</dd>
               </div>
             </dl>
 
@@ -145,14 +161,14 @@ export default function Home() {
                   <line x1="214" y1="194" x2="230" y2="194" className="legend-upload" />
                   <text x="236" y="198">upload</text>
                   <circle cx="314" cy="194" r="4" className="legend-median" />
-                  <text x="324" y="198">median dots</text>
+                  <text x="324" y="198">median ping</text>
                 </g>
               </svg>
             </div>
 
             <p>
-              Illustrative data. The live test reports a scorecard with a
-              measured latency trace, median dots, throughput, and public
+              Illustrative B-grade result. The live test reports the measured
+              trace, application performance, throughput, and public
               methodology.
             </p>
           </aside>

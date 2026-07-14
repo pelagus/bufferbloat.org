@@ -177,6 +177,9 @@ type AnalyticsEventPayload = {
     uploadStressMs?: number | null;
     downloadMbps?: number | null;
     uploadMbps?: number | null;
+    quietVariationMs?: number | null;
+    downloadVariationMs?: number | null;
+    uploadVariationMs?: number | null;
     quietJitterMs?: number | null;
     downloadJitterMs?: number | null;
     uploadJitterMs?: number | null;
@@ -302,9 +305,14 @@ function sampleStandardDeviation(samples: number[]) {
   return Math.sqrt(variance);
 }
 
-function phaseJitter(samples: number[]) {
+function phaseLatencyVariation(samples: number[]) {
   if (samples.length < 2) return null;
-  return sampleStandardDeviation(samples);
+
+  const totalMovement = samples
+    .slice(1)
+    .reduce((total, sample, index) => total + Math.abs(sample - samples[index]), 0);
+
+  return totalMovement / (samples.length - 1);
 }
 
 function smoothDisplaySamples(samples: number[]) {
@@ -449,15 +457,15 @@ function applicationRankingsFor(
   uploadDelta: number | null,
   downloadMbps: number | null,
   uploadMbps: number | null,
-  quietJitter: number | null,
-  downloadJitter: number | null,
-  uploadJitter: number | null
+  quietVariation: number | null,
+  downloadVariation: number | null,
+  uploadVariation: number | null
 ) {
   const baseline = idle ?? 0;
   const worstLoadedLatency = Math.max(downloadLatency ?? 0, uploadLatency ?? 0);
   const movement = stressMovement(downloadDelta, uploadDelta);
-  const worstJitter = Math.max(quietJitter ?? 0, downloadJitter ?? 0, uploadJitter ?? 0);
-  const loadedJitter = Math.max(downloadJitter ?? 0, uploadJitter ?? 0);
+  const worstVariation = Math.max(quietVariation ?? 0, downloadVariation ?? 0, uploadVariation ?? 0);
+  const loadedVariation = Math.max(downloadVariation ?? 0, uploadVariation ?? 0);
   const down = downloadMbps ?? 0;
   const up = uploadMbps ?? 0;
   const clampScore = (score: number) => Math.max(0, Math.min(100, Math.round(score)));
@@ -477,18 +485,18 @@ function applicationRankingsFor(
     {
       symbol: "⌁",
       name: "Web browsing",
-      score: clampScore(96 - movement * 0.28 - loadedJitter * 0.12 - Math.max(0, worstLoadedLatency - 160) * 0.25),
+      score: clampScore(96 - movement * 0.28 - loadedVariation * 0.1 - Math.max(0, worstLoadedLatency - 160) * 0.25),
     },
     {
       symbol: "▶",
       name: "Video streaming",
-      score: clampScore(speedScore(down, 25, 8) - movement * 0.06 - loadedJitter * 0.05),
+      score: clampScore(speedScore(down, 25, 8) - movement * 0.06 - loadedVariation * 0.04),
     },
     {
       symbol: "☎",
       name: "Voice calls",
       score: clampScore(
-        96 - Math.max(0, baseline - 90) * 0.2 - movement * 0.45 - worstJitter * 0.55 - Math.max(0, 1 - up) * 18
+        96 - Math.max(0, baseline - 90) * 0.2 - movement * 0.45 - worstVariation * 0.48 - Math.max(0, 1 - up) * 18
       ),
     },
     {
@@ -498,7 +506,7 @@ function applicationRankingsFor(
         94 -
           Math.max(0, baseline - 80) * 0.22 -
           movement * 0.5 -
-          worstJitter * 0.45 -
+          worstVariation * 0.4 -
           Math.max(0, 10 - down) * 2 -
           Math.max(0, 3 - up) * 10
       ),
@@ -506,12 +514,12 @@ function applicationRankingsFor(
     {
       symbol: "◆",
       name: "Online gaming",
-      score: clampScore(96 - Math.max(0, baseline - 40) * 0.4 - movement * 0.5 - worstJitter * 0.6),
+      score: clampScore(96 - Math.max(0, baseline - 40) * 0.4 - movement * 0.5 - worstVariation * 0.52),
     },
     {
       symbol: "⇧",
       name: "Cloud backup",
-      score: clampScore(speedScore(up, 10, 2) - movement * 0.35 - (uploadJitter ?? 0) * 0.15),
+      score: clampScore(speedScore(up, 10, 2) - movement * 0.35 - (uploadVariation ?? 0) * 0.12),
     },
   ]
     .map((item) => ({ ...item, ...labelFor(item.score) }))
@@ -727,9 +735,9 @@ export default function Page() {
 
       setTestProgress(100);
       const nextCount = readStoredTestCount() + 1;
-      const completedQuietJitter = phaseJitter(result.latencySamples.idle);
-      const completedDownloadJitter = phaseJitter(result.latencySamples.download);
-      const completedUploadJitter = phaseJitter(result.latencySamples.upload);
+      const completedQuietVariation = phaseLatencyVariation(result.latencySamples.idle);
+      const completedDownloadVariation = phaseLatencyVariation(result.latencySamples.download);
+      const completedUploadVariation = phaseLatencyVariation(result.latencySamples.upload);
       const completedApplications = applicationRankingsFor(
         result.idle,
         result.downloadLatency,
@@ -738,9 +746,9 @@ export default function Page() {
         latencyDelta(result.idle, result.uploadLatency),
         result.downloadMbps,
         result.uploadMbps,
-        completedQuietJitter,
-        completedDownloadJitter,
-        completedUploadJitter
+        completedQuietVariation,
+        completedDownloadVariation,
+        completedUploadVariation
       );
       const storedShareId = await storeCompletedAnalyticsEvent(
         analyticsPayload(runId, "completed", nextCount, {
@@ -754,9 +762,12 @@ export default function Page() {
           uploadStressMs: latencyDelta(result.idle, result.uploadLatency),
           downloadMbps: result.downloadMbps,
           uploadMbps: result.uploadMbps,
-          quietJitterMs: completedQuietJitter,
-          downloadJitterMs: completedDownloadJitter,
-          uploadJitterMs: completedUploadJitter,
+          quietVariationMs: completedQuietVariation,
+          downloadVariationMs: completedDownloadVariation,
+          uploadVariationMs: completedUploadVariation,
+          quietJitterMs: completedQuietVariation,
+          downloadJitterMs: completedDownloadVariation,
+          uploadJitterMs: completedUploadVariation,
           quietSamples: result.latencySamples.idle.length,
           downloadSamples: result.latencySamples.download.length,
           uploadSamples: result.latencySamples.upload.length,
@@ -912,13 +923,13 @@ export default function Page() {
     uploadLatency
   );
   const underLoadLatency = loadedLatency(downloadLatency, uploadLatency);
-  const quietJitter = phaseJitter(latencySamples.idle);
-  const downloadJitter = phaseJitter(latencySamples.download);
-  const uploadJitter = phaseJitter(latencySamples.upload);
-  const jitterValues = [quietJitter, downloadJitter, uploadJitter].filter(
+  const quietVariation = phaseLatencyVariation(latencySamples.idle);
+  const downloadVariation = phaseLatencyVariation(latencySamples.download);
+  const uploadVariation = phaseLatencyVariation(latencySamples.upload);
+  const variationValues = [quietVariation, downloadVariation, uploadVariation].filter(
     (value): value is number => value !== null
   );
-  const worstJitter = jitterValues.length > 0 ? Math.max(...jitterValues) : null;
+  const medianVariation = variationValues.length > 0 ? sampleMedian(variationValues) : null;
   const applicationRankingsResult = applicationRankingsFor(
     idle,
     downloadLatency,
@@ -927,9 +938,9 @@ export default function Page() {
     uploadDelta,
     downloadMbps,
     uploadMbps,
-    quietJitter,
-    downloadJitter,
-    uploadJitter
+    quietVariation,
+    downloadVariation,
+    uploadVariation
   );
   const totalScoredSamples = sampleCounts.idle + sampleCounts.download + sampleCounts.upload;
   const shareText =
@@ -1041,25 +1052,25 @@ export default function Page() {
       note: "Higher of the download-loaded and upload-loaded medians.",
     },
     {
-      section: "Jitter",
-      metric: "Quiet jitter",
-      value: formatLatency(quietJitter),
+      section: "Latency variation",
+      metric: "Quiet latency variation",
+      value: formatLatency(quietVariation),
       unit: "ms",
-      note: "Standard deviation of scored quiet latency / ping samples.",
+      note: "Average absolute change between consecutive scored quiet latency / ping samples.",
     },
     {
-      section: "Jitter",
-      metric: "Download jitter",
-      value: formatLatency(downloadJitter),
+      section: "Latency variation",
+      metric: "Download latency variation",
+      value: formatLatency(downloadVariation),
       unit: "ms",
-      note: "Standard deviation of scored latency / ping samples during download load.",
+      note: "Average absolute change between consecutive scored latency / ping samples during download load.",
     },
     {
-      section: "Jitter",
-      metric: "Upload jitter",
-      value: formatLatency(uploadJitter),
+      section: "Latency variation",
+      metric: "Upload latency variation",
+      value: formatLatency(uploadVariation),
       unit: "ms",
-      note: "Standard deviation of scored latency / ping samples during upload load.",
+      note: "Average absolute change between consecutive scored latency / ping samples during upload load.",
     },
     {
       section: "Throughput",
@@ -1365,20 +1376,20 @@ export default function Page() {
           measuredAt={resultMeasuredAt ?? new Date().toISOString()}
           scorecardMetrics={[
             {
-              label: "Download speed",
-              value: `${formatSpeed(downloadMbps)} Mbps`,
+              label: "Latency / ping",
+              value: `${formatLatency(idle)} ms`,
             },
             {
-              label: "Upload speed",
-              value: `${formatSpeed(uploadMbps)} Mbps`,
+              label: "Download stress",
+              value: formatDelta(downloadDelta),
             },
             {
-              label: "Worst jitter",
-              value: `${formatLatency(worstJitter)} ms`,
+              label: "Upload stress",
+              value: formatDelta(uploadDelta),
             },
             {
-              label: "Test duration",
-              value: formatDuration(resultDurationSeconds),
+              label: "Median latency variation",
+              value: `${formatLatency(medianVariation)} ms`,
             },
           ]}
           finding={findingFor(
@@ -1528,16 +1539,16 @@ function LatencyPhaseChart({
     sampleMedian(samples.download),
     sampleMedian(samples.upload),
   ].filter((value): value is number => value !== null);
-  const jitterBounds = [
-    { median: sampleMedian(samples.idle), jitter: phaseJitter(samples.idle) },
-    { median: sampleMedian(samples.download), jitter: phaseJitter(samples.download) },
-    { median: sampleMedian(samples.upload), jitter: phaseJitter(samples.upload) },
+  const variationBounds = [
+    { median: sampleMedian(samples.idle), variation: phaseLatencyVariation(samples.idle) },
+    { median: sampleMedian(samples.download), variation: phaseLatencyVariation(samples.download) },
+    { median: sampleMedian(samples.upload), variation: phaseLatencyVariation(samples.upload) },
   ].flatMap((item) =>
-    item.median === null || item.jitter === null
+    item.median === null || item.variation === null
       ? []
-      : [Math.max(0, item.median - item.jitter), item.median + item.jitter]
+      : [Math.max(0, item.median - item.variation), item.median + item.variation]
   );
-  const valuesPlottedForScale = [...plottedSamples, ...medianValues, ...jitterBounds];
+  const valuesPlottedForScale = [...plottedSamples, ...medianValues, ...variationBounds];
   const maxPlottedSample = valuesPlottedForScale.length
     ? Math.max(...valuesPlottedForScale)
     : 100;
@@ -1546,10 +1557,10 @@ function LatencyPhaseChart({
   const axisMid = axisMin + (axisMax - axisMin) / 2;
   const chart = {
     left: 58,
-    top: 28,
+    top: 24,
     width: 628,
-    height: 248,
-    bottom: 276,
+    height: 314,
+    bottom: 338,
   };
   const phaseWidth = chart.width / 3;
   const phaseRanges = {
@@ -1570,29 +1581,33 @@ function LatencyPhaseChart({
     yFor
   );
   const uploadPath = samplePath(displaySamples.upload, phaseRanges.upload[0], phaseRanges.upload[1], yFor);
-  const jitterBands = [
+  const variationBands = [
     {
       key: "idle",
-      className: "jitter-idle",
+      className: "variation-idle",
       range: phaseRanges.idle,
       median: sampleMedian(samples.idle),
-      jitter: phaseJitter(samples.idle),
+      variation: phaseLatencyVariation(samples.idle),
     },
     {
       key: "download",
-      className: "jitter-download",
+      className: "variation-download",
       range: phaseRanges.download,
       median: sampleMedian(samples.download),
-      jitter: phaseJitter(samples.download),
+      variation: phaseLatencyVariation(samples.download),
     },
     {
       key: "upload",
-      className: "jitter-upload",
+      className: "variation-upload",
       range: phaseRanges.upload,
       median: sampleMedian(samples.upload),
-      jitter: phaseJitter(samples.upload),
+      variation: phaseLatencyVariation(samples.upload),
     },
   ] as const;
+  const variationValues = variationBands
+    .map((band) => band.variation)
+    .filter((value): value is number => value !== null);
+  const worstVariation = variationValues.length ? Math.max(...variationValues) : null;
   const phaseMedians = [
     { key: "idle", className: "median-idle", range: phaseRanges.idle, value: sampleMedian(samples.idle) },
     {
@@ -1722,14 +1737,14 @@ function LatencyPhaseChart({
           <span className="upload">upload stress</span>
           {mode === "result" ? (
             <>
-              <span className="jitter">jitter band</span>
-              <span className="reference">median dots</span>
+              <span className="variation">variation band</span>
+              <span className="reference">median ping</span>
             </>
           ) : null}
         </div>
       </div>
 
-      <svg viewBox="0 0 720 330" role="img" aria-labelledby={`latency-phase-chart-${mode}`}>
+      <svg viewBox="0 0 720 360" role="img" aria-labelledby={`latency-phase-chart-${mode}`}>
         <title id={`latency-phase-chart-${mode}`}>
           Ping samples by test phase
         </title>
@@ -1750,23 +1765,29 @@ function LatencyPhaseChart({
           );
         })}
         <text className="chart-axis-label" x={11} y={18}>ms</text>
+        {mode === "result" && worstVariation !== null ? (
+          <g className="chart-variation-callout">
+            <rect x={524} y={chart.top + 10} width={150} height={29} rx={0} />
+            <text x={536} y={chart.top + 29}>worst variation {formatLatency(worstVariation)} ms</text>
+          </g>
+        ) : null}
         <line className="phase-break" x1={chart.left + phaseWidth} y1={chart.top} x2={chart.left + phaseWidth} y2={chart.bottom} />
         <line className="phase-break" x1={chart.left + phaseWidth * 2} y1={chart.top} x2={chart.left + phaseWidth * 2} y2={chart.bottom} />
 
         {mode === "result" &&
-          jitterBands.map((band) => {
-            if (band.median === null || band.jitter === null) {
+          variationBands.map((band) => {
+            if (band.median === null || band.variation === null) {
               return null;
             }
 
-            const upperY = yFor(band.median + band.jitter);
-            const lowerY = yFor(Math.max(0, band.median - band.jitter));
+            const upperY = yFor(band.median + band.variation);
+            const lowerY = yFor(Math.max(0, band.median - band.variation));
             const height = Math.max(2, lowerY - upperY);
 
             return (
               <rect
-                aria-label={`${band.key} jitter band: ${formatLatency(band.jitter)} ms`}
-                className={`latency-jitter-band ${band.className}`}
+                aria-label={`${band.key} variation band: ${formatLatency(band.variation)} ms`}
+                className={`latency-variation-band ${band.className}`}
                 key={band.key}
                 x={band.range[0]}
                 y={upperY}
@@ -1828,9 +1849,9 @@ function LatencyPhaseChart({
             </g>
           ))}
 
-        <text className="chart-phase-label" x={chart.left + 10} y={310}>quiet</text>
-        <text className="chart-phase-label" x={chart.left + phaseWidth + 10} y={310}>download</text>
-        <text className="chart-phase-label" x={chart.left + phaseWidth * 2 + 10} y={310}>upload</text>
+        <text className="chart-phase-label" x={chart.left + 10} y={354}>quiet</text>
+        <text className="chart-phase-label" x={chart.left + phaseWidth + 10} y={354}>download</text>
+        <text className="chart-phase-label" x={chart.left + phaseWidth * 2 + 10} y={354}>upload</text>
       </svg>
 
     </section>
@@ -1861,9 +1882,9 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
 
     return {
       eyebrow: "Step 2 of 3",
-      title: settling ? "Starting download load" : "Measuring ping during download",
+      title: settling ? "Warming up download" : "Measuring ping during download",
       detail: settling
-        ? "Download traffic is starting. These first seconds are excluded from the score."
+        ? "Download traffic is already running. These first seconds are excluded while the load settles."
         : "Now we compare ping against the baseline while the connection is busy downloading.",
     };
   }
@@ -1873,9 +1894,9 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
 
     return {
       eyebrow: "Step 3 of 3",
-      title: settling ? "Starting upload load" : "Measuring ping during upload",
+      title: settling ? "Warming up upload" : "Measuring ping during upload",
       detail: settling
-        ? "Upload traffic is starting. These first seconds are excluded from the score."
+        ? "Upload traffic is already running. These first seconds are excluded while the load settles."
         : "Now we compare ping against the baseline while the connection is busy uploading.",
     };
   }
@@ -2017,7 +2038,7 @@ function TestProcedurePanel({
               <i aria-hidden="true" />
               <span>{complete ? "✓" : index + 1}</span>
               <strong>{step.label}</strong>
-              {active && <em>{stepSettling ? "settling" : "sampling"}</em>}
+              {active && <em>{stepSettling ? "warming up" : "sampling"}</em>}
             </li>
           );
         })}

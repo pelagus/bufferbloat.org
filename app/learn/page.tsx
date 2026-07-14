@@ -314,7 +314,7 @@ export default function Page() {
             </h3>
             <p>
               A public browser-based network performance test that reports
-              throughput, latency, jitter, and related metrics.
+              throughput, latency, latency variation, and related metrics.
             </p>
           </article>
 
