@@ -1,10 +1,11 @@
 :root {
+  --page: #ffffff;
   --bg: #ffffff;
-  --fg: #151515;
-  --muted: #666666;
-  --soft: #f7f7f7;
-  --line: #dddddd;
-  --line-strong: #111111;
+  --fg: #16181a;
+  --muted: #555b61;
+  --soft: #f5f6f7;
+  --line: #d8dce1;
+  --line-strong: #2a2d31;
   --good: #22c55e;
   --warn: #facc15;
   --bad: #ff6266;
@@ -15,26 +16,13 @@
   --action-strong: #0f5f30;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #050505;
-    --fg: #f4f4f4;
-    --muted: #a0a0a0;
-    --soft: #101010;
-    --line: #303030;
-    --line-strong: #eeeeee;
-    --quiet: #f59a2f;
-    --action: #2fa866;
-    --action-strong: #45c17d;
-  }
-}
-
 * {
   box-sizing: border-box;
 }
 
 html {
-  color-scheme: light dark;
+  color-scheme: light;
+  background: var(--page);
 }
 
 body {
@@ -338,32 +326,8 @@ button:disabled {
   }
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --soft: #f3f3f3;
-    --line: #cfcfcf;
-    --muted: #4d4d4d;
-  }
-}
-
 .signup-card {
   border-color: var(--line-strong);
-}
-
-.signup-card h2 {
-  max-width: 520px;
-}
-
-.signup-card h2::before {
-  content: "Get the full fix guide";
-}
-
-.signup-card h2 {
-  font-size: 0;
-}
-
-.signup-card h2::before {
-  font-size: clamp(24px, 3vw, 36px);
 }
 
 .signup-card p {
@@ -394,15 +358,6 @@ button:disabled {
   color: #b88600;
 }
 
-@media (prefers-color-scheme: dark) {
-  .warn {
-    color: #facc15;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-}
-
 .analysis-card {
   margin-top: 28px;
   border: 1px solid var(--line);
@@ -419,9 +374,6 @@ button:disabled {
   to {
     width: 88%;
   }
-}
-
-@media (prefers-color-scheme: dark) {
 }
 
 .signup-card {

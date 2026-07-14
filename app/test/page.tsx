@@ -23,6 +23,7 @@ const UPLOAD_STREAM_COUNT = 3;
 const DOWNLOAD_PAYLOAD_MB = 100;
 const UPLOAD_CHUNK_MB = 1;
 const LOAD_SETTLING_SECONDS = 4;
+const PREFLIGHT_SECONDS = 7;
 const FOREGROUND_ERROR =
   "The test paused because this tab was no longer visible.";
 const TEST_COUNT_STORAGE_KEY = "bufferbloat_test_count";
@@ -508,6 +509,8 @@ export default function Page() {
   const [analyzing, setAnalyzing] = useState(false);
   const [finished, setFinished] = useState(false);
   const [showPreflight, setShowPreflight] = useState(false);
+  const [preflightSeconds, setPreflightSeconds] = useState(PREFLIGHT_SECONDS);
+  const [preflightPaused, setPreflightPaused] = useState(false);
 
   const [idle, setIdle] = useState<number | null>(null);
   const [downloadLatency, setDownloadLatency] = useState<number | null>(null);
@@ -529,7 +532,7 @@ export default function Page() {
   const [grade, setGrade] = useState<Grade>("—");
   const [error, setError] = useState<string | null>(null);
   const [resultMeasuredAt, setResultMeasuredAt] = useState<string | null>(null);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [testProgress, setTestProgress] = useState(0);
   const [resultDurationSeconds, setResultDurationSeconds] = useState<number | null>(null);
   const [completedTestCount, setCompletedTestCount] = useState(0);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -546,17 +549,23 @@ export default function Page() {
     );
   }, []);
 
+  const openPreflight = useCallback(() => {
+    setPreflightSeconds(PREFLIGHT_SECONDS);
+    setPreflightPaused(false);
+    setShowPreflight(true);
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
 
     if (params.get("start") !== "1") return;
 
     const timer = window.setTimeout(() => {
-      setShowPreflight(true);
+      openPreflight();
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [openPreflight]);
 
   useEffect(() => {
     if (!running) return;
@@ -594,20 +603,6 @@ export default function Page() {
       });
     }
   }, [finished]);
-
-  useEffect(() => {
-    if (!running && !analyzing) return;
-
-    const updateElapsed = () => {
-      if (testStartedAtRef.current === null) return;
-      setElapsedSeconds(Math.max(0, Math.round((Date.now() - testStartedAtRef.current) / 1000)));
-    };
-
-    updateElapsed();
-    const interval = window.setInterval(updateElapsed, 1000);
-
-    return () => window.clearInterval(interval);
-  }, [running, analyzing]);
 
   const runTest = useCallback(async function runTest() {
     abortControllerRef.current?.abort();
@@ -647,7 +642,7 @@ export default function Page() {
       setSampleCounts({ idle: 0, download: 0, upload: 0 });
       setGrade("—");
       setResultMeasuredAt(null);
-      setElapsedSeconds(0);
+      setTestProgress(0);
       setResultDurationSeconds(null);
       setShareUrl(null);
       setShareMessage("");
@@ -662,6 +657,7 @@ export default function Page() {
           setPhase(update.phase);
           setStatus(update.status);
           setMessage(update.message);
+          setTestProgress(update.progress);
           setIdle(update.idle);
           setDownloadLatency(update.downloadLatency);
           setUploadLatency(update.uploadLatency);
@@ -703,6 +699,7 @@ export default function Page() {
       setPhase("analysis");
       setStatus("diagnosis");
       setMessage("Comparing quiet and loaded latency medians.");
+      setTestProgress(96);
 
       await wait(6200);
 
@@ -713,11 +710,10 @@ export default function Page() {
           0,
           Math.round((Date.now() - testStartedAtRef.current) / 1000)
         );
-        setElapsedSeconds(finalDuration);
         setResultDurationSeconds(finalDuration);
       }
 
-      setAnalyzing(false);
+      setTestProgress(100);
       const nextCount = readStoredTestCount() + 1;
       const completedApplications = applicationRankingsFor(
         result.idle,
@@ -750,12 +746,13 @@ export default function Page() {
 
       window.localStorage.setItem(TEST_COUNT_STORAGE_KEY, String(nextCount));
       setCompletedTestCount(nextCount);
+      setAnalyzing(false);
+      setFinished(true);
       setShareUrl(
         storedShareId && typeof window !== "undefined"
           ? `${window.location.origin}/result/${storedShareId}`
           : null
       );
-      setFinished(true);
     } catch (err) {
       const stoppedForForeground =
         abortController.signal.aborted &&
@@ -792,6 +789,7 @@ export default function Page() {
       setPhase("ready");
       setStatus("stopped");
       setMessage("Test stopped before completion.");
+      setTestProgress(0);
       testStartedAtRef.current = null;
     } finally {
       if (abortControllerRef.current === abortController) {
@@ -804,16 +802,37 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    if (!showPreflight || running || analyzing || finished || error) return;
+    if (!showPreflight || preflightPaused || running || analyzing || finished || error) {
+      return;
+    }
+
+    if (preflightSeconds <= 0) {
+      const timer = window.setTimeout(() => {
+        void runTest();
+      }, 0);
+
+      return () => {
+        window.clearTimeout(timer);
+      };
+    }
 
     const timer = window.setTimeout(() => {
-      void runTest();
-    }, 5000);
+      setPreflightSeconds((current) => Math.max(0, current - 1));
+    }, 1000);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [analyzing, error, finished, runTest, running, showPreflight]);
+  }, [
+    analyzing,
+    error,
+    finished,
+    preflightPaused,
+    preflightSeconds,
+    runTest,
+    running,
+    showPreflight,
+  ]);
 
   const automaticStage = running && !analyzing ? stageIndex(status) : 0;
   const phaseDetail = getPhaseDetail(phase, status);
@@ -1085,6 +1104,13 @@ export default function Page() {
 
   return (
     <main className="test-shell">
+      {!finished && (
+        <header className="test-page-heading">
+          <span>Bufferbloat test</span>
+          <h1>Testing your internet connection</h1>
+        </header>
+      )}
+
       {!error && !running && !analyzing && !finished && !showPreflight && (
         <section className="hero-panel">
           <div className="hero-grid">
@@ -1108,9 +1134,7 @@ export default function Page() {
 
               <button
                 className="hero-start-button"
-                onClick={() => {
-                  setShowPreflight(true);
-                }}
+                onClick={openPreflight}
                 disabled={running || analyzing}
               >
                 Start test
@@ -1149,22 +1173,44 @@ export default function Page() {
 
             <div className="preflight-copy">
               <span>Before the measurement</span>
-              <h1>Help the browser test stay reliable</h1>
+              <h1>Ready in a few seconds</h1>
               <p>
-                Browser measurements can be noisy. A few small precautions make
-                the result easier to trust.
+                For a cleaner result, take a moment to remove anything that may
+                interfere with the connection.
               </p>
 
               <ul className="preflight-caveats">
-                <li>Disable VPNs or traffic-shaping tools if you can.</li>
-                <li>Pause downloads, backups, video calls, and other heavy activity on this device.</li>
-                <li>Keep this tab visible until the result appears.</li>
-                <li>If focus leaves the tab, the test stops rather than reporting questionable data.</li>
+                <li>Disable VPN or traffic shaping if you use it.</li>
+                <li>Pause downloads, backups, calls, and streams on this device.</li>
+                <li>Keep this tab visible until the scorecard appears.</li>
               </ul>
 
               <p className="preflight-note">
                 The test starts automatically and usually takes about a minute.
               </p>
+
+              <div className="preflight-countdown" role="timer" aria-live="polite">
+                <strong>{preflightSeconds}</strong>
+                <span>{preflightPaused ? "Countdown stopped" : "Starting automatically"}</span>
+                <em>
+                  Stop the countdown if you need to disable a VPN or pause other traffic.
+                </em>
+              </div>
+
+              <div className="preflight-actions">
+                <button onClick={runTest} disabled={running || analyzing}>
+                  Start now
+                </button>
+                <button
+                  className="secondary-button"
+                  onClick={() => {
+                    setPreflightPaused((current) => !current);
+                  }}
+                  disabled={running || analyzing}
+                >
+                  {preflightPaused ? "Continue countdown" : "Stop countdown"}
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -1174,7 +1220,7 @@ export default function Page() {
         <section className="test-stop-stage">
           <div className="stopped-test-underlay" aria-hidden="true">
             <section className="instrument-panel">
-              <ForegroundRunNotice elapsedSeconds={elapsedSeconds} />
+              <ForegroundRunNotice progress={testProgress} phase={phase} />
 
               <TestProcedurePanel
                 phase={phase}
@@ -1236,34 +1282,45 @@ export default function Page() {
       )}
 
       {analyzing && (
-        <section className="instrument-panel">
-          <ForegroundRunNotice elapsedSeconds={elapsedSeconds} />
+        <section className="test-stop-stage analysis-stage">
+          <div className="stopped-test-underlay" aria-hidden="true">
+            <section className="instrument-panel">
+              <ForegroundRunNotice progress={testProgress} phase="analysis" />
 
-          <TestProcedurePanel
-            phase="analysis"
-            status="analysis"
-            message="Comparing normal latency / ping with latency / ping during download and upload."
-            phaseDetail={getPhaseDetail("analysis", "analysis")}
-            sampleCount={latencySampleCount}
-            idle={idle}
-            downloadLatency={downloadLatency}
-            uploadLatency={uploadLatency}
-            downloadMbps={downloadMbps}
-            uploadMbps={uploadMbps}
-          />
+              <TestProcedurePanel
+                phase="analysis"
+                status="analysis"
+                message="Comparing normal latency / ping with latency / ping during download and upload."
+                phaseDetail={getPhaseDetail("analysis", "analysis")}
+                sampleCount={latencySampleCount}
+                idle={idle}
+                downloadLatency={downloadLatency}
+                uploadLatency={uploadLatency}
+                downloadMbps={downloadMbps}
+                uploadMbps={uploadMbps}
+              />
+            </section>
+          </div>
 
-          <section className="analysis-card">
-            <div className="analysis-loader tall">
-              <div>
-                <p>Calculating report...</p>
-                <small>
-                  Comparing normal latency / ping with latency / ping during download and upload.
-                </small>
+          <section className="test-stop-overlay analysis-overlay" aria-live="polite">
+            <div className="terminal-card test-stop-card test-stop-screen analysis-interstitial">
+              <Image
+                src="/test-foreground.svg"
+                alt=""
+                width={220}
+                height={150}
+                className="test-stop-illustration"
+                aria-hidden="true"
+              />
+              <span>Preparing your scorecard</span>
+              <strong>Calculating result</strong>
+              <p>
+                Comparing the quiet, download, and upload measurements before
+                showing the final bufferbloat grade.
+              </p>
+              <div className="analysis-progress" aria-hidden="true">
+                <div />
               </div>
-            </div>
-
-            <div className="analysis-progress">
-              <div />
             </div>
           </section>
         </section>
@@ -1310,7 +1367,7 @@ export default function Page() {
 
       {running && (
         <section className="instrument-panel">
-          <ForegroundRunNotice elapsedSeconds={elapsedSeconds} />
+          <ForegroundRunNotice progress={testProgress} phase={phase} />
 
           <TestProcedurePanel
             phase={phase}
@@ -1724,13 +1781,31 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
   };
 }
 
-function ForegroundRunNotice({ elapsedSeconds }: { elapsedSeconds: number }) {
+function ForegroundRunNotice({
+  progress,
+  phase,
+}: {
+  progress: number;
+  phase: TestPhase | "ready" | "analysis";
+}) {
+  const boundedProgress = Math.max(0, Math.min(100, Math.round(progress)));
+  const label =
+    phase === "analysis"
+      ? "Calculating result"
+      : phase === "warmup"
+        ? "Preparing measurement"
+        : "Measurement in progress";
+
   return (
     <div className="foreground-run-notice" role="status" aria-live="polite">
-      <strong>{formatDuration(elapsedSeconds)}</strong>
-      <span>
-        Keep this tab in the foreground. The test takes about a minute.
-      </span>
+      <div className="test-progress-meta">
+        <span>{label}</span>
+        <strong>{boundedProgress}%</strong>
+      </div>
+      <div className="test-progress-track" aria-hidden="true">
+        <span style={{ width: `${boundedProgress}%` }} />
+      </div>
+      <p>Keep this tab in the foreground. The test takes about a minute.</p>
     </div>
   );
 }

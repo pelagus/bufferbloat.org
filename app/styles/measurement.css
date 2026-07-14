@@ -5,7 +5,63 @@
 /* Homepage-aligned measurement theme */
 
 .test-shell {
-  padding-top: 8px;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  margin-top: 0;
+  padding-top: clamp(18px, 3.5vw, 38px);
+  padding-right: max(12px, calc((100vw - 1180px) / 2));
+  padding-bottom: clamp(34px, 5vw, 64px);
+  padding-left: max(12px, calc((100vw - 1180px) / 2));
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 78%, var(--bg));
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0,
+      transparent max(6px, calc((100vw - 1180px) / 2 + 6px)),
+      color-mix(in srgb, var(--line) 62%, transparent) max(6px, calc((100vw - 1180px) / 2 + 6px)),
+      color-mix(in srgb, var(--line) 62%, transparent) max(7px, calc((100vw - 1180px) / 2 + 7px)),
+      transparent max(7px, calc((100vw - 1180px) / 2 + 7px))
+    ),
+    linear-gradient(
+      180deg,
+      var(--bg) 0,
+      color-mix(in srgb, var(--soft) 72%, var(--bg)) 92px,
+      color-mix(in srgb, var(--soft) 48%, var(--bg)) 100%
+    );
+}
+
+.test-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.test-page-heading {
+  display: grid;
+  gap: 4px;
+  max-width: 1180px;
+  margin: 0 auto 14px;
+  padding-left: 16px;
+  border-left: 2px solid color-mix(in srgb, var(--fg) 42%, var(--line));
+}
+
+.test-page-heading span {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-weight: 420;
+  line-height: 1.2;
+}
+
+.test-page-heading h1 {
+  margin: 0;
+  color: var(--fg);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: clamp(24px, 3.2vw, 42px);
+  font-weight: 430;
+  line-height: 1.08;
+  letter-spacing: 0;
 }
 
 .test-shell .hero-panel {
@@ -100,13 +156,15 @@
 .result-method-note,
 .test-stop-card {
   border: 1px solid var(--line);
+  border-left-color: color-mix(in srgb, var(--fg) 42%, var(--line));
+  border-left-width: 2px;
   border-radius: 0;
-  background: var(--soft) !important;
+  background: var(--bg) !important;
   box-shadow: none !important;
 }
 
 .preflight-card {
-  margin: 18px 0 0;
+  margin: 0;
   padding: 0;
   overflow: hidden;
 }
@@ -166,9 +224,9 @@
 
 .preflight-caveats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 0;
-  margin: 18px 0 0;
+  margin: 16px 0 0;
   padding: 0;
   border-top: 1px solid var(--line);
   border-left: 1px solid var(--line);
@@ -177,7 +235,7 @@
 
 .preflight-caveats li {
   min-width: 0;
-  padding: 10px 12px 10px 34px;
+  padding: 9px 12px 9px 34px;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: var(--bg);
@@ -205,7 +263,90 @@
   line-height: 1.35 !important;
 }
 
+.preflight-countdown {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 16px;
+  align-items: center;
+  width: 100%;
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--soft) 70%, var(--bg)),
+      var(--bg)
+    );
+  padding: 12px 14px;
+  font-family: var(--font-geist-mono), monospace;
+  text-align: left;
+}
+
+.preflight-countdown strong {
+  position: relative;
+  display: grid;
+  place-items: center;
+  grid-row: span 2;
+  width: clamp(74px, 8vw, 92px);
+  height: clamp(74px, 8vw, 92px);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background:
+    linear-gradient(var(--line), var(--line)) 50% 0 / 1px 100% no-repeat,
+    linear-gradient(90deg, var(--line), var(--line)) 0 50% / 100% 1px no-repeat,
+    conic-gradient(
+      from -90deg,
+      color-mix(in srgb, var(--fg) 12%, transparent) 0deg,
+      transparent 54deg,
+      color-mix(in srgb, var(--fg) 8%, transparent) 56deg,
+      transparent 360deg
+    ),
+    var(--bg);
+  color: var(--fg);
+  font-size: clamp(36px, 5vw, 54px);
+  font-weight: 520;
+  line-height: 1;
+  text-align: center;
+  animation: countdownSweep 1s steps(1, end) infinite;
+}
+
+.preflight-countdown strong::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.preflight-countdown strong::after {
+  content: "";
+  position: absolute;
+  inset: 50% 8px auto 50%;
+  height: 1px;
+  background: color-mix(in srgb, var(--fg) 52%, transparent);
+  transform-origin: left center;
+  animation: countdownHand 1s linear infinite;
+}
+
+.preflight-countdown span {
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 520;
+  line-height: 1.2;
+}
+
+.preflight-countdown em {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.35;
+}
+
 .preflight-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 12px;
 }
 
@@ -215,6 +356,34 @@
   min-height: 46px;
   border-radius: 0;
   padding-inline: 18px;
+}
+
+.preflight-actions .secondary-button {
+  border-color: var(--line);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+@keyframes countdownHand {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes countdownSweep {
+  50% {
+    background:
+      linear-gradient(var(--line), var(--line)) 50% 0 / 1px 100% no-repeat,
+      linear-gradient(90deg, var(--line), var(--line)) 0 50% / 100% 1px no-repeat,
+      conic-gradient(
+        from -90deg,
+        color-mix(in srgb, var(--fg) 16%, transparent) 0deg,
+        transparent 72deg,
+        color-mix(in srgb, var(--fg) 10%, transparent) 74deg,
+        transparent 360deg
+      ),
+      var(--bg);
+  }
 }
 
 .test-stop-stage {
@@ -319,37 +488,62 @@
   cursor: pointer;
 }
 
+.analysis-stage .stopped-test-underlay {
+  opacity: 0.42;
+  filter: saturate(0.8) blur(0.4px);
+}
+
+.analysis-overlay {
+  background:
+    linear-gradient(
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0.5)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--fg) 3.5%, transparent) 0,
+      color-mix(in srgb, var(--fg) 3.5%, transparent) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+}
+
+.analysis-interstitial {
+  border-color: color-mix(in srgb, var(--line) 86%, var(--bg));
+}
+
+.analysis-interstitial .analysis-progress {
+  grid-column: 2;
+  width: min(420px, 100%);
+  margin-top: 4px;
+}
+
 .instrument-panel {
   gap: 8px;
   margin-top: 0;
   padding: 8px !important;
+  background:
+    linear-gradient(
+      180deg,
+      var(--bg) 0%,
+      color-mix(in srgb, var(--soft) 36%, var(--bg)) 100%
+    ) !important;
 }
 
 .foreground-run-notice {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
+  gap: 7px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--fg) 3%, var(--bg));
   color: color-mix(in srgb, var(--fg) 68%, var(--muted));
-  padding: 6px 8px;
+  padding: 8px 10px;
   font-family: var(--font-geist-mono), monospace;
 }
 
-.foreground-run-notice strong {
-  min-width: 44px;
-  color: var(--fg);
-  font-size: clamp(14px, 1.7vw, 20px);
-  font-weight: 560;
-  letter-spacing: 0;
-  line-height: 1;
-}
-
-.foreground-run-notice span {
-  min-width: 0;
-  font-size: 11px;
-  font-weight: 440;
+.foreground-run-notice p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10.5px;
   line-height: 1.25;
 }
 
@@ -1752,6 +1946,27 @@
 }
 
 @media (max-width: 767px) {
+  .test-shell {
+    width: 100%;
+    margin-top: 0;
+    padding: 14px 8px 28px;
+    background:
+      linear-gradient(
+        90deg,
+        transparent 0,
+        transparent 4px,
+        color-mix(in srgb, var(--line) 58%, transparent) 4px,
+        color-mix(in srgb, var(--line) 58%, transparent) 5px,
+        transparent 5px
+      ),
+      linear-gradient(
+        180deg,
+        var(--bg) 0,
+        color-mix(in srgb, var(--soft) 70%, var(--bg)) 82px,
+        color-mix(in srgb, var(--soft) 48%, var(--bg)) 100%
+      );
+  }
+
   .test-shell .hero-panel {
     padding: 34px 0 26px !important;
   }
@@ -1874,7 +2089,7 @@
 
 .result-screen {
   width: min(1220px, calc(100vw - 32px));
-  margin-top: -22px;
+  margin-top: 0;
   margin-left: 50%;
   transform: translateX(-50%);
 }
@@ -2551,8 +2766,26 @@
 
 @media (min-width: 768px) and (max-width: 1199px) {
   .test-shell {
-    width: min(1120px, calc(100vw - 24px));
-    padding-top: 12px;
+    width: 100%;
+    padding-top: 20px;
+    padding-right: 12px;
+    padding-bottom: 42px;
+    padding-left: 12px;
+    background:
+      linear-gradient(
+        90deg,
+        transparent 0,
+        transparent 6px,
+        color-mix(in srgb, var(--line) 58%, transparent) 6px,
+        color-mix(in srgb, var(--line) 58%, transparent) 7px,
+        transparent 7px
+      ),
+      linear-gradient(
+        180deg,
+        var(--bg) 0,
+        color-mix(in srgb, var(--soft) 70%, var(--bg)) 88px,
+        color-mix(in srgb, var(--soft) 48%, var(--bg)) 100%
+      );
   }
 
   .instrument-panel {
