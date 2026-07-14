@@ -2373,8 +2373,8 @@
 
 .application-ranking-list li {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
-  gap: 2px 10px;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 2px 11px;
   align-items: center;
   min-width: 0;
   padding: 6px 8px;
@@ -2415,7 +2415,7 @@
 
 .reliability-symbol {
   color: var(--fg);
-  font-size: 17px;
+  font-size: 24px;
 }
 
 .application-copy {
@@ -2495,8 +2495,8 @@
   }
 
   .application-ranking-list li {
-    grid-template-columns: 30px minmax(0, 1fr);
-    gap: 3px 10px;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 3px 11px;
     min-height: 58px;
     padding: 10px 9px;
   }
@@ -2945,8 +2945,8 @@
   }
 
   .application-ranking-list li {
-    grid-template-columns: 26px minmax(0, 1fr);
-    gap: 2px 8px;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 2px 9px;
     padding: 9px;
   }
 
@@ -2991,7 +2991,7 @@
   }
 
   .application-ranking-list li {
-    grid-template-columns: 24px minmax(0, 1fr);
+    grid-template-columns: 32px minmax(0, 1fr);
     gap: 2px 8px;
     min-height: 52px;
     padding: 8px;
@@ -3211,8 +3211,8 @@
 
   .application-ranking-list li {
     grid-template-columns: 1fr;
-    gap: 4px;
-    min-height: 48px;
+    gap: 5px;
+    min-height: 58px;
     padding: 7px 8px;
     border-right: 1px solid var(--line);
   }
@@ -3234,7 +3234,9 @@
   }
 
   .reliability-symbol {
-    display: none;
+    display: block;
+    font-size: 21px;
+    text-align: left;
   }
 
   .result-scorecard .signup-card {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { d1Query, ensureD1Columns } from "../../../lib/d1";
 import PrintResultButton from "../../test/components/PrintResultButton";
 
@@ -384,13 +384,7 @@ async function fetchSharedResult(shareId: string) {
   return data.result?.[0]?.results?.[0] || null;
 }
 
-export default async function SharedResultPage({
-  params,
-}: {
-  params: Promise<{ shareId: string }>;
-}) {
-  const { shareId } = await params;
-
+export async function SharedResultContent({ shareId }: { shareId: string }) {
   if (!/^[a-f0-9]{18}$/i.test(shareId)) {
     notFound();
   }
@@ -411,6 +405,9 @@ export default async function SharedResultPage({
     uploadStressMs: number;
     downloadMbps: number;
     uploadMbps: number;
+    quietJitterMs: number;
+    downloadJitterMs: number;
+    uploadJitterMs: number;
   }>>(row.result_json, {});
   const samples = safeJson<LatencySamples>(row.samples_json, { idle: [], download: [], upload: [] });
   const applications = safeJson<ApplicationScore[]>(row.application_scores_json, []);
@@ -418,6 +415,12 @@ export default async function SharedResultPage({
   const idleMs = saved.idleMs ?? row.idle_ms;
   const downloadStressMs = saved.downloadStressMs ?? row.download_stress_ms;
   const uploadStressMs = saved.uploadStressMs ?? row.upload_stress_ms;
+  const jitterValues = [
+    saved.quietJitterMs,
+    saved.downloadJitterMs,
+    saved.uploadJitterMs,
+  ].filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  const worstJitter = jitterValues.length > 0 ? Math.max(...jitterValues) : null;
   const measuredAt = new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -449,6 +452,7 @@ export default async function SharedResultPage({
               <div className="result-metric-grid">
                 <article><span>Download speed</span><strong>{formatSpeed(saved.downloadMbps ?? row.download_mbps)} Mbps</strong></article>
                 <article><span>Upload speed</span><strong>{formatSpeed(saved.uploadMbps ?? row.upload_mbps)} Mbps</strong></article>
+                <article><span>Worst jitter</span><strong>{formatLatency(worstJitter)} ms</strong></article>
                 <article><span>Test duration</span><strong>{formatDuration(saved.durationSeconds ?? row.duration_seconds)}</strong></article>
               </div>
             </div>
@@ -495,4 +499,18 @@ export default async function SharedResultPage({
       </div>
     </main>
   );
+}
+
+export default async function SharedResultPage({
+  params,
+}: {
+  params: Promise<{ shareId: string }>;
+}) {
+  const { shareId } = await params;
+
+  if (!/^[a-f0-9]{18}$/i.test(shareId)) {
+    notFound();
+  }
+
+  redirect(`/test?result=${shareId}`);
 }
