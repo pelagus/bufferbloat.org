@@ -135,8 +135,6 @@ export default function ResultCard({
       </div>
 
       <div className="result-evidence-row">
-        <div className="result-chart-cell">{chartSlot}</div>
-
         <div className="result-applications">
           <div className="result-section-heading">
             <span>Application performance</span>
@@ -156,6 +154,8 @@ export default function ResultCard({
             ))}
           </ol>
         </div>
+
+        <div className="result-chart-cell">{chartSlot}</div>
       </div>
 
       {signupSlot}

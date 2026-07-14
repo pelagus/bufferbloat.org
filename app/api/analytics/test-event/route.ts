@@ -30,6 +30,9 @@ type AnalyticsEventBody = {
     uploadStressMs?: unknown;
     downloadMbps?: unknown;
     uploadMbps?: unknown;
+    quietJitterMs?: unknown;
+    downloadJitterMs?: unknown;
+    uploadJitterMs?: unknown;
     quietSamples?: unknown;
     downloadSamples?: unknown;
     uploadSamples?: unknown;
@@ -188,6 +191,9 @@ async function storeEvent(body: AnalyticsEventBody, headers: Headers) {
         uploadStressMs: numberValue(result.uploadStressMs),
         downloadMbps: numberValue(result.downloadMbps),
         uploadMbps: numberValue(result.uploadMbps),
+        quietJitterMs: numberValue(result.quietJitterMs),
+        downloadJitterMs: numberValue(result.downloadJitterMs),
+        uploadJitterMs: numberValue(result.uploadJitterMs),
       })
     : null;
 
