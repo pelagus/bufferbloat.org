@@ -45,7 +45,7 @@ export default function Page() {
           </p>
 
           <div className="guide-test-actions">
-            <Link href="/test" className="guide-primary-action">
+            <Link href="/test?start=1" className="guide-primary-action">
               Run the bufferbloat test
             </Link>
             <Link href="/docs" className="guide-secondary-action">
@@ -114,7 +114,7 @@ export default function Page() {
         </p>
       </section>
 
-      <section className="resource-note learning-directory">
+      <section className="resource-note learning-directory" id="authoritative-resources">
         <div>
           <p className="eyebrow">topic guides</p>
           <h2>Start with the common searches</h2>

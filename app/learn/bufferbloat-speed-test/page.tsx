@@ -39,7 +39,7 @@ export default function Page() {
           </p>
 
           <div className="guide-test-actions">
-            <Link href="/test" className="guide-primary-action">
+            <Link href="/test?start=1" className="guide-primary-action">
               Run the bufferbloat test
             </Link>
             <Link href="/learn/latency-under-load" className="guide-secondary-action">
@@ -128,7 +128,7 @@ export default function Page() {
         </p>
 
         <div className="resource-links">
-          <Link href="/test">Run the bufferbloat test</Link>
+          <Link href="/test?start=1">Run the bufferbloat test</Link>
           <Link href="/learn/latency-under-load">
             Learn about latency under load
           </Link>

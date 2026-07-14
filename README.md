@@ -173,6 +173,18 @@ The core measurement is orchestrated by the browser. Test traffic is generated
 from the page against public measurement endpoints, and no local helper
 application is required.
 
+Bufferbloat.org stores first-party operational analytics for test quality and
+shared result links: session/test events, success or failure, coarse location
+from hosting headers, broad browser/OS/device category, bucketed viewport,
+measured results, chart samples, and application-fit scores. It does not store
+IP addresses, precise geolocation, full user-agent strings, or fingerprinting
+signals.
+
+Shared result pages are backed by the same completed-test analytics record;
+they do not create a second copy of the result. Analytics and shared result
+records are retained for up to 180 days and are deleted automatically after
+that window.
+
 Optional email signup data is stored separately and should never be committed:
 
 ```

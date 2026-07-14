@@ -9,7 +9,7 @@ const homeStructuredData = {
   operatingSystem: "Any modern browser",
   isAccessibleForFree: true,
   description:
-    "An open-source browser-based bufferbloat test for measuring internet reliability and latency under load.",
+    "An open-source browser-based bufferbloat test that explains why an internet connection can feel slow or unreliable even when speed tests look fast.",
   codeRepository: "https://github.com/pelagus/bufferbloat.org",
 };
 
@@ -26,28 +26,26 @@ export default function Home() {
       <section className="hero-panel home-as-test">
         <div className="home-hero-grid">
           <div className="hero-copy">
-            <div className="home-project-label">
-              <span>open-source project</span>
-              <span>browser bufferbloat test</span>
-              <span>methodology public</span>
-            </div>
+            <p className="home-project-label">
+              Open-source browser test. Public methodology. Inspectable results.
+            </p>
 
             <h1>Bufferbloat.org</h1>
 
             <p className="hero-subtitle">
-              An open-source bufferbloat test for internet reliability: the lag
-              that appears when your connection is busy.
+              Your internet can be unstable even when ordinary speed tests say
+              it is fast.
             </p>
 
             <p className="home-hero-description">
-              Speed tests report throughput. Bufferbloat.org measures whether
-              the network still responds while download and upload traffic are
-              active, then shows the result in a report that can be inspected
-              and cited.
+              Megabits per second do not tell the whole story. Latency / ping
+              helps, but only when measured while the connection is doing real
+              work. Bufferbloat.org recreates busy conditions and gives you a
+              practical assessment of how your connection behaves in real life.
             </p>
 
             <div className="home-hero-actions">
-              <Link href="/test" className="hero-start-button">
+              <Link href="/test?start=1" className="hero-start-button">
                 Run test
               </Link>
 
@@ -70,26 +68,22 @@ export default function Home() {
             aria-label="Example bufferbloat test result"
           >
             <div className="instrument-header">
-              <span>example bufferbloat trace</span>
-              <strong>latency under load</strong>
+              <span>example scorecard trace</span>
+              <strong>Latency / Ping in milliseconds</strong>
             </div>
 
             <dl className="instrument-metrics">
               <div>
-                <dt>Quiet</dt>
-                <dd>24 ms</dd>
+                <dt>Download speed</dt>
+                <dd>22 Mbps</dd>
               </div>
               <div>
-                <dt>Download load</dt>
-                <dd>118 ms</dd>
+                <dt>Upload speed</dt>
+                <dd>10 Mbps</dd>
               </div>
               <div>
-                <dt>Upload load</dt>
-                <dd>412 ms</dd>
-              </div>
-              <div>
-                <dt>Added delay</dt>
-                <dd>+388 ms</dd>
+                <dt>Test duration</dt>
+                <dd>47 sec</dd>
               </div>
             </dl>
 
@@ -97,58 +91,69 @@ export default function Home() {
               className="instrument-trace"
               aria-label="Illustrative latency trace"
             >
-              <svg viewBox="0 0 420 202" role="img" aria-labelledby="home-trace-title">
+              <svg viewBox="0 0 420 220" role="img" aria-labelledby="home-trace-title">
                 <title id="home-trace-title">
                   Example trace where latency rises while traffic is active
                 </title>
-                <line x1="42" y1="132" x2="392" y2="132" className="trace-axis" />
-                <line x1="42" y1="26" x2="392" y2="26" className="trace-grid" />
-                <line x1="42" y1="79" x2="392" y2="79" className="trace-grid" />
-                <text x="10" y="29" className="trace-axis-label">500</text>
-                <text x="10" y="82" className="trace-axis-label">250</text>
-                <text x="18" y="135" className="trace-axis-label">0</text>
+                <line x1="48" y1="142" x2="398" y2="142" className="trace-axis" />
+                <line x1="48" y1="30" x2="398" y2="30" className="trace-grid" />
+                <line x1="48" y1="86" x2="398" y2="86" className="trace-grid" />
+                <text x="14" y="33" className="trace-axis-label">200</text>
+                <text x="18" y="89" className="trace-axis-label">100</text>
+                <text x="24" y="145" className="trace-axis-label">0</text>
                 <text x="7" y="18" className="trace-axis-label">ms</text>
-                <rect x="42" y="22" width="104" height="110" className="trace-zone trace-zone-quiet" />
-                <rect x="146" y="22" width="122" height="110" className="trace-zone trace-zone-download" />
-                <rect x="268" y="22" width="124" height="110" className="trace-zone trace-zone-upload" />
-                <line x1="146" y1="22" x2="146" y2="132" className="trace-phase-break" />
-                <line x1="268" y1="22" x2="268" y2="132" className="trace-phase-break" />
-                <path
-                  className="trace-line trace-line-reference"
-                  d="M42 122 L66 123 L90 121 L114 122 L138 121 L162 122 L186 121 L210 122 L234 121 L258 122 L282 121 L306 122 L330 121 L354 122 L378 121 L392 122"
-                />
+                <rect x="48" y="26" width="104" height="116" className="trace-zone trace-zone-quiet" />
+                <rect x="152" y="26" width="122" height="116" className="trace-zone trace-zone-download" />
+                <rect x="274" y="26" width="124" height="116" className="trace-zone trace-zone-upload" />
+                <line x1="152" y1="26" x2="152" y2="142" className="trace-phase-break" />
+                <line x1="274" y1="26" x2="274" y2="142" className="trace-phase-break" />
                 <path
                   className="trace-line trace-line-quiet"
-                  d="M42 126 L64 125 L86 126 L108 124 L130 125 L144 124"
+                  d="M48 98 L58 104 L70 99 L82 101 L94 96 L106 100 L118 88 L130 72 L142 68 L152 59"
                 />
                 <path
                   className="trace-line trace-line-download"
-                  d="M156 111 L174 103 L192 107 L210 96 L228 101 L246 90 L262 94"
+                  d="M164 97 L174 86 L184 103 L194 88 L204 99 L214 91 L224 96 L234 85 L244 91 L254 78 L264 101 L274 92"
                 />
                 <path
                   className="trace-line trace-line-upload"
-                  d="M278 68 L296 44 L314 54 L332 36 L350 49 L368 31 L388 40"
+                  d="M286 84 L296 31 L306 88 L316 100 L326 63 L336 53 L346 101 L356 94 L366 83 L376 37 L386 55 L398 89"
                 />
-                <text x="42" y="154" className="trace-label">quiet</text>
-                <text x="160" y="154" className="trace-label">download</text>
-                <text x="286" y="154" className="trace-label">upload</text>
+                <g className="trace-median-marker">
+                  <line x1="48" y1="97" x2="152" y2="97" />
+                  <circle cx="100" cy="97" r="4.5" />
+                  <text x="100" y="88">80 ms</text>
+                </g>
+                <g className="trace-median-marker">
+                  <line x1="152" y1="94" x2="274" y2="94" />
+                  <circle cx="213" cy="94" r="4.5" />
+                  <text x="213" y="85">86 ms</text>
+                </g>
+                <g className="trace-median-marker">
+                  <line x1="274" y1="78" x2="398" y2="78" />
+                  <circle cx="336" cy="78" r="4.5" />
+                  <text x="336" y="69">114 ms</text>
+                </g>
+                <text x="48" y="164" className="trace-label">quiet</text>
+                <text x="166" y="164" className="trace-label">download</text>
+                <text x="292" y="164" className="trace-label">upload</text>
                 <g className="trace-legend">
-                  <line x1="42" y1="180" x2="58" y2="180" className="legend-quiet" />
-                  <text x="64" y="184">quiet</text>
-                  <line x1="110" y1="180" x2="126" y2="180" className="legend-download" />
-                  <text x="132" y="184">download</text>
-                  <line x1="208" y1="180" x2="224" y2="180" className="legend-upload" />
-                  <text x="230" y="184">upload</text>
-                  <line x1="288" y1="180" x2="304" y2="180" className="legend-reference" />
-                  <text x="310" y="184">quiet median</text>
+                  <line x1="48" y1="194" x2="64" y2="194" className="legend-quiet" />
+                  <text x="70" y="198">quiet</text>
+                  <line x1="116" y1="194" x2="132" y2="194" className="legend-download" />
+                  <text x="138" y="198">download</text>
+                  <line x1="214" y1="194" x2="230" y2="194" className="legend-upload" />
+                  <text x="236" y="198">upload</text>
+                  <circle cx="314" cy="194" r="4" className="legend-median" />
+                  <text x="324" y="198">median dots</text>
                 </g>
               </svg>
             </div>
 
             <p>
-              Illustrative data. The live test reports measured quiet latency,
-              download latency under load, upload latency under load, and
-              throughput.
+              Illustrative data. The live test reports a scorecard with a
+              measured latency trace, median dots, throughput, and public
+              methodology.
             </p>
           </aside>
         </div>
@@ -184,11 +189,11 @@ export default function Home() {
       <section className="home-grid project-principles">
         <article>
           <span>Problem</span>
-          <h2>Throughput is not reliability</h2>
+          <h2>Throughput is not the whole story</h2>
           <p>
-            A connection can show high download speed and still feel unreliable
-            if latency rises when the line is busy. That is why calls freeze,
-            games stutter, and pages stall during ordinary network use.
+            A connection can show high Mbps and still feel unreliable if ping
+            rises when the line is busy. Calls freeze, games stutter, and pages
+            stall because responsiveness changed under real-world load.
           </p>
         </article>
 

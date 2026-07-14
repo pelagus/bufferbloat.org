@@ -67,8 +67,8 @@
 
 .home-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.72fr);
-  gap: 30px;
+  grid-template-columns: minmax(0, 1.14fr) minmax(300px, 0.62fr);
+  gap: clamp(22px, 3.5vw, 48px);
   align-items: start;
 }
 
@@ -81,24 +81,13 @@
 }
 
 .home-project-label {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  margin-bottom: 20px;
-  border-top: 1px solid var(--line);
-  border-left: 1px solid var(--line);
-}
-
-.home-project-label span {
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--fg) 3%, var(--bg));
-  padding: 7px 9px;
-  color: var(--muted);
+  max-width: 680px;
+  margin: 0 0 18px;
+  color: color-mix(in srgb, var(--fg) 62%, var(--muted));
   font-family: var(--font-geist-mono), monospace;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 380;
-  line-height: 1.2;
+  line-height: 1.35;
 }
 
 .home-as-test .hero-kicker {
@@ -255,7 +244,9 @@
 }
 
 .home-hero-instrument {
-  margin-top: 26px;
+  width: min(100%, 430px);
+  justify-self: end;
+  margin-top: clamp(12px, 2.4vw, 28px);
   border: 1px solid var(--line);
   background:
     linear-gradient(to right, color-mix(in srgb, var(--line) 36%, transparent) 1px, transparent 1px),
@@ -288,7 +279,7 @@
 
 .instrument-metrics {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
   border-bottom: 1px solid var(--line);
 }
@@ -331,7 +322,7 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 230px;
+  max-height: 250px;
 }
 
 .instrument-trace .trace-axis {
@@ -368,7 +359,7 @@
 
 .instrument-trace .trace-line {
   fill: none;
-  stroke-width: 4;
+  stroke-width: 2.6;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
@@ -379,9 +370,30 @@
   stroke-dasharray: 4 4;
 }
 
+.instrument-trace .trace-median-marker line {
+  stroke: var(--bad);
+  stroke-dasharray: 4 4;
+  stroke-width: 2;
+}
+
+.instrument-trace .trace-median-marker circle,
+.instrument-trace .legend-median {
+  fill: var(--bg);
+  stroke: var(--bad);
+  stroke-width: 2.8;
+}
+
+.instrument-trace .trace-median-marker text {
+  fill: color-mix(in srgb, var(--fg) 82%, var(--muted));
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 10px;
+  font-weight: 520;
+  text-anchor: middle;
+}
+
 .instrument-trace .trace-line-quiet,
 .instrument-trace .legend-quiet {
-  stroke: var(--fg);
+  stroke: color-mix(in srgb, var(--fg) 72%, var(--muted));
 }
 
 .instrument-trace .trace-line-download,
@@ -462,11 +474,13 @@
   }
 
   .home-hero-instrument {
+    width: 100%;
+    justify-self: stretch;
     margin-top: 0;
   }
 
   .instrument-metrics {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .instrument-metrics div {
@@ -495,7 +509,7 @@
   }
 
   .instrument-trace svg {
-    max-height: 118px;
+    max-height: 180px;
   }
 
   .home-hero-instrument p {
@@ -1209,8 +1223,9 @@
     gap: 12px;
   }
 
-  .home-project-label span {
-    flex: 0 1 auto;
+  .home-project-label {
+    margin-bottom: 14px;
+    font-size: 11px;
   }
 
   .project-index {
@@ -1267,6 +1282,16 @@
   .home-shell {
     width: min(760px, calc(100% - 32px));
   }
+
+  .home-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-hero-instrument {
+    width: min(100%, 620px);
+    justify-self: start;
+    margin-top: 8px;
+  }
 }
 
 @media (max-width: 767px) {
@@ -1320,7 +1345,6 @@
   font-weight: 340;
 }
 
-.home-project-label span,
 .home-as-test .hero-kicker,
 .home-as-test .hero-start-button,
 .home-hero-links,

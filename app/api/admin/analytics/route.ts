@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminRequestIsAuthenticated } from "../../../../lib/admin-auth";
-import { d1Query } from "../../../../lib/d1";
+import { d1Query, ensureD1Columns } from "../../../../lib/d1";
 
 export const runtime = "nodejs";
 
@@ -99,12 +99,23 @@ const analyticsSchema = `
     upload_mbps REAL,
     quiet_samples INTEGER,
     download_samples INTEGER,
-    upload_samples INTEGER
+    upload_samples INTEGER,
+    share_id TEXT,
+    result_json TEXT,
+    samples_json TEXT,
+    application_scores_json TEXT
   )
 `;
 
 async function fetchAnalytics() {
   await d1Query(analyticsSchema);
+  await ensureD1Columns("analytics_events", [
+    "share_id TEXT",
+    "result_json TEXT",
+    "samples_json TEXT",
+    "application_scores_json TEXT",
+  ]);
+  await d1Query("DELETE FROM analytics_events WHERE datetime(created_at) < datetime('now', '-180 days')");
 
   const [
     summaryData,

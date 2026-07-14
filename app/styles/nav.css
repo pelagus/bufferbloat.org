@@ -4,6 +4,7 @@
 }
 
 .site-logo {
+  flex: 0 0 auto;
   max-width: 155px;
   overflow: hidden;
   font-weight: 520;
@@ -13,23 +14,8 @@
 .site-links {
   align-items: center;
   gap: 9px;
+  min-width: 0;
   font-weight: 380;
-}
-
-.nav-test-link {
-  border: 1px solid color-mix(in srgb, var(--action-strong) 58%, var(--line));
-  background: color-mix(in srgb, var(--action) 10%, var(--bg));
-  color: var(--action-strong);
-  padding: 5px 8px;
-  font-family: var(--font-geist-mono), monospace;
-  font-weight: 460;
-  line-height: 1;
-}
-
-.nav-test-link:hover {
-  border-color: var(--action-strong);
-  background: color-mix(in srgb, var(--action) 16%, var(--bg));
-  color: var(--action-strong);
 }
 
 .github-link {
@@ -57,10 +43,6 @@
   .site-nav {
     width: calc(100% - 24px);
     font-size: 13px;
-  }
-
-  .nav-test-link {
-    padding: 4px 6px;
   }
 
   .github-link {

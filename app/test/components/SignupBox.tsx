@@ -79,9 +79,9 @@ export default function SignupBox({ testCount }: { testCount: number }) {
       <section className="signup-card signup-success">
         <div className="signup-icon">✓</div>
 
-        <div>
+        <div className="signup-copy">
           <h2>You’re on the list</h2>
-          <p>We’ll send concise project updates as the test and methodology improve.</p>
+          <p>We’ll send concise updates as the test and methodology improve.</p>
         </div>
       </section>
     );
@@ -91,8 +91,9 @@ export default function SignupBox({ testCount }: { testCount: number }) {
     <section className="signup-card">
       <div className="signup-icon">✉</div>
 
-      <div>
-        <h2>Stay in the loop</h2>
+      <div className="signup-copy">
+        <h2>Follow the project</h2>
+        <p>Get occasional notes when the open-source test or methodology changes.</p>
       </div>
 
       <form onSubmit={submit} noValidate>
@@ -118,7 +119,7 @@ export default function SignupBox({ testCount }: { testCount: number }) {
           {state === "loading" ? "Saving..." : "Subscribe"}
         </button>
 
-        <small>No spam. We save rough location and test count, not precise location.</small>
+        <small>No spam. We store your email, rough location, and completed-test count.</small>
       </form>
 
       {message && (

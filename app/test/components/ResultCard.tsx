@@ -33,6 +33,11 @@ function variableName(row: TechnicalRow) {
   return baseName;
 }
 
+function variableLabel(row: TechnicalRow) {
+  if (row.unit) return `${row.metric} (${row.unit})`;
+  return row.metric;
+}
+
 export default function ResultCard({
   grade,
   diagnosis,
@@ -104,14 +109,6 @@ export default function ResultCard({
             open source bufferbloat test · Measured {formattedMeasuredAt}
           </span>
         </div>
-
-        <button
-          className="result-print-button"
-          type="button"
-          onClick={() => window.print()}
-        >
-          Print
-        </button>
       </div>
 
       <div className="result-scorecard-grid">
@@ -142,18 +139,19 @@ export default function ResultCard({
 
         <div className="result-applications">
           <div className="result-section-heading">
-            <span>Application fit, ranked</span>
+            <span>Application performance</span>
           </div>
 
           <ol className="application-ranking-list">
-            {applicationRankings.map((item, index) => (
+            {applicationRankings.map((item) => (
               <li className={item.tone} key={item.name}>
-                <span className="application-rank">{index + 1}</span>
                 <span className="reliability-symbol" aria-hidden="true">
                   {item.symbol}
                 </span>
-                <strong>{item.name}</strong>
-                <em>{item.label}</em>
+                <span className="application-copy">
+                  <strong>{item.name}</strong>
+                  <em>{item.label}</em>
+                </span>
               </li>
             ))}
           </ol>
@@ -170,7 +168,14 @@ export default function ResultCard({
         </summary>
 
         <div className="technical-table-header">
-          <span>Measurement record</span>
+          <a
+            className="technical-methodology-link"
+            href="/docs#technical-detail-export-fields"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Public methodology for these variables
+          </a>
           <button
             aria-label="Export technical details as CSV"
             className="technical-export-button"
@@ -193,18 +198,13 @@ export default function ResultCard({
           <tbody>
             {technicalRows.map((row) => (
               <tr key={`${row.section}-${row.metric}`}>
-                <th scope="row">{variableName(row)}</th>
+                <th scope="row">{variableLabel(row)}</th>
                 <td>{row.value}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </details>
-
-      <a className="methodology-row" href="/docs" rel="noopener noreferrer" target="_blank">
-        Measurement methodology
-        <span aria-hidden="true">›</span>
-      </a>
     </section>
   );
 }

@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { d1Query } from "../../../../lib/d1";
+import { d1Query, ensureD1Columns } from "../../../../lib/d1";
 import { locationFromHeaders } from "../../../../lib/request-context";
 
 export const runtime = "nodejs";
@@ -33,6 +33,8 @@ type AnalyticsEventBody = {
     quietSamples?: unknown;
     downloadSamples?: unknown;
     uploadSamples?: unknown;
+    samples?: unknown;
+    applications?: unknown;
   };
 };
 
@@ -66,9 +68,24 @@ const analyticsSchema = `
     upload_mbps REAL,
     quiet_samples INTEGER,
     download_samples INTEGER,
-    upload_samples INTEGER
+    upload_samples INTEGER,
+    share_id TEXT,
+    result_json TEXT,
+    samples_json TEXT,
+    application_scores_json TEXT
   )
 `;
+
+async function ensureAnalyticsStorage() {
+  await d1Query(analyticsSchema);
+  await ensureD1Columns("analytics_events", [
+    "share_id TEXT",
+    "result_json TEXT",
+    "samples_json TEXT",
+    "application_scores_json TEXT",
+  ]);
+  await d1Query("DELETE FROM analytics_events WHERE datetime(created_at) < datetime('now', '-180 days')");
+}
 
 function text(value: unknown, maxLength = 120) {
   if (typeof value !== "string") return null;
@@ -130,6 +147,23 @@ function gradeValue(value: unknown) {
   return null;
 }
 
+function compactJson(value: unknown, maxLength = 24000) {
+  if (value === null || value === undefined) return null;
+
+  try {
+    const json = JSON.stringify(value);
+    return json.length <= maxLength ? json : null;
+  } catch {
+    return null;
+  }
+}
+
+function publicShareId(type: string) {
+  if (type !== "completed") return null;
+
+  return randomUUID().replace(/-/g, "").slice(0, 18);
+}
+
 async function storeEvent(body: AnalyticsEventBody, headers: Headers) {
   const type = eventType(body.eventType);
   const sessionId = text(body.sessionId, 80);
@@ -142,8 +176,22 @@ async function storeEvent(body: AnalyticsEventBody, headers: Headers) {
   const result = body.result || {};
   const device = body.device || {};
   const location = locationFromHeaders(headers);
+  const shareId = publicShareId(type);
+  const resultJson = type === "completed"
+    ? compactJson({
+        grade: gradeValue(result.grade),
+        durationSeconds: integerValue(result.durationSeconds, 3600),
+        idleMs: numberValue(result.idleMs),
+        downloadLatencyMs: numberValue(result.downloadLatencyMs),
+        uploadLatencyMs: numberValue(result.uploadLatencyMs),
+        downloadStressMs: numberValue(result.downloadStressMs),
+        uploadStressMs: numberValue(result.uploadStressMs),
+        downloadMbps: numberValue(result.downloadMbps),
+        uploadMbps: numberValue(result.uploadMbps),
+      })
+    : null;
 
-  await d1Query(analyticsSchema);
+  await ensureAnalyticsStorage();
   await d1Query(
     `
       INSERT INTO analytics_events (
@@ -175,9 +223,13 @@ async function storeEvent(body: AnalyticsEventBody, headers: Headers) {
         upload_mbps,
         quiet_samples,
         download_samples,
-        upload_samples
+        upload_samples,
+        share_id,
+        result_json,
+        samples_json,
+        application_scores_json
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
       randomUUID(),
@@ -209,8 +261,14 @@ async function storeEvent(body: AnalyticsEventBody, headers: Headers) {
       integerValue(result.quietSamples, 10000),
       integerValue(result.downloadSamples, 10000),
       integerValue(result.uploadSamples, 10000),
+      shareId,
+      resultJson,
+      type === "completed" ? compactJson(result.samples) : null,
+      type === "completed" ? compactJson(result.applications, 12000) : null,
     ]
   );
+
+  return shareId;
 }
 
 export async function POST(request: Request) {
@@ -224,8 +282,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    await storeEvent(body, request.headers);
-    return NextResponse.json({ ok: true });
+    const shareId = await storeEvent(body, request.headers);
+    return NextResponse.json({ ok: true, shareId });
   } catch (error) {
     const invalid =
       error instanceof Error &&

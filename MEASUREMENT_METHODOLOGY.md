@@ -23,19 +23,15 @@ Latency probes use a small Cloudflare Speed endpoint instead of the large
 download-file origin. This avoids treating same-origin browser/CDN contention as
 network latency under load.
 
-The visible run is organized as five stages:
-
-1. Warm-up
-2. Quiet-line latency
-3. Download latency under load
-4. Upload latency under load
-5. Result computation
-
-Only three stages produce scored latency medians:
+The visible run emphasizes the three stages that produce scored latency
+medians:
 
 1. Quiet-line latency
 2. Download latency under load
 3. Upload latency under load
+
+Warm-up and result computation still happen, but they are shown as preparation
+and calculation states rather than scored measurement phases.
 
 The result page shows these three scored phases as a latency trace. Quiet
 samples are shown in black, download-loaded samples in blue, and upload-loaded
@@ -97,9 +93,10 @@ The primary latency values are:
 
 The result page also exposes a technical-details table with the measurement
 record used for the scorecard, including phase medians, stress deltas,
-throughput estimates, scored sample counts, recorded sample ranges, traffic
-generation notes, and application-fit scoring. That table can be exported as a
-CSV file for independent inspection or comparison.
+throughput estimates, scored sample counts, raw scored latency sample lists,
+recorded sample ranges, traffic generation notes, and application-fit scoring.
+That table can be exported as a CSV file for independent inspection or
+comparison.
 
 ## Grading
 
@@ -126,6 +123,18 @@ browser extension.
 
 The technical-details export contains measurement data only. It does not include
 IP address, location, browser fingerprint, user-agent string, or device identity.
+
+Bufferbloat.org stores first-party operational analytics for test quality and
+shared result links: session/test events, success or failure, coarse location
+from hosting headers, broad browser/OS/device category, bucketed viewport,
+measured results, chart samples, and application-fit scores. It does not store
+IP addresses, precise geolocation, full user-agent strings, or fingerprinting
+signals.
+
+Shared result pages are backed by the same completed-test analytics record;
+they do not create a second copy of the result. Analytics and shared result
+records are retained for up to 180 days and are deleted automatically after
+that window.
 
 ## Known limitations
 

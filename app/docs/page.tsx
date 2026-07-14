@@ -35,49 +35,67 @@ const technicalDetailFields = [
       "Elapsed time from measurement start through result computation, displayed in the same compact format as the scorecard.",
   },
   {
-    variable: "quiet_median_latency",
+    variable: "quiet_latency_samples_ms",
+    value: "comma-separated milliseconds",
+    description:
+      "Raw scored latency / ping samples collected during the quiet phase before intentional load is applied.",
+  },
+  {
+    variable: "download_latency_samples_ms",
+    value: "comma-separated milliseconds",
+    description:
+      "Raw scored latency / ping samples collected while download load is active, after the settling interval is excluded.",
+  },
+  {
+    variable: "upload_latency_samples_ms",
+    value: "comma-separated milliseconds",
+    description:
+      "Raw scored latency / ping samples collected while upload load is active, after the settling interval is excluded.",
+  },
+  {
+    variable: "quiet_median_latency_ms",
     value: "milliseconds",
     description:
       "Median latency / ping before intentional download or upload traffic is applied.",
   },
   {
-    variable: "download_loaded_latency",
+    variable: "download_loaded_latency_ms",
     value: "milliseconds",
     description:
       "Median latency / ping while the download load phase is active, after the settling interval is excluded.",
   },
   {
-    variable: "upload_loaded_latency",
+    variable: "upload_loaded_latency_ms",
     value: "milliseconds",
     description:
       "Median latency / ping while the upload load phase is active, after the settling interval is excluded.",
   },
   {
-    variable: "download_stress",
+    variable: "download_stress_ms",
     value: "milliseconds",
     description:
       "Download-loaded median latency minus quiet median latency. Positive values mean added delay under download pressure.",
   },
   {
-    variable: "upload_stress",
+    variable: "upload_stress_ms",
     value: "milliseconds",
     description:
       "Upload-loaded median latency minus quiet median latency. Positive values mean added delay under upload pressure.",
   },
   {
-    variable: "worst_loaded_latency",
+    variable: "worst_loaded_latency_ms",
     value: "milliseconds",
     description:
       "Higher of the download-loaded and upload-loaded median latency values.",
   },
   {
-    variable: "download_throughput",
+    variable: "download_throughput_mbps",
     value: "Mbps",
     description:
       "Estimated downstream throughput measured during the download load phase.",
   },
   {
-    variable: "upload_throughput",
+    variable: "upload_throughput_mbps",
     value: "Mbps",
     description:
       "Estimated upstream throughput measured during the upload load phase.",
@@ -119,7 +137,7 @@ const technicalDetailFields = [
       "Number of parallel browser download requests used to create downstream load.",
   },
   {
-    variable: "download_payload_size",
+    variable: "download_payload_size_mb",
     value: "MB",
     description:
       "Size of the payload file requested by each download stream.",
@@ -131,7 +149,7 @@ const technicalDetailFields = [
       "Number of parallel browser upload requests used to create upstream load.",
   },
   {
-    variable: "upload_chunk_size",
+    variable: "upload_chunk_size_mb",
     value: "MB",
     description:
       "Size of the repeated upload payload chunk sent by each upload stream.",
@@ -143,43 +161,43 @@ const technicalDetailFields = [
       "Indicates that pre-measurement warm-up requests are excluded from the scored medians.",
   },
   {
-    variable: "settling_period",
+    variable: "settling_period_sec",
     value: "seconds",
     description:
       "Initial interval excluded from loaded phases so throughput and latency are scored after load begins to stabilize.",
   },
   {
-    variable: "web_browsing",
+    variable: "web_browsing_score",
     value: "0-100 score",
     description:
       "Application-fit score for web browsing, derived from loaded latency and latency movement.",
   },
   {
-    variable: "video_streaming",
+    variable: "video_streaming_score",
     value: "0-100 score",
     description:
       "Application-fit score for video streaming, weighted more heavily toward download throughput with some latency-stability adjustment.",
   },
   {
-    variable: "voice_calls",
+    variable: "voice_calls_score",
     value: "0-100 score",
     description:
       "Application-fit score for voice calls, derived from baseline latency, latency movement, and minimum upload capacity.",
   },
   {
-    variable: "video_calls",
+    variable: "video_calls_score",
     value: "0-100 score",
     description:
       "Application-fit score for video calls, derived from baseline latency, latency movement, download throughput, and upload throughput.",
   },
   {
-    variable: "online_gaming",
+    variable: "online_gaming_score",
     value: "0-100 score",
     description:
       "Application-fit score for online gaming, weighted toward low baseline latency and low added latency under load.",
   },
   {
-    variable: "cloud_backup",
+    variable: "cloud_backup_score",
     value: "0-100 score",
     description:
       "Application-fit score for cloud backup, weighted toward upload throughput with a latency-stability adjustment.",
@@ -284,19 +302,20 @@ export default function Page() {
         <p>
           The technical-details drawer contains the structured measurement
           record used by the scorecard: phase medians, stress deltas,
-          throughput estimates, scored sample counts, sample ranges, method
-          notes, and application-fit scoring. The same record can be exported
-          as CSV for review.
+          throughput estimates, scored sample counts, raw scored latency sample
+          lists, sample ranges, method notes, and application-fit scoring. The
+          same record can be exported as CSV for review.
         </p>
       </section>
 
-      <section className="resource-note">
+      <section className="resource-note" id="technical-detail-export-fields">
         <h2>Technical-detail export fields</h2>
         <p>
           The result page exposes a technical-details drawer and CSV export.
-          The export uses stable variable names, short descriptions, and raw
-          values so the record can be reviewed in a spreadsheet or cited in a
-          technical report.
+          The scorecard keeps the table compact, while this section documents
+          what each exported variable means. The CSV export uses stable
+          variable names and raw values so the record can be reviewed in a
+          spreadsheet or cited in a technical report.
         </p>
 
         <div className="technical-field-table-wrap">
@@ -337,10 +356,18 @@ export default function Page() {
 
         <p>
           Bufferbloat.org records first-party operational analytics for test
-          quality: session/test events, success or failure, coarse location from
-          hosting headers, broad browser/OS/device category, bucketed viewport,
-          and measured results. It does not store IP addresses, precise
+          quality and shared result links: session/test events, success or
+          failure, coarse location from hosting headers, broad browser/OS/device
+          category, bucketed viewport, measured results, chart samples, and
+          application-fit scores. It does not store IP addresses, precise
           geolocation, full user-agent strings, or fingerprinting signals.
+        </p>
+
+        <p>
+          Shared result pages are backed by the same completed-test analytics
+          record; they do not create a second copy of the result. Analytics and
+          shared result records are retained for up to 180 days and are deleted
+          automatically after that window.
         </p>
 
         <div className="resource-links">
@@ -358,12 +385,8 @@ export default function Page() {
           >
             Source repository
           </a>
-          <a
-            href="https://queue.acm.org/detail.cfm?id=2076798"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            ACM Queue bufferbloat discussion
+          <a href="/learn#authoritative-resources">
+            Further reading and external resources
           </a>
         </div>
       </section>
