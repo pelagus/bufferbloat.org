@@ -45,10 +45,10 @@ const LATENCY_URL = "https://speed.cloudflare.com/__down?bytes=1";
 const UPLOAD_URL = "https://speed.cloudflare.com/__up";
 
 const IDLE_DURATION_MS = 8000;
-const LOADED_DURATION_MS = 16000;
+const LOADED_DURATION_MS = 18000;
 const MIN_PHASE_WARMUP_MS = 3000;
 const IDLE_SETTLE_MS = MIN_PHASE_WARMUP_MS;
-const LOADED_SETTLE_MS = Math.max(4000, MIN_PHASE_WARMUP_MS);
+const LOADED_SETTLE_MS = Math.max(6000, MIN_PHASE_WARMUP_MS);
 const LOADED_RECORDING_MS = LOADED_DURATION_MS - LOADED_SETTLE_MS;
 const SAMPLE_DELAY_MS = 250;
 const FREEZE_FINAL_MS = 900;
@@ -572,7 +572,7 @@ export async function runBufferbloatTest(
       latencySamples,
     });
 
-    await wait(LOADED_SETTLE_MS, signal);
+    await warmUpLatencyPath(LOADED_SETTLE_MS, signal);
 
     onUpdate({
       phase: "download",
@@ -659,7 +659,7 @@ export async function runBufferbloatTest(
       latencySamples,
     });
 
-    await wait(LOADED_SETTLE_MS, signal);
+    await warmUpLatencyPath(LOADED_SETTLE_MS, signal);
 
     onUpdate({
       phase: "upload",

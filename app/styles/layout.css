@@ -9,7 +9,7 @@
   .test-shell,
   .page-shell,
   .site-nav {
-    width: min(1040px, calc(100% - 48px));
+    width: min(1320px, calc(100% - 48px));
   }
 
   .hero-panel {

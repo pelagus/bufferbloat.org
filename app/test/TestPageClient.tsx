@@ -23,7 +23,7 @@ const UPLOAD_STREAM_COUNT = 3;
 const DOWNLOAD_PAYLOAD_MB = 100;
 const UPLOAD_CHUNK_MB = 1;
 const QUIET_WARMUP_SECONDS = 3;
-const LOAD_SETTLING_SECONDS = 4;
+const LOAD_SETTLING_SECONDS = 6;
 const PREFLIGHT_SECONDS = 7;
 const FOREGROUND_ERROR =
   "The test paused because this tab was no longer visible.";
@@ -391,23 +391,78 @@ function loadedLatency(downloadLatency: number | null, uploadLatency: number | n
   return Math.max(downloadLatency ?? 0, uploadLatency ?? 0);
 }
 
+function pickFindingVariant(seed: number, variants: string[]) {
+  return variants[Math.abs(Math.round(seed)) % variants.length];
+}
+
+function practicalImpactFor(
+  grade: Grade,
+  idle: number | null,
+  movement: number,
+  downloadMbps: number | null,
+  uploadMbps: number | null
+) {
+  const baseline = idle ?? 0;
+  const down = downloadMbps ?? 0;
+  const up = uploadMbps ?? 0;
+  const throughputLimited = down > 0 && up > 0 && (down < 8 || up < 2);
+  const highBaseline = baseline >= 100;
+  const moderateBaseline = baseline >= 75;
+
+  if (throughputLimited) {
+    return "The line stayed responsive, so calls and ordinary streaming should be reliable; the limitation is speed, which may make 4K or 8K video, large downloads, and cloud backup slower or harder to sustain.";
+  }
+
+  if (grade === "A+" || grade === "A") {
+    if (highBaseline) {
+      return "Video calls, voice calls, browsing, and streaming should hold up well under load; low-latency games may still feel less immediate because the quiet-line ping is already high.";
+    }
+
+    if (moderateBaseline) {
+      return "Video calls, voice calls, browsing, and streaming should feel steady; low-latency games should be usable, though not as crisp as on a very low-ping line.";
+    }
+
+    return "Video calls, voice calls, browsing, streaming, cloud backup, and low-latency games should all have plenty of room on this run.";
+  }
+
+  if (grade === "B") {
+    return movement > 25
+      ? "Browsing and streaming should be fine, but calls and low-latency games may feel less consistent when someone is uploading or downloading."
+      : "Everyday apps should be fine, with only mild risk of rough edges for calls or low-latency games while the line is busy.";
+  }
+
+  if (grade === "C") {
+    return "Browsing and video streaming may still work, but calls, meetings, and low-latency games can become uneven when the connection is busy.";
+  }
+
+  return "Bulk downloads may still show good Mbps, but calls, meetings, low-latency games, and interactive browsing are likely to suffer whenever the line is busy.";
+}
+
 function findingFor(
   grade: Grade,
   idle: number | null,
   downloadLatency: number | null,
   uploadLatency: number | null,
-  downloadMbps: number | null
+  downloadMbps: number | null,
+  uploadMbps: number | null
 ) {
   const typical = `${formatLatency(idle)} ms`;
   const downloadChange = latencyDelta(idle, downloadLatency);
   const uploadChange = latencyDelta(idle, uploadLatency);
   const meaningfulDownload = (downloadChange ?? 0) > 10;
   const meaningfulUpload = (uploadChange ?? 0) > 10;
-  const severeMovement = stressMovement(downloadChange, uploadChange) >= 80;
+  const movement = stressMovement(downloadChange, uploadChange);
+  const severeMovement = movement >= 80;
   const uploadDominates =
     meaningfulUpload && (uploadChange ?? 0) > Math.max(10, (downloadChange ?? 0) * 1.35);
   const downloadDominates =
     meaningfulDownload && (downloadChange ?? 0) > Math.max(10, (uploadChange ?? 0) * 1.35);
+  const seed =
+    (idle ?? 0) +
+    (downloadChange ?? 0) * 3 +
+    (uploadChange ?? 0) * 5 +
+    (downloadMbps ?? 0) * 7 +
+    (uploadMbps ?? 0) * 11;
 
   const source = uploadDominates
     ? "The problem showed up mostly while the connection was uploading."
@@ -416,35 +471,64 @@ function findingFor(
       : meaningfulDownload || meaningfulUpload
         ? "Both download and upload load made the connection less responsive."
         : "The loaded phases did not add much delay.";
+  const impact = practicalImpactFor(grade, idle, movement, downloadMbps, uploadMbps);
   const repeatNote =
     "Repeat the test before drawing a hard conclusion: networks vary during the day, and a single browser run can occasionally catch a transient problem.";
 
   if (grade === "F" || grade === "D" || grade === "C") {
     if (severeMovement || grade === "F") {
-      return `This connection became hard to trust once it was busy. ${source} Calls, games, and interactive work may stall even if a normal speed test looks fine. ${repeatNote}`;
+      return pickFindingVariant(seed, [
+        `This connection became hard to trust once it was busy. ${source} ${impact} ${repeatNote}`,
+        `The line looked much worse under real traffic than a quiet speed reading would suggest. ${source} ${impact} ${repeatNote}`,
+        `This is the kind of result that makes a connection feel fast one moment and frozen the next. ${source} ${impact} ${repeatNote}`,
+      ]);
     }
 
-    return `This connection stayed usable, but the test found bufferbloat when the line was busy. ${source} You may notice lag during calls, games, or uploads. ${repeatNote}`;
+    return pickFindingVariant(seed, [
+      `This connection stayed usable, but the test found bufferbloat when the line was busy. ${source} ${impact} ${repeatNote}`,
+      `The line is not broken, but it becomes less predictable under load. ${source} ${impact} ${repeatNote}`,
+      `This result points to a connection that can work well when quiet, then feel uneven once other traffic competes for it. ${source} ${impact} ${repeatNote}`,
+    ]);
   }
 
   if (grade === "B") {
-    return `This is a solid result with some added delay under load. ${source} Most everyday use should be fine, but latency-sensitive work may feel less crisp when the connection is busy.`;
+    return pickFindingVariant(seed, [
+      `This is a solid result with some added delay under load. ${source} ${impact}`,
+      `The connection mostly kept its composure, but the busy-line test did add some delay. ${source} ${impact}`,
+      `This line should be dependable for most use, with a small caveat under load. ${source} ${impact}`,
+    ]);
   }
 
   if (grade === "A+" || grade === "A") {
     if (grade === "A+") {
-      return `Exceptional result. The connection stayed calm while the test filled the line, so latency-sensitive apps should have plenty of room even when other traffic is active.`;
+      return pickFindingVariant(seed, [
+        `Exceptional result. The connection stayed calm while the test filled the line. ${impact}`,
+        `This is exactly what a reliable line looks like under pressure: traffic increased, but latency / ping barely moved. ${impact}`,
+        `The test could not make this connection meaningfully laggier. ${impact}`,
+      ]);
     }
 
     if ((idle ?? 0) < 100) {
-      return `Excellent bufferbloat result. The test pushed download and upload traffic, and latency / ping stayed close to its normal level.`;
+      return pickFindingVariant(seed, [
+        `Excellent bufferbloat result. Download and upload traffic were active, but latency / ping stayed close to normal. ${impact}`,
+        `This connection behaved well in the situation that usually exposes bufferbloat: a busy line. ${impact}`,
+        `The important result is stability: the line stayed responsive while data was moving in both directions. ${impact}`,
+      ]);
     }
 
     if ((idle ?? 0) <= 120) {
-      return `Excellent bufferbloat result. Your normal latency / ping is moderate at about ${typical}, but it did not get much worse when the connection was busy.`;
+      return pickFindingVariant(seed, [
+        `Excellent bufferbloat result. Your normal latency / ping is moderate at about ${typical}, but it did not get much worse when the connection was busy. ${impact}`,
+        `The line starts from a moderate ping of about ${typical}, but the bufferbloat behavior is strong: load did not add much delay. ${impact}`,
+        `This run shows a stable connection under pressure, even though the quiet-line ping is not especially low at about ${typical}. ${impact}`,
+      ]);
     }
 
-    return `Good bufferbloat result, with an important footnote: the connection stayed stable under load, but the normal latency / ping is already high at about ${typical}.`;
+    return pickFindingVariant(seed, [
+      `Good bufferbloat result, with an important footnote: the connection stayed stable under load, but the normal latency / ping is already high at about ${typical}. ${impact}`,
+      `The busy-line behavior is good, but the base ping is the main limitation here at about ${typical}. ${impact}`,
+      `This looks like a stable line with a distance or routing limitation: load did not hurt much, but normal ping is already about ${typical}. ${impact}`,
+    ]);
   }
 
   return `This run measured ${formatSpeed(downloadMbps)} Mbps download, but did not produce a complete latency / ping under load result.`;
@@ -477,8 +561,8 @@ function applicationRankingsFor(
   };
   const labelFor = (score: number) => {
     if (score >= 85) return { label: "Very reliable", tone: "excellent" as const };
-    if (score >= 70) return { label: "Reliable", tone: "good" as const };
-    if (score >= 50) return { label: "Unstable", tone: "fair" as const };
+    if (score >= 65) return { label: "Reliable", tone: "good" as const };
+    if (score >= 45) return { label: "Usable", tone: "fair" as const };
     return { label: "Poor", tone: "poor" as const };
   };
 
@@ -514,8 +598,8 @@ function applicationRankingsFor(
     },
     {
       symbol: "◆",
-      name: "Online gaming",
-      score: clampScore(96 - Math.max(0, baseline - 40) * 0.4 - movement * 0.5 - worstVariation * 0.52),
+      name: "Low-latency games",
+      score: clampScore(96 - Math.max(0, baseline - 80) * 0.28 - movement * 0.45 - worstVariation * 0.32),
     },
     {
       symbol: "⇧",
@@ -927,10 +1011,6 @@ export default function Page() {
   const quietVariation = phaseLatencyVariation(latencySamples.idle);
   const downloadVariation = phaseLatencyVariation(latencySamples.download);
   const uploadVariation = phaseLatencyVariation(latencySamples.upload);
-  const variationValues = [quietVariation, downloadVariation, uploadVariation].filter(
-    (value): value is number => value !== null
-  );
-  const medianVariation = variationValues.length > 0 ? sampleMedian(variationValues) : null;
   const applicationRankingsResult = applicationRankingsFor(
     idle,
     downloadLatency,
@@ -1163,7 +1243,7 @@ export default function Page() {
       metric: "Settling period",
       value: String(LOAD_SETTLING_SECONDS),
       unit: "sec",
-      note: "Initial loaded interval excluded before loaded medians are scored.",
+      note: "Initial loaded interval where ping probes continue but are excluded before loaded medians are scored.",
     },
     ...applicationRankingsResult.map((item, index) => ({
       section: "Application fit",
@@ -1237,14 +1317,24 @@ export default function Page() {
       )}
 
       {!error && !running && !analyzing && !finished && showPreflight && (
-        <section className="terminal-card preflight-card">
-          <div className="preflight-layout">
-            <div className="preflight-copy">
+        <section className="test-stop-stage preflight-stage">
+          <div className="stopped-test-underlay preflight-underlay" aria-hidden="true" />
+
+          <section className="test-stop-overlay preflight-overlay" aria-live="polite">
+            <div className="terminal-card preflight-card test-stop-card test-stop-screen">
+              <Image
+                src="/test-foreground.svg"
+                alt=""
+                width={220}
+                height={150}
+                className="test-stop-illustration"
+                aria-hidden="true"
+              />
               <span>Before the measurement</span>
-              <h1>We are about to test your connection</h1>
+              <strong>We are about to test your connection</strong>
               <p>
-                Browser measurements are sensitive to other traffic. For the
-                cleanest run:
+                Browser testing is sensitive to other activity. For the cleanest
+                run, do these first:
               </p>
 
               <ul className="preflight-caveats">
@@ -1280,7 +1370,7 @@ export default function Page() {
                 </button>
               </div>
             </div>
-          </div>
+          </section>
         </section>
       )}
 
@@ -1395,31 +1485,60 @@ export default function Page() {
               label: "Upload stress",
               value: formatDelta(uploadDelta),
             },
-            {
-              label: "Median latency variation",
-              value: `${formatLatency(medianVariation)} ms`,
-            },
-            {
-              label: "Avg download speed",
-              value: `${formatSpeed(downloadMbps)} Mb/s`,
-              tone: "download",
-            },
-            {
-              label: "Avg upload speed",
-              value: `${formatSpeed(uploadMbps)} Mb/s`,
-              tone: "upload",
-            },
           ]}
           finding={findingFor(
             grade,
             idle,
             downloadLatency,
             uploadLatency,
-            downloadMbps
+            downloadMbps,
+            uploadMbps
           )}
           applicationRankings={applicationRankingsResult}
           chartSlot={
-            <LatencyPhaseChart samples={latencySamples} mode="result" grade={grade} />
+            <LatencyPhaseChart
+              samples={latencySamples}
+              mode="result"
+              grade={grade}
+              downloadMbps={downloadMbps}
+              uploadMbps={uploadMbps}
+            />
+          }
+          headerActions={
+            <div className="result-header-actions">
+              <div className="result-action-buttons">
+                <PrintResultButton />
+                <button
+                  className="result-icon-button result-share-button"
+                  type="button"
+                  onClick={() => {
+                    setSharePanelOpen((current) => !current);
+                  }}
+                  aria-expanded={sharePanelOpen}
+                  aria-controls="result-share-panel"
+                  aria-label="Share result"
+                  title="Share result"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+                    <path d="M12 16V4" />
+                    <path d="M8 8l4-4 4 4" />
+                  </svg>
+                </button>
+              </div>
+              {sharePanelOpen && (
+                <section className="result-share-panel" id="result-share-panel" aria-label="Share result">
+                  <p>{shareText}</p>
+                  <div className="result-share-links">
+                    <a href={shareLinks.email}>Email</a>
+                    <a href={shareLinks.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                    <a href={shareLinks.telegram} target="_blank" rel="noopener noreferrer">Telegram</a>
+                    <button type="button" onClick={copyShareText}>Copy</button>
+                  </div>
+                </section>
+              )}
+              {shareMessage && <p>{shareMessage}</p>}
+            </div>
           }
           technicalRows={technicalRows}
           signupSlot={<SignupBox testCount={completedTestCount} />}
@@ -1490,37 +1609,10 @@ export default function Page() {
       {finished && (
         <div className="result-share-actions">
           <div className="result-action-buttons">
-            <button
-              className="result-icon-button result-share-button"
-              type="button"
-              onClick={() => {
-                setSharePanelOpen((current) => !current);
-              }}
-              aria-expanded={sharePanelOpen}
-              aria-controls="result-share-panel"
-              aria-label="Share result"
-              title="Share result"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
-                <path d="M12 16V4" />
-                <path d="M8 8l4-4 4 4" />
-              </svg>
-            </button>
-            <PrintResultButton />
+            <a className="result-rerun-button" href="/test?start=1">
+              Run bufferbloat test
+            </a>
           </div>
-          {sharePanelOpen && (
-            <section className="result-share-panel" id="result-share-panel" aria-label="Share result">
-              <p>{shareText}</p>
-              <div className="result-share-links">
-                <a href={shareLinks.email}>Email</a>
-                <a href={shareLinks.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                <a href={shareLinks.telegram} target="_blank" rel="noopener noreferrer">Telegram</a>
-                <button type="button" onClick={copyShareText}>Copy</button>
-              </div>
-            </section>
-          )}
-          {shareMessage && <p>{shareMessage}</p>}
         </div>
       )}
     </main>
@@ -1532,11 +1624,15 @@ function LatencyPhaseChart({
   grade,
   mode = "live",
   activePhase = "ready",
+  downloadMbps = null,
+  uploadMbps = null,
 }: {
   samples: LatencySamplesByPhase;
   grade?: Grade;
   mode?: "live" | "result";
   activePhase?: TestPhase | "ready";
+  downloadMbps?: number | null;
+  uploadMbps?: number | null;
 }) {
   const displaySamples =
     mode === "result"
@@ -1766,6 +1862,12 @@ function LatencyPhaseChart({
     <section className={`latency-phase-chart ${mode} ${gradeClass}`} aria-label="Latency / ping samples by test phase">
       <div className="latency-phase-chart-header">
         <strong>Latency / Ping in milliseconds</strong>
+        {mode === "result" ? (
+          <div className="chart-throughput" aria-label="Average throughput during load phases">
+            <span className="download">download {formatSpeed(downloadMbps)} Mb/s</span>
+            <span className="upload">upload {formatSpeed(uploadMbps)} Mb/s</span>
+          </div>
+        ) : null}
         <div className="latency-phase-legend" aria-hidden="true">
           <span className="idle">quiet line</span>
           <span className="download">download stress</span>
@@ -1980,7 +2082,6 @@ function ForegroundRunNotice({
       <div className="test-progress-track" aria-hidden="true">
         <span style={{ width: `${boundedProgress}%` }} />
       </div>
-      <p>Keep this tab in the foreground. The test takes about a minute.</p>
     </div>
   );
 }
@@ -2169,14 +2270,50 @@ function ActiveMeasurementCard({
       </dl>
 
       {showSpeedGauge && (
-        <div className="live-speed-gauge" aria-label={`${speedTitle}: ${speed == null ? "measuring" : `${formatSpeed(speed)} megabits per second`}`}>
-          <span>
-            <i style={{ width: `${speedWidth(speed ?? null)}%` }} />
-          </span>
-          <em>{speed == null ? "measuring throughput" : `${formatSpeed(speed)} Mb/s average`}</em>
-        </div>
+        <SpeedGauge
+          label={speedTitle}
+          value={speed ?? null}
+        />
       )}
     </section>
+  );
+}
+
+function SpeedGauge({
+  label,
+  value,
+}: {
+  label: string;
+  value: number | null;
+}) {
+  const width = speedWidth(value);
+  const angle = -96 + (width / 100) * 192;
+  const radians = (angle * Math.PI) / 180;
+  const needleLength = 34;
+  const needleX = 70 + Math.cos(radians) * needleLength;
+  const needleY = 66 + Math.sin(radians) * needleLength;
+
+  return (
+    <div
+      className="live-speedometer"
+      aria-label={`${label}: ${value == null ? "measuring" : `${formatSpeed(value)} megabits per second`}`}
+    >
+      <svg className="speedometer" viewBox="0 0 140 82" aria-hidden="true">
+        <path className="speedometer-bg" d="M22 66 A48 48 0 0 1 118 66" pathLength="100" />
+        <path
+          className="speedometer-fill"
+          d="M22 66 A48 48 0 0 1 118 66"
+          pathLength="100"
+          style={{ strokeDasharray: `${width} 100` }}
+        />
+        <line className="speedometer-needle" x1="70" y1="66" x2={needleX} y2={needleY} />
+        <circle className="speedometer-dot" cx="70" cy="66" r="5" />
+        <text x="22" y="79">0</text>
+        <text x="104" y="79">40+</text>
+      </svg>
+      <strong>{value == null ? "measuring" : `${formatSpeed(value)} Mb/s`}</strong>
+      <span>{label}</span>
+    </div>
   );
 }
 

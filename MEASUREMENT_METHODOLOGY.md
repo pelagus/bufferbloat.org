@@ -60,8 +60,9 @@ later comparison.
 The download phase creates download pressure and measures whether ping latency increases while data is being received.
 
 The browser starts several download streams, lets the load settle briefly, and
-then records loaded-latency samples while the download pressure continues. The
-early settling period is excluded from the reported median.
+keeps sending latency probes during that settling period. Those early probes are
+excluded from the reported median. The scored loaded-latency samples begin only
+after the download pressure has had time to stabilize.
 
 The current public browser test uses a 100 MB download payload repeated across
 four parallel download streams. Parallel streams are used to create sustained
@@ -74,7 +75,8 @@ The upload phase creates upload pressure and measures whether ping latency incre
 Upload pressure is often especially important because many consumer connections have much lower upload capacity than download capacity.
 
 The upload phase follows the same settling rule as download: pressure starts
-first, then loaded-latency samples are recorded after the initial ramp period.
+first, latency probes continue during the ramp period, and only later
+loaded-latency samples are recorded for scoring.
 
 Upload pressure uses repeated small chunks sent to Cloudflare Speed's upload
 endpoint. Throughput is an estimate based on server-confirmed completed bytes,

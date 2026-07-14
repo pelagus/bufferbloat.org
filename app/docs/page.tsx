@@ -215,10 +215,10 @@ const technicalDetailFields = [
       "Application-fit score for video calls, derived from baseline latency, latency movement, latency variation, download throughput, and upload throughput.",
   },
   {
-    variable: "online_gaming_score",
+    variable: "low_latency_games_score",
     value: "0-100 score",
     description:
-      "Application-fit score for online gaming, weighted toward low baseline latency, low added latency under load, and low latency variation.",
+      "Application-fit score for low-latency games, weighted toward low baseline latency, low added latency under load, and low latency variation.",
   },
   {
     variable: "cloud_backup_score",
@@ -272,7 +272,8 @@ export default function Page() {
           <h2>Download load</h2>
           <p>
             The browser creates download pressure with parallel streams and
-            records latency after a short settling period.
+            keeps probing latency during a short unscored settling period
+            before recording the scored samples.
           </p>
         </article>
 
@@ -280,9 +281,9 @@ export default function Page() {
           <span>phase 4</span>
           <h2>Upload load</h2>
           <p>
-            The browser sends repeated upload chunks while latency probes
-            continue. Upload pressure is often where bufferbloat becomes
-            visible.
+            The browser sends repeated upload chunks, keeps probing during the
+            unscored ramp period, then records latency while upload pressure is
+            established.
           </p>
         </article>
 

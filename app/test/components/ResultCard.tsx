@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { Grade } from "../../../lib/test-copy";
+import ApplicationIcon from "./ApplicationIcon";
 import { severityClass } from "./diagnosis";
 
 type TechnicalRow = {
@@ -46,6 +47,7 @@ export default function ResultCard({
   finding,
   applicationRankings,
   chartSlot,
+  headerActions,
   technicalRows,
   signupSlot,
 }: {
@@ -70,6 +72,7 @@ export default function ResultCard({
     score: number;
   }>;
   chartSlot?: ReactNode;
+  headerActions?: ReactNode;
   technicalRows: TechnicalRow[];
   signupSlot?: ReactNode;
 }) {
@@ -109,6 +112,7 @@ export default function ResultCard({
             open source bufferbloat test · Measured {formattedMeasuredAt}
           </span>
         </div>
+        {headerActions}
       </div>
 
       <div className="result-scorecard-grid">
@@ -143,9 +147,7 @@ export default function ResultCard({
           <ol className="application-ranking-list">
             {applicationRankings.map((item) => (
               <li className={item.tone} key={item.name}>
-                <span className="reliability-symbol" aria-hidden="true">
-                  {item.symbol}
-                </span>
+                <ApplicationIcon name={item.name} />
                 <span className="application-copy">
                   <strong>{item.name}</strong>
                   <em>{item.label}</em>
@@ -163,7 +165,8 @@ export default function ResultCard({
       <details className="technical-details">
         <summary>
           <span className="technical-summary-label">
-            Technical details, exportable as CSV
+            <strong>Inspect measurement data</strong>
+            <small>Open table · Export CSV</small>
           </span>
         </summary>
 

@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { d1Query, ensureD1Columns } from "../../../lib/d1";
-import PrintResultButton from "../../test/components/PrintResultButton";
+import ApplicationIcon from "../../test/components/ApplicationIcon";
+import SharedResultActions, { SharedResultHeaderActions } from "../../test/components/SharedResultActions";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -92,6 +92,18 @@ function safeJson<T>(value: string | null, fallback: T): T {
   }
 }
 
+function normalizeApplicationScore(item: ApplicationScore): ApplicationScore {
+  if (item.name !== "Online gaming") {
+    return item;
+  }
+
+  return {
+    ...item,
+    name: "Low-latency games",
+    label: item.label === "Unstable" ? "Usable" : item.label,
+  };
+}
+
 function formatLatency(value: number | null) {
   return value === null ? "—" : String(Math.round(value));
 }
@@ -141,11 +153,60 @@ function variableName(row: TechnicalRow) {
   return baseName;
 }
 
+function pickFindingVariant(seed: number, variants: string[]) {
+  return variants[Math.abs(Math.round(seed)) % variants.length];
+}
+
+function practicalImpactFor(
+  grade: Grade,
+  idle: number | null,
+  movement: number,
+  downloadMbps: number | null,
+  uploadMbps: number | null
+) {
+  const baseline = idle ?? 0;
+  const down = downloadMbps ?? 0;
+  const up = uploadMbps ?? 0;
+  const throughputLimited = down > 0 && up > 0 && (down < 8 || up < 2);
+  const highBaseline = baseline >= 100;
+  const moderateBaseline = baseline >= 75;
+
+  if (throughputLimited) {
+    return "The line stayed responsive, so calls and ordinary streaming should be reliable; the limitation is speed, which may make 4K or 8K video, large downloads, and cloud backup slower or harder to sustain.";
+  }
+
+  if (grade === "A+" || grade === "A") {
+    if (highBaseline) {
+      return "Video calls, voice calls, browsing, and streaming should hold up well under load; low-latency games may still feel less immediate because the quiet-line ping is already high.";
+    }
+
+    if (moderateBaseline) {
+      return "Video calls, voice calls, browsing, and streaming should feel steady; low-latency games should be usable, though not as crisp as on a very low-ping line.";
+    }
+
+    return "Video calls, voice calls, browsing, streaming, cloud backup, and low-latency games should all have plenty of room on this run.";
+  }
+
+  if (grade === "B") {
+    return movement > 25
+      ? "Browsing and streaming should be fine, but calls and low-latency games may feel less consistent when someone is uploading or downloading."
+      : "Everyday apps should be fine, with only mild risk of rough edges for calls or low-latency games while the line is busy.";
+  }
+
+  if (grade === "C") {
+    return "Browsing and video streaming may still work, but calls, meetings, and low-latency games can become uneven when the connection is busy.";
+  }
+
+  return "Bulk downloads may still show good Mbps, but calls, meetings, low-latency games, and interactive browsing are likely to suffer whenever the line is busy.";
+}
+
 function sharedFindingFor(
   grade: Grade,
   idle: number | null,
   downloadStress: number | null,
-  uploadStress: number | null
+  uploadStress: number | null,
+  downloadMbps: number | null,
+  uploadMbps: number | null
 ) {
   const typical = idle === null ? null : `${formatLatency(idle)} ms`;
   const meaningfulDownload = (downloadStress ?? 0) > 10;
@@ -162,30 +223,69 @@ function sharedFindingFor(
       : meaningfulDownload || meaningfulUpload
         ? "Both download and upload load made the connection less responsive."
         : "The loaded phases did not add much delay.";
+  const seed =
+    (idle ?? 0) +
+    (downloadStress ?? 0) * 3 +
+    (uploadStress ?? 0) * 5 +
+    (downloadMbps ?? 0) * 7 +
+    (uploadMbps ?? 0) * 11;
+  const impact = practicalImpactFor(grade, idle, worstMovement, downloadMbps, uploadMbps);
   const repeatNote =
     "Repeat the test before drawing a hard conclusion: networks vary during the day, and a single browser run can occasionally catch a transient problem.";
 
   if (grade === "F" || grade === "D" || grade === "C") {
     if (grade === "F" || worstMovement >= 80) {
-      return `This connection became hard to trust once it was busy. ${source} Calls, games, and interactive work may stall even if a normal speed test looks fine. ${repeatNote}`;
+      return pickFindingVariant(seed, [
+        `This connection became hard to trust once it was busy. ${source} ${impact} ${repeatNote}`,
+        `The line looked much worse under real traffic than a quiet speed reading would suggest. ${source} ${impact} ${repeatNote}`,
+        `This is the kind of result that makes a connection feel fast one moment and frozen the next. ${source} ${impact} ${repeatNote}`,
+      ]);
     }
 
-    return `This connection stayed usable, but the test found bufferbloat when the line was busy. ${source} You may notice lag during calls, games, or uploads. ${repeatNote}`;
+    return pickFindingVariant(seed, [
+      `This connection stayed usable, but the test found bufferbloat when the line was busy. ${source} ${impact} ${repeatNote}`,
+      `The line is not broken, but it becomes less predictable under load. ${source} ${impact} ${repeatNote}`,
+      `This result points to a connection that can work well when quiet, then feel uneven once other traffic competes for it. ${source} ${impact} ${repeatNote}`,
+    ]);
   }
 
   if (grade === "B") {
-    return `This is a solid result with some added delay under load. ${source} Most everyday use should be fine, but latency-sensitive work may feel less crisp when the connection is busy.`;
+    return pickFindingVariant(seed, [
+      `This is a solid result with some added delay under load. ${source} ${impact}`,
+      `The connection mostly kept its composure, but the busy-line test did add some delay. ${source} ${impact}`,
+      `This line should be dependable for most use, with a small caveat under load. ${source} ${impact}`,
+    ]);
   }
 
   if (grade === "A+") {
-    return "Exceptional result. The connection stayed calm while the test filled the line, so latency-sensitive apps should have plenty of room even when other traffic is active.";
+    return pickFindingVariant(seed, [
+      `Exceptional result. The connection stayed calm while the test filled the line. ${impact}`,
+      `This is exactly what a reliable line looks like under pressure: traffic increased, but latency / ping barely moved. ${impact}`,
+      `The test could not make this connection meaningfully laggier. ${impact}`,
+    ]);
   }
 
   if (typical && idle && idle > 120) {
-    return `Good bufferbloat result, with an important footnote: the connection stayed stable under load, but the normal latency / ping is already high at about ${typical}.`;
+    return pickFindingVariant(seed, [
+      `Good bufferbloat result, with an important footnote: the connection stayed stable under load, but the normal latency / ping is already high at about ${typical}. ${impact}`,
+      `The busy-line behavior is good, but the base ping is the main limitation here at about ${typical}. ${impact}`,
+      `This looks like a stable line with a distance or routing limitation: load did not hurt much, but normal ping is already about ${typical}. ${impact}`,
+    ]);
   }
 
-  return "Excellent bufferbloat result. The test pushed download and upload traffic, and latency / ping stayed close to its normal level.";
+  if (typical && idle && idle >= 75) {
+    return pickFindingVariant(seed, [
+      `Excellent bufferbloat result. Your quiet-line ping is about ${typical}, and the test did not make it much worse under load. ${impact}`,
+      `The line starts from a moderate ping of about ${typical}, but the bufferbloat behavior is strong: load did not add much delay. ${impact}`,
+      `This run shows a stable connection under pressure, even though the quiet-line ping is not extremely low at about ${typical}. ${impact}`,
+    ]);
+  }
+
+  return pickFindingVariant(seed, [
+    `Excellent bufferbloat result. Download and upload traffic were active, but latency / ping stayed close to normal. ${impact}`,
+    `This connection behaved well in the situation that usually exposes bufferbloat: a busy line. ${impact}`,
+    `The important result is stability: the line stayed responsive while data was moving in both directions. ${impact}`,
+  ]);
 }
 
 function sampleMedian(samples: number[]) {
@@ -238,7 +338,15 @@ function severityClass(grade: Grade | null) {
   return "bad";
 }
 
-function SharedLatencyChart({ samples }: { samples: LatencySamples }) {
+function SharedLatencyChart({
+  samples,
+  downloadMbps,
+  uploadMbps,
+}: {
+  samples: LatencySamples;
+  downloadMbps: number | null;
+  uploadMbps: number | null;
+}) {
   const chart = { left: 58, top: 24, width: 628, height: 314, bottom: 338 };
   const phaseWidth = chart.width / 3;
   const ranges = {
@@ -368,6 +476,10 @@ function SharedLatencyChart({ samples }: { samples: LatencySamples }) {
     <section className="latency-phase-chart result" aria-label="Shared latency / ping chart">
       <div className="latency-phase-chart-header">
         <strong>Latency / Ping in milliseconds</strong>
+        <div className="chart-throughput" aria-label="Average throughput during load phases">
+          <span className="download">download {formatSpeed(downloadMbps)} Mb/s</span>
+          <span className="upload">upload {formatSpeed(uploadMbps)} Mb/s</span>
+        </div>
         <div className="latency-phase-legend" aria-hidden="true">
           <span className="idle">quiet line</span>
           <span className="download">download stress</span>
@@ -540,7 +652,7 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
     uploadJitterMs: number;
   }>>(row.result_json, {});
   const samples = safeJson<LatencySamples>(row.samples_json, { idle: [], download: [], upload: [] });
-  const applications = safeJson<ApplicationScore[]>(row.application_scores_json, []);
+  const applications = safeJson<ApplicationScore[]>(row.application_scores_json, []).map(normalizeApplicationScore);
   const grade = (saved.grade || row.grade || "F") as Grade;
   const idleMs = saved.idleMs ?? row.idle_ms;
   const downloadLatencyMs = saved.downloadLatencyMs ?? row.download_latency_ms;
@@ -598,29 +710,27 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
           <div className="result-compact-header">
             <div className="result-brand-lockup" aria-label="Bufferbloat.org">
               <strong>Bufferbloat.org</strong>
-              <span>shared bufferbloat test result · Measured {measuredAt}</span>
+              <span>bufferbloat test result · Measured {measuredAt}</span>
             </div>
+            <SharedResultHeaderActions sharePath={`/test?result=${shareId}`} />
           </div>
 
           <div className="result-scorecard-grid">
             <div className="result-grade">
               <p>grade</p>
               <strong className={`${severityClass(grade)} ${grade === "A+" ? "grade-plus" : ""}`}>{grade}</strong>
-              <span>Shared result</span>
+              <span>Test result</span>
             </div>
 
             <div className="result-scorecard-body">
               <p className="result-finding">
-                {sharedFindingFor(grade, idleMs, downloadStressMs, uploadStressMs)}
+                {sharedFindingFor(grade, idleMs, downloadStressMs, uploadStressMs, downloadMbps, uploadMbps)}
               </p>
 
               <div className="result-metric-grid">
                 <article><span>Quiet line ping</span><strong>{formatLatency(idleMs)} ms</strong></article>
                 <article><span>Download stress</span><strong>{formatDelta(downloadStressMs)}</strong></article>
                 <article><span>Upload stress</span><strong>{formatDelta(uploadStressMs)}</strong></article>
-                <article><span>Median latency variation</span><strong>{formatLatency(medianVariation)} ms</strong></article>
-                <article className="download"><span>Avg download speed</span><strong>{formatSpeed(downloadMbps)} Mb/s</strong></article>
-                <article className="upload"><span>Avg upload speed</span><strong>{formatSpeed(uploadMbps)} Mb/s</strong></article>
               </div>
             </div>
           </div>
@@ -634,7 +744,7 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
               <ol className="application-ranking-list">
                 {applications.map((item) => (
                   <li className={item.tone} key={item.name}>
-                    <span className="reliability-symbol" aria-hidden="true">{item.symbol}</span>
+                    <ApplicationIcon name={item.name} />
                     <span className="application-copy">
                       <strong>{item.name}</strong>
                       <em>{item.label}</em>
@@ -645,14 +755,15 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
             </div>
 
             <div className="result-chart-cell">
-              <SharedLatencyChart samples={samples} />
+              <SharedLatencyChart samples={samples} downloadMbps={downloadMbps} uploadMbps={uploadMbps} />
             </div>
           </div>
 
           <details className="technical-details">
             <summary>
               <span className="technical-summary-label">
-                Technical details, exportable as CSV
+                <strong>Inspect measurement data</strong>
+                <small>Open table · Export CSV</small>
               </span>
             </summary>
 
@@ -698,14 +809,7 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
           </details>
         </section>
 
-        <div className="result-share-actions">
-          <div className="result-action-buttons">
-            <Link className="result-rerun-button" href="/test?start=1">
-              Run bufferbloat test
-            </Link>
-            <PrintResultButton />
-          </div>
-        </div>
+        <SharedResultActions />
       </div>
     </main>
   );

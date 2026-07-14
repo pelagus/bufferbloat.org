@@ -1,5 +1,5 @@
 .home-shell {
-  width: min(980px, calc(100% - 32px));
+  width: min(1320px, calc(100% - 48px));
   margin: 0 auto;
   padding-top: 28px;
 }
@@ -1344,7 +1344,7 @@
 
 @media (min-width: 1100px) {
   .home-shell {
-    width: min(1040px, calc(100% - 48px));
+    width: min(1320px, calc(100% - 48px));
   }
 
   .home-hero {
