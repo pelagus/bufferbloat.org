@@ -20,6 +20,7 @@ export type TestUpdate = {
   recentLatencySamples: number[];
   latencySampleCount: number;
   latencySamples: LatencySamplesByPhase;
+  excludedLatencySamples: LatencySamplesByPhase;
 };
 
 export type TestResult = {
@@ -160,15 +161,20 @@ async function sampleLatency(
   return samples;
 }
 
-async function warmUpLatencyPath(durationMs: number, signal?: AbortSignal) {
+async function warmUpLatencyPath(
+  durationMs: number,
+  onSample: (sample: number) => void,
+  signal?: AbortSignal
+) {
   const end = performance.now() + durationMs;
 
   while (performance.now() < end) {
     throwIfAborted(signal);
 
     try {
-      await probeLatency();
+      const sample = await probeLatency();
       throwIfAborted(signal);
+      onSample(sample);
     } catch (error) {
       if (isAbortError(error)) throw error;
     }
@@ -450,6 +456,11 @@ export async function runBufferbloatTest(
     download: [],
     upload: [],
   };
+  const excludedLatencySamples: LatencySamplesByPhase = {
+    idle: [],
+    download: [],
+    upload: [],
+  };
 
   let currentUpdateMeta = {
     phase: "warmup" as TestPhase,
@@ -469,6 +480,7 @@ export async function runBufferbloatTest(
       recentLatencySamples,
       latencySampleCount,
       latencySamples,
+      excludedLatencySamples,
     });
   }
 
@@ -503,7 +515,10 @@ export async function runBufferbloatTest(
 
   emit("idle", "quiet settling", "Warming quiet-line ping before recording baseline samples.", 8);
 
-  await warmUpLatencyPath(IDLE_SETTLE_MS, signal);
+  await warmUpLatencyPath(IDLE_SETTLE_MS, (sample) => {
+    excludedLatencySamples.idle = [...excludedLatencySamples.idle, sample];
+    emitCurrent();
+  }, signal);
 
   emit("idle", "quiet measuring", "Measuring baseline response time.", 12);
 
@@ -534,7 +549,10 @@ export async function runBufferbloatTest(
   try {
     emit("download", "download settling", "Letting download pressure settle before recording samples.", 44);
 
-    await warmUpLatencyPath(LOADED_SETTLE_MS, signal);
+    await warmUpLatencyPath(LOADED_SETTLE_MS, (sample) => {
+      excludedLatencySamples.download = [...excludedLatencySamples.download, sample];
+      emitCurrent();
+    }, signal);
 
     emit("download", "download measuring", "Sampling ping under established download pressure.", 58);
 
@@ -570,7 +588,10 @@ export async function runBufferbloatTest(
   try {
     emit("upload", "upload settling", "Letting upload pressure settle before recording samples.", 76);
 
-    await warmUpLatencyPath(LOADED_SETTLE_MS, signal);
+    await warmUpLatencyPath(LOADED_SETTLE_MS, (sample) => {
+      excludedLatencySamples.upload = [...excludedLatencySamples.upload, sample];
+      emitCurrent();
+    }, signal);
 
     emit("upload", "upload measuring", "Sampling ping under established upload pressure.", 88);
 

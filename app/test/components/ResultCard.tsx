@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { Grade } from "../../../lib/test-copy";
 import ApplicationIcon from "./ApplicationIcon";
 import { severityClass } from "./diagnosis";
+import LocalMeasuredTime from "./LocalMeasuredTime";
 
 type TechnicalRow = {
   section: string;
@@ -70,11 +71,6 @@ export default function ResultCard({
   technicalRows: TechnicalRow[];
   signupSlot?: ReactNode;
 }) {
-  const formattedMeasuredAt = new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(measuredAt));
-
   function exportTechnicalDetails() {
     const rows = [
       ["Variable", "Value"],
@@ -103,7 +99,7 @@ export default function ResultCard({
         <div className="result-brand-lockup" aria-label="Bufferbloat.org">
           <strong>Bufferbloat.org</strong>
           <span>
-            open source bufferbloat test · Measured {formattedMeasuredAt}
+            open source bufferbloat test · Measured <LocalMeasuredTime isoTime={measuredAt} />
           </span>
         </div>
         {headerActions}

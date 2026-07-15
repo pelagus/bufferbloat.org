@@ -17,6 +17,11 @@ export default function ApplicationIcon({ name }: ApplicationIconProps) {
           <path d="M7 17h34M17 37h14M21 42h6" />
           <path d="M16 27h16M16 23h10M16 31h7" />
         </svg>
+      ) : key.includes("audio") ? (
+        <svg viewBox="0 0 48 48" role="img">
+          <path d="M20 18 31 10v28L20 30H11V18h9Z" />
+          <path d="M36 18c2.3 3.7 2.3 8.3 0 12M40 14c4.3 6 4.3 14 0 20" />
+        </svg>
       ) : key.includes("stream") ? (
         <svg viewBox="0 0 48 48" role="img">
           <rect x="7" y="10" width="34" height="28" rx="2" />

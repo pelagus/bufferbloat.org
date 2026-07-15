@@ -166,6 +166,84 @@ export default function Page() {
           </article>
 
           <article>
+            <span>Common search</span>
+            <h3>
+              <Link href="/learn/network-stability-test">
+                Network stability test
+              </Link>
+            </h3>
+            <p>
+              How to measure whether a network stays steady when download and
+              upload traffic are active.
+            </p>
+          </article>
+
+          <article>
+            <span>Connection quality</span>
+            <h3>
+              <Link href="/learn/internet-connection-quality">
+                Internet connection quality
+              </Link>
+            </h3>
+            <p>
+              Why connection quality combines throughput, latency, loaded ping,
+              and variation instead of relying on Mbps alone.
+            </p>
+          </article>
+
+          <article>
+            <span>Calls</span>
+            <h3>
+              <Link href="/learn/calls-internet-test">
+                Calls internet test
+              </Link>
+            </h3>
+            <p>
+              Why video and audio calls depend on stable latency under load,
+              especially on shared connections.
+            </p>
+          </article>
+
+          <article>
+            <span>Video meetings</span>
+            <h3>
+              <Link href="/learn/zoom-internet-test">
+                Zoom internet test
+              </Link>
+            </h3>
+            <p>
+              An independent guide to the connection behavior that affects
+              video meetings when the line is busy.
+            </p>
+          </article>
+
+          <article>
+            <span>Video meetings</span>
+            <h3>
+              <Link href="/learn/zoom-network-test">
+                Zoom network test
+              </Link>
+            </h3>
+            <p>
+              How to test latency, upload behavior, and queueing delay for
+              meeting-like network conditions.
+            </p>
+          </article>
+
+          <article>
+            <span>Gaming</span>
+            <h3>
+              <Link href="/learn/gaming-network-test">
+                Gaming network test
+              </Link>
+            </h3>
+            <p>
+              Why low-latency games need stable ping under load, not only a
+              good idle ping number.
+            </p>
+          </article>
+
+          <article>
             <span>Technical signal</span>
             <h3>
               <Link href="/learn/latency-under-load">
@@ -200,28 +278,14 @@ export default function Page() {
         </div>
 
         <p>
-          Bufferbloat.org is one small browser-based test in a much larger
-          ecosystem. These projects, papers, standards, and tools are useful
-          starting points for understanding the problem, measuring it more
+          These projects, papers, standards, and tools are useful starting
+          points for understanding bufferbloat, measuring loaded latency more
           deeply, and fixing it in real networks.
         </p>
 
         <div className="learning-resource-list">
           <article>
-            <span>Original project</span>
-            <h3>
-              <a href="https://www.bufferbloat.net/projects/" {...linkProps}>
-                Bufferbloat.net
-              </a>
-            </h3>
-            <p>
-              The central community site for the Bufferbloat Project, including
-              background, tests, mitigations, mailing lists, and related work.
-            </p>
-          </article>
-
-          <article>
-            <span>Accessible introduction</span>
+            <span>Community background</span>
             <h3>
               <a
                 href="https://www.bufferbloat.net/projects/bloat/wiki/"
@@ -232,7 +296,7 @@ export default function Page() {
             </h3>
             <p>
               A readable entry point for symptoms, experiments, fixes, glossary
-              material, and the broader history of the project.
+              material, and the broader history of bufferbloat research.
             </p>
           </article>
 

@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { d1Query, ensureD1Columns } from "../../../lib/d1";
 import ApplicationIcon from "../../test/components/ApplicationIcon";
+import LocalMeasuredTime from "../../test/components/LocalMeasuredTime";
 import SharedResultActions, { SharedResultHeaderActions } from "../../test/components/SharedResultActions";
 
 export const dynamic = "force-dynamic";
@@ -94,6 +95,13 @@ function safeJson<T>(value: string | null, fallback: T): T {
 
 function normalizeApplicationScore(item: ApplicationScore): ApplicationScore {
   if (item.name !== "Online gaming") {
+    if (item.name === "Voice calls" || item.name === "Audio streaming") {
+      return {
+        ...item,
+        name: "Audio calls",
+      };
+    }
+
     return item;
   }
 
@@ -157,12 +165,39 @@ function pickFindingVariant(seed: number, variants: string[]) {
   return variants[Math.abs(Math.round(seed)) % variants.length];
 }
 
+function formatHumanList(items: string[]) {
+  if (items.length <= 1) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
+function applicationCaveatFor(applications?: ApplicationScore[]) {
+  if (!applications?.length) return null;
+
+  const weakestTone = applications.some((item) => item.tone === "poor")
+    ? "poor"
+    : applications.some((item) => item.tone === "fair")
+      ? "fair"
+      : null;
+
+  if (!weakestTone) return null;
+
+  const weakestApplications = applications
+    .filter((item) => item.tone === weakestTone)
+    .map((item) => item.name);
+  const label = weakestTone === "poor" ? "poor" : "usable";
+
+  return `The bufferbloat behavior is good, but application fit is more specific: ${formatHumanList(weakestApplications)} ${weakestApplications.length === 1 ? "is" : "are"} rated ${label} for this run because baseline ping, latency variation, or throughput can still matter.`;
+}
+
 function practicalImpactFor(
   grade: Grade,
   idle: number | null,
   movement: number,
   downloadMbps: number | null,
-  uploadMbps: number | null
+  uploadMbps: number | null,
+  applications?: ApplicationScore[]
 ) {
   const baseline = idle ?? 0;
   const down = downloadMbps ?? 0;
@@ -170,6 +205,13 @@ function practicalImpactFor(
   const throughputLimited = down > 0 && up > 0 && (down < 8 || up < 2);
   const highBaseline = baseline >= 100;
   const moderateBaseline = baseline >= 75;
+  const applicationCaveat = grade === "A+" || grade === "A" || grade === "B"
+    ? applicationCaveatFor(applications)
+    : null;
+
+  if (applicationCaveat) {
+    return applicationCaveat;
+  }
 
   if (throughputLimited) {
     return "The line stayed responsive, so calls and ordinary streaming should be reliable; the limitation is speed, which may make 4K or 8K video, large downloads, and cloud backup slower or harder to sustain.";
@@ -177,14 +219,14 @@ function practicalImpactFor(
 
   if (grade === "A+" || grade === "A") {
     if (highBaseline) {
-      return "Video calls, voice calls, browsing, and streaming should hold up well under load; low-latency games may still feel less immediate because the quiet-line ping is already high.";
+      return "Video calls, audio calls, browsing, and video streaming should hold up well under load; low-latency games may still feel less immediate because the quiet-line ping is already high.";
     }
 
     if (moderateBaseline) {
-      return "Video calls, voice calls, browsing, and streaming should feel steady; low-latency games should be usable, though not as crisp as on a very low-ping line.";
+      return "Video calls, audio calls, browsing, and video streaming should feel steady; low-latency games should be usable, though not as crisp as on a very low-ping line.";
     }
 
-    return "Video calls, voice calls, browsing, streaming, cloud backup, and low-latency games should all have plenty of room on this run.";
+    return "Video calls, audio calls, browsing, video streaming, cloud backup, and low-latency games should all have plenty of room on this run.";
   }
 
   if (grade === "B") {
@@ -206,7 +248,8 @@ function sharedFindingFor(
   downloadStress: number | null,
   uploadStress: number | null,
   downloadMbps: number | null,
-  uploadMbps: number | null
+  uploadMbps: number | null,
+  applications?: ApplicationScore[]
 ) {
   const typical = idle === null ? null : `${formatLatency(idle)} ms`;
   const meaningfulDownload = (downloadStress ?? 0) > 10;
@@ -229,7 +272,7 @@ function sharedFindingFor(
     (uploadStress ?? 0) * 5 +
     (downloadMbps ?? 0) * 7 +
     (uploadMbps ?? 0) * 11;
-  const impact = practicalImpactFor(grade, idle, worstMovement, downloadMbps, uploadMbps);
+  const impact = practicalImpactFor(grade, idle, worstMovement, downloadMbps, uploadMbps, applications);
   const repeatNote =
     "Repeat the test before drawing a hard conclusion: networks vary during the day, and a single browser run can occasionally catch a transient problem.";
 
@@ -338,6 +381,14 @@ function severityClass(grade: Grade | null) {
   return "bad";
 }
 
+function qualityLabelForGrade(grade: Grade | null) {
+  if (grade === "A+") return "Very reliable";
+  if (grade === "A" || grade === "B") return "Stable";
+  if (grade === "C") return "Uneven";
+  if (grade === "D") return "Poor";
+  return "Severe";
+}
+
 function SharedLatencyChart({
   samples,
   downloadMbps,
@@ -394,7 +445,7 @@ function SharedLatencyChart({
         className: band.className,
         x: band.range[0] + (band.range[1] - band.range[0]) / 2,
         y: chart.top + 18,
-        text: `variation ${formatLatency(band.variation)} ms`,
+        text: `latency variation ${formatLatency(band.variation)} ms`,
       };
     })
     .filter((label): label is {
@@ -430,7 +481,7 @@ function SharedLatencyChart({
     },
     {
       key: "download",
-      label: "Download stress",
+      label: "Download load",
       className: "sample-download",
       range: ranges.download,
       values: samples.download,
@@ -438,7 +489,7 @@ function SharedLatencyChart({
     },
     {
       key: "upload",
-      label: "Upload stress",
+      label: "Upload load",
       className: "sample-upload",
       range: ranges.upload,
       values: samples.upload,
@@ -478,9 +529,8 @@ function SharedLatencyChart({
         <strong>Latency / Ping in milliseconds</strong>
         <div className="latency-phase-legend" aria-hidden="true">
           <span className="idle">quiet line</span>
-          <span className="download">download stress</span>
-          <span className="upload">upload stress</span>
-          <span className="variation">variation band</span>
+          <span className="download">download load</span>
+          <span className="upload">upload load</span>
           <span className="reference">median ping</span>
         </div>
       </div>
@@ -515,14 +565,18 @@ function SharedLatencyChart({
 
           return (
             <rect
-              aria-label={`${band.key} variation band: ${formatLatency(band.variation)} ms`}
+              aria-label={`${band.key} latency variation band: ${formatLatency(band.variation)} ms`}
               className={`latency-variation-band ${band.className}`}
               key={band.key}
               x={band.range[0]}
               y={upperY}
               width={band.range[1] - band.range[0]}
               height={height}
-            />
+            >
+              <title>
+                Latency variation: average change between consecutive ping samples during this phase.
+              </title>
+            </rect>
           );
         })}
 
@@ -580,8 +634,14 @@ function SharedLatencyChart({
         <text className="chart-phase-label" x={chart.left + phaseWidth * 2 + 10} y={354}>upload</text>
       </svg>
       <div className="chart-throughput" aria-label="Average throughput during load phases">
-        <span className="download">download {formatSpeed(downloadMbps)} Mb/s</span>
-        <span className="upload">upload {formatSpeed(uploadMbps)} Mb/s</span>
+        <span className="download" aria-label={`download ${formatSpeed(downloadMbps)} Mb/s`}>
+          <em>download link</em>
+          <strong>{formatSpeed(downloadMbps)} Mb/s</strong>
+        </span>
+        <span className="upload" aria-label={`upload ${formatSpeed(uploadMbps)} Mb/s`}>
+          <em>upload link</em>
+          <strong>{formatSpeed(uploadMbps)} Mb/s</strong>
+        </span>
       </div>
     </section>
   );
@@ -698,11 +758,6 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
     ...technicalRows.map((item) => [variableName(item), item.value]),
   ].map((csvRow) => csvRow.map(csvCell).join(",")).join("\n")}\n`;
   const technicalCsvHref = `data:text/csv;charset=utf-8,${encodeURIComponent(technicalCsv)}`;
-  const measuredAt = new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(row.created_at));
-
   return (
     <main className="test-shell">
       <div className="result-screen shared-result-screen">
@@ -710,7 +765,9 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
           <div className="result-compact-header">
             <div className="result-brand-lockup" aria-label="Bufferbloat.org">
               <strong>Bufferbloat.org</strong>
-              <span>bufferbloat test result · Measured {measuredAt}</span>
+              <span>
+                bufferbloat test result · Measured <LocalMeasuredTime isoTime={row.created_at} />
+              </span>
             </div>
             <SharedResultHeaderActions sharePath={`/test?result=${shareId}`} />
           </div>
@@ -719,12 +776,20 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
             <div className="result-grade">
               <p>grade</p>
               <strong className={`${severityClass(grade)} ${grade === "A+" ? "grade-plus" : ""}`}>{grade}</strong>
-              <span>Test result</span>
+              <span>{qualityLabelForGrade(grade)}</span>
             </div>
 
             <div className="result-scorecard-body">
               <p className="result-finding">
-                {sharedFindingFor(grade, idleMs, downloadStressMs, uploadStressMs, downloadMbps, uploadMbps)}
+                {sharedFindingFor(
+                  grade,
+                  idleMs,
+                  downloadStressMs,
+                  uploadStressMs,
+                  downloadMbps,
+                  uploadMbps,
+                  applications
+                )}
               </p>
             </div>
           </div>

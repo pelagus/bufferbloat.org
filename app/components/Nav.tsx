@@ -6,7 +6,15 @@ export default function Nav() {
   return (
     <nav className="site-nav">
       <Link href="/" className="site-logo">
-        bufferbloat.org
+        <svg viewBox="0 0 64 64" aria-hidden="true" className="brand-mark">
+          <rect width="64" height="64" />
+          <path d="M10 48.5h44" />
+          <path d="M10 16v33" />
+          <path d="M15 39h6l5-5 5 5h6" />
+          <path className="brand-mark-load" d="M37 39h5l4-17 4 17h4" />
+          <path className="brand-mark-grid" d="M14 26h6M14 18h6M28 26h6M28 18h6" />
+        </svg>
+        <span>bufferbloat.org</span>
       </Link>
 
       <div className="site-links">

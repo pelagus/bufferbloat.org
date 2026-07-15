@@ -28,7 +28,7 @@ const guide: SeoGuide = {
   cards: [
     {
       label: "Calls",
-      title: "Video and voice",
+      title: "Video and audio",
       body:
         "Calls need low and stable latency. A connection can have enough throughput for video but still feel delayed when queues fill.",
     },

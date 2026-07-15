@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import PrintResultButton from "./PrintResultButton";
+import ResultSharePanel from "./ResultSharePanel";
 
 const shareText =
-  "I used Bufferbloat.org to check how my internet connection performs in real-life situations. It is more accurate than an ordinary speed test for this question, non-commercial, and open source.";
+  "I ran a Bufferbloat.org test to check how my internet connection performs under real load.";
 
 function useShareLinks(sharePath: string) {
   const shareTarget = `https://bufferbloat.org${sharePath}`;
@@ -31,8 +32,8 @@ export function SharedResultHeaderActions({ sharePath }: { sharePath: string }) 
 
   async function copyShareText() {
     try {
-      await navigator.clipboard.writeText(`${shareText}\n\n${shareTarget}`);
-      setShareMessage("Share text copied.");
+      await navigator.clipboard.writeText(shareTarget);
+      setShareMessage("Link copied.");
     } catch {
       setShareMessage(shareTarget);
     }
@@ -63,24 +64,12 @@ export function SharedResultHeaderActions({ sharePath }: { sharePath: string }) 
       </div>
 
       {sharePanelOpen && (
-        <section className="result-share-panel" id="result-share-panel" aria-label="Share result">
-          <p>{shareText}</p>
-          <div className="result-share-links">
-            <a href={shareLinks.email}>Email</a>
-            <a href={shareLinks.whatsapp} target="_blank" rel="noopener noreferrer">
-              WhatsApp
-            </a>
-            <a href={shareLinks.telegram} target="_blank" rel="noopener noreferrer">
-              Telegram
-            </a>
-            <button type="button" onClick={copyShareText}>
-              Copy
-            </button>
-          </div>
-        </section>
+        <ResultSharePanel
+          copyMessage={shareMessage}
+          links={shareLinks}
+          onCopy={copyShareText}
+        />
       )}
-
-      {shareMessage && <p>{shareMessage}</p>}
     </div>
   );
 }

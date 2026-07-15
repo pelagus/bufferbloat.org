@@ -203,10 +203,10 @@ const technicalDetailFields = [
       "Application-fit score for video streaming, weighted more heavily toward download throughput with some latency-stability adjustment.",
   },
   {
-    variable: "voice_calls_score",
+    variable: "audio_calls_score",
     value: "0-100 score",
     description:
-      "Application-fit score for voice calls, derived from baseline latency, latency movement, latency variation, and minimum upload capacity.",
+      "Application-fit score for audio calls, derived from baseline latency, latency movement, latency variation, and minimum upload capacity.",
   },
   {
     variable: "video_calls_score",

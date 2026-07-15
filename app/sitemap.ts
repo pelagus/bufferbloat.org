@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const lastModified = new Date("2026-07-13T00:00:00.000Z");
+const lastModified = new Date("2026-07-15T00:00:00.000Z");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -48,6 +48,42 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: "https://bufferbloat.org/learn/internet-stability-test",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
+    {
+      url: "https://bufferbloat.org/learn/network-stability-test",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
+    {
+      url: "https://bufferbloat.org/learn/calls-internet-test",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
+    {
+      url: "https://bufferbloat.org/learn/zoom-network-test",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
+    {
+      url: "https://bufferbloat.org/learn/gaming-network-test",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
+    {
+      url: "https://bufferbloat.org/learn/zoom-internet-test",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
+    {
+      url: "https://bufferbloat.org/learn/internet-connection-quality",
       lastModified,
       changeFrequency: "monthly",
       priority: 0.72,

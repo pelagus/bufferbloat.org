@@ -158,8 +158,8 @@
   justify-content: center;
   min-height: 56px;
   margin-top: 0;
-  border-color: #1d4ed8;
-  background: #2563eb;
+  border-color: #146c36;
+  background: #16803f;
   color: #ffffff;
   padding: 0 26px;
   font-family: var(--font-geist-mono), monospace;
@@ -180,8 +180,8 @@
 }
 
 .home-as-test .hero-start-button:hover {
-  border-color: #1e40af;
-  background: #1d4ed8;
+  border-color: #0f5f2d;
+  background: #146c36;
   color: #ffffff;
   transform: none;
 }
@@ -305,7 +305,7 @@
 }
 
 .instrument-grade strong {
-  color: #2563eb;
+  color: #5b9f31;
   font-size: 56px;
   font-weight: 560;
   line-height: 0.86;
@@ -313,9 +313,9 @@
 
 .instrument-grade em {
   padding: 2px 5px;
-  border: 1px solid color-mix(in srgb, #2563eb 24%, var(--line));
-  background: color-mix(in srgb, #2563eb 9%, var(--bg));
-  color: color-mix(in srgb, #2563eb 74%, var(--fg));
+  border: 1px solid color-mix(in srgb, #5b9f31 24%, var(--line));
+  background: color-mix(in srgb, #5b9f31 9%, var(--bg));
+  color: color-mix(in srgb, #5b9f31 74%, var(--fg));
   font-size: 9px;
   font-style: normal;
   line-height: 1.1;
@@ -1225,9 +1225,18 @@
     padding: 18px;
   }
 
+  .guide-test-actions {
+    justify-content: flex-end;
+  }
+
   .guide-test-actions a {
-    width: 100%;
+    width: auto;
     text-align: center;
+  }
+
+  .guide-primary-action {
+    width: min(340px, 100%) !important;
+    min-width: 220px;
   }
 
   .guide-test-micro {
@@ -1285,12 +1294,13 @@
   .home-hero-actions {
     flex-direction: column;
     gap: 14px;
-    align-items: flex-start;
+    align-items: flex-end;
   }
 
   .home-shell .home-as-test.hero-panel .hero-start-button {
-    width: auto;
-    min-width: 150px;
+    width: min(340px, 86vw);
+    min-width: 220px;
+    justify-content: center;
   }
 
   .home-hero-links {
@@ -1318,6 +1328,20 @@
   .home-reference-panel h2,
   .resource-note h2 {
     font-size: 24px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .home-hero-actions,
+  .guide-test-actions {
+    justify-content: flex-end;
+  }
+
+  .home-shell .home-as-test.hero-panel .hero-start-button,
+  .guide-primary-action {
+    width: min(360px, 46vw);
+    min-width: 240px;
+    justify-content: center;
   }
 }
 
