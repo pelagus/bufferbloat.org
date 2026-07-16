@@ -318,11 +318,14 @@ function sampleStandardDeviation(samples: number[]) {
 function phaseLatencyVariation(samples: number[]) {
   if (samples.length < 2) return null;
 
-  const totalMovement = samples
-    .slice(1)
-    .reduce((total, sample, index) => total + Math.abs(sample - samples[index]), 0);
+  const median = sampleMedian(samples);
+  const p95 = samplePercentile(samples, 0.95);
 
-  return totalMovement / (samples.length - 1);
+  if (median === null || p95 === null) {
+    return null;
+  }
+
+  return Math.max(0, p95 - median);
 }
 
 function smoothDisplaySamples(samples: number[]) {
@@ -354,6 +357,25 @@ function sampleMedian(samples: number[]) {
   }
 
   return (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function samplePercentile(samples: number[], percentile: number) {
+  if (samples.length === 0) {
+    return null;
+  }
+
+  const sorted = [...samples].sort((a, b) => a - b);
+  const clamped = Math.min(1, Math.max(0, percentile));
+  const position = (sorted.length - 1) * clamped;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+
+  if (lower === upper) {
+    return sorted[lower];
+  }
+
+  const weight = position - lower;
+  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
 function formatChartTick(value: number) {
@@ -406,7 +428,7 @@ function applicationCaveatFor(applications?: ApplicationRanking[]) {
     .map((item) => item.name);
   const label = weakestTone === "poor" ? "poor" : "usable";
 
-  return `The bufferbloat behavior is good, but application fit is more specific: ${formatHumanList(weakestApplications)} ${weakestApplications.length === 1 ? "is" : "are"} rated ${label} for this run because baseline ping, latency variation, or throughput can still matter.`;
+  return `The bufferbloat behavior is good, but application fit is more specific: ${formatHumanList(weakestApplications)} ${weakestApplications.length === 1 ? "is" : "are"} rated ${label} for this run because baseline ping, latency spread, or throughput can still matter.`;
 }
 
 function practicalImpactFor(
@@ -432,7 +454,7 @@ function practicalImpactFor(
   }
 
   if (throughputLimited) {
-    return "The line stayed responsive, so calls and ordinary streaming should be reliable; the limitation is speed, which may make 4K or 8K video, large downloads, and cloud backup slower or harder to sustain.";
+    return "Latency stayed stable, so calls and ordinary streaming should be reliable; the limitation is speed, which may make 4K or 8K video and large downloads slower or harder to sustain.";
   }
 
   if (grade === "A+" || grade === "A") {
@@ -492,7 +514,7 @@ function findingFor(
     : downloadDominates
       ? "The problem showed up mostly while the connection was downloading."
       : meaningfulDownload || meaningfulUpload
-        ? "Both download and upload load made the connection less responsive."
+        ? "Both download and upload load made the connection less usable."
         : "The loaded phases did not add much delay.";
   const impact = practicalImpactFor(grade, idle, movement, downloadMbps, uploadMbps, applications);
   const repeatNote =
@@ -535,7 +557,7 @@ function findingFor(
       return pickFindingVariant(seed, [
         `Excellent bufferbloat result. Download and upload traffic were active, but latency / ping stayed close to normal. ${impact}`,
         `This connection behaved well in the situation that usually exposes bufferbloat: a busy line. ${impact}`,
-        `The important result is stability: the line stayed responsive while data was moving in both directions. ${impact}`,
+        `The important result is stability: the line stayed usable while data was moving in both directions. ${impact}`,
       ]);
     }
 
@@ -1164,25 +1186,25 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
       note: "Higher of the download-loaded and upload-loaded medians.",
     },
     {
-      section: "Latency variation",
-      metric: "Quiet latency variation",
+      section: "Latency spread",
+      metric: "Quiet latency spread",
       value: formatLatency(quietVariation),
       unit: "ms",
-      note: "Average absolute change between consecutive scored quiet latency / ping samples.",
+      note: "95th percentile scored quiet latency / ping minus the quiet median.",
     },
     {
-      section: "Latency variation",
-      metric: "Download latency variation",
+      section: "Latency spread",
+      metric: "Download latency spread",
       value: formatLatency(downloadVariation),
       unit: "ms",
-      note: "Average absolute change between consecutive scored latency / ping samples during download load.",
+      note: "95th percentile scored latency / ping during download load minus the download-loaded median.",
     },
     {
-      section: "Latency variation",
-      metric: "Upload latency variation",
+      section: "Latency spread",
+      metric: "Upload latency spread",
       value: formatLatency(uploadVariation),
       unit: "ms",
-      note: "Average absolute change between consecutive scored latency / ping samples during upload load.",
+      note: "95th percentile scored latency / ping during upload load minus the upload-loaded median.",
     },
     {
       section: "Throughput",
@@ -1301,21 +1323,21 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
           <div className="hero-grid">
             <div className="hero-copy">
               <div className="hero-kicker">
-                Open-source bufferbloat test
+                Open-source internet quality test
               </div>
 
-              <h1>Run a bufferbloat test</h1>
+              <h1>Test your connection under real load</h1>
 
               <p className="hero-subtitle">
-                Find out whether your internet stays reliable when ordinary
-                speed tests say it is fast.
+                Ordinary speed tests do not tell you whether the connection
+                stays usable when it is busy.
               </p>
 
               <p className="hero-description">
-                Bufferbloat.org measures quiet-line ping, then repeats the
-                measurement while download and upload traffic are active. The
-                result is a shareable scorecard for real-world internet
-                reliability, not just Mbps.
+                This bufferbloat test creates download and upload load, then
+                checks whether delay stays under control. The result shows how
+                the connection behaves in the moments that make calls, games,
+                browsing, and streaming feel smooth or frustrating.
               </p>
 
               <button
@@ -1337,7 +1359,7 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
                 </div>
                 <div>
                   <span>Outputs</span>
-                  <strong>Shareable scorecard</strong>
+                  <strong>Inspectable scorecard</strong>
                 </div>
               </div>
 
@@ -1360,8 +1382,8 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
                 <strong>B</strong>
               </div>
               <div className="test-preview-diagnosis">
-                Speed looks fine, but upload load adds delay. Calls and games may
-                feel less stable when the line is busy.
+                Ordinary speed tests can look fine while upload load adds delay.
+                Calls and games may feel less stable when the line is busy.
               </div>
               <div className="test-preview-metrics">
                 <div>
@@ -1413,7 +1435,7 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
                 aria-hidden="true"
               />
               <span>Before the measurement</span>
-              <strong>We are about to test your connection</strong>
+              <strong>Check how the line behaves when busy</strong>
 
               <ul className="preflight-caveats">
                 <li><b>Keep this tab visible</b>; the test stops if focus changes.</li>
@@ -1453,8 +1475,9 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
               </div>
 
               <p className="preflight-context">
-                Browser network tests can be noisy. These checks help keep setup
-                noise, background traffic, and tab throttling out of the result.
+                Browser network tests can be noisy. These checks keep the run
+                focused on your connection, not background activity or tab
+                throttling.
               </p>
             </div>
           </section>
@@ -1476,10 +1499,10 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
                 aria-hidden="true"
               />
               <span>Preparing measurement</span>
-              <strong>Opening the test path</strong>
+              <strong>Preparing a clean run</strong>
               <p>
                 Scored ping samples start next. This short setup keeps browser
-                connection noise out of the result.
+                connection noise out of the measurement.
               </p>
               <div className="measurement-prep-probes" aria-hidden="true">
                 <span />
@@ -1542,7 +1565,7 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
               <strong>Focus moved away from this tab</strong>
               <p>
                 We had to stop this run because background tabs can be throttled,
-                which may compromise the quality of the measurement. Please
+                which can compromise the quality of the measurement. Please
                 restart and keep this tab visible until the result appears.
               </p>
               <button onClick={runTest} disabled={running || analyzing}>
@@ -1571,7 +1594,7 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
               <strong>Calculating result</strong>
               <p>
                 Comparing the quiet, download, and upload measurements before
-                showing the final bufferbloat grade.
+                showing the final bufferbloat scorecard.
               </p>
               <div className="analysis-matrix" aria-hidden="true">
                 <div className="analysis-phase quiet">
@@ -1792,7 +1815,7 @@ function LatencyPhaseChart({
   ].flatMap((item) =>
     item.median === null || item.variation === null
       ? []
-      : [Math.max(0, item.median - item.variation), item.median + item.variation]
+      : [item.median, item.median + item.variation]
   );
   const valuesPlottedForScale = [
     ...plottedSamples,
@@ -1909,7 +1932,7 @@ function LatencyPhaseChart({
         className: band.className,
         x: band.range[0] + (band.range[1] - band.range[0]) / 2,
         y: chart.top + 18,
-        text: `latency variation ${formatLatency(band.variation)} ms`,
+        text: `latency spread ${formatLatency(band.variation)} ms`,
       };
     })
     .filter((label): label is {
@@ -1940,7 +1963,7 @@ function LatencyPhaseChart({
     },
     {
       key: "download",
-      label: mode === "live" ? "Download on" : "Download load",
+      label: "Download on",
       className: "sample-download",
       range: phaseRanges.download,
       values: samples.download,
@@ -1948,7 +1971,7 @@ function LatencyPhaseChart({
     },
     {
       key: "upload",
-      label: mode === "live" ? "Upload on" : "Upload load",
+      label: "Upload on",
       className: "sample-upload",
       range: phaseRanges.upload,
       values: samples.upload,
@@ -2110,13 +2133,13 @@ function LatencyPhaseChart({
             }
 
             const upperY = yFor(band.median + band.variation);
-            const lowerY = yFor(Math.max(0, band.median - band.variation));
+            const lowerY = yFor(band.median);
             const height = Math.max(2, lowerY - upperY);
 
             return (
               <rect
-                aria-label={`${band.key} latency variation band: ${formatLatency(band.variation)} ms`}
-                className={`latency-variation-band ${band.className}`}
+                aria-label={`${band.key} latency spread band: ${formatLatency(band.variation)} ms`}
+                className={`latency-spread-band ${band.className}`}
                 key={band.key}
                 x={band.range[0]}
                 y={upperY}
@@ -2124,7 +2147,7 @@ function LatencyPhaseChart({
                 height={height}
               >
                 <title>
-                  Latency variation: average change between consecutive ping samples during this phase.
+                  Latency spread: 95th percentile ping minus median ping during this phase.
                 </title>
               </rect>
             );
@@ -2132,7 +2155,7 @@ function LatencyPhaseChart({
 
         {mode === "result" &&
           variationLabels.map((label) => (
-            <g className={`latency-variation-label ${label.className}`} key={label.key}>
+            <g className={`latency-spread-label ${label.className}`} key={label.key}>
               <text x={label.x} y={label.y}>{label.text}</text>
             </g>
           ))}
@@ -2221,9 +2244,9 @@ function LatencyPhaseChart({
             </g>
           ))}
 
-        <text className="chart-phase-label label-idle" x={chart.left + phaseWidth / 2} y={354}>quiet</text>
-        <text className="chart-phase-label label-download" x={chart.left + phaseWidth + phaseWidth / 2} y={354}>download</text>
-        <text className="chart-phase-label label-upload" x={chart.left + phaseWidth * 2 + phaseWidth / 2} y={354}>upload</text>
+        <text className="chart-phase-label label-idle" x={chart.left + phaseWidth / 2} y={354}>quiet line</text>
+        <text className="chart-phase-label label-download" x={chart.left + phaseWidth + phaseWidth / 2} y={354}>download on</text>
+        <text className="chart-phase-label label-upload" x={chart.left + phaseWidth * 2 + phaseWidth / 2} y={354}>upload on</text>
       </svg>
 
       {mode === "result" ? (
@@ -2259,10 +2282,10 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
 
     return {
       eyebrow: "Step 1 of 3",
-      title: settling ? "Warming up baseline ping" : "Measuring your baseline",
+      title: settling ? "Warming quiet line" : "Measuring quiet line",
       detail: settling
-        ? "The browser is sending a few quiet pings first. These are excluded from the result."
-        : "Now we record latency / ping before adding any download or upload load.",
+        ? "A few quiet pings are excluded before scoring begins."
+        : "Recording ping before download or upload traffic is added.",
     };
   }
 
@@ -2271,10 +2294,10 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
 
     return {
       eyebrow: "Step 2 of 3",
-      title: settling ? "Warming up download" : "Measuring ping during download",
+      title: settling ? "Warming download" : "Measuring download",
       detail: settling
-        ? "Download traffic is already running. These first seconds are excluded while the load settles."
-        : "Now we compare ping against the baseline while the connection is busy downloading.",
+        ? "Download traffic is running; these first seconds are excluded."
+        : "Comparing ping with the quiet line while download is active.",
     };
   }
 
@@ -2283,10 +2306,10 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
 
     return {
       eyebrow: "Step 3 of 3",
-      title: settling ? "Warming up upload" : "Measuring ping during upload",
+      title: settling ? "Warming upload" : "Measuring upload",
       detail: settling
-        ? "Upload traffic is already running. These first seconds are excluded while the load settles."
-        : "Now we compare ping against the baseline while the connection is busy uploading.",
+        ? "Upload traffic is running; these first seconds are excluded."
+        : "Comparing ping with the quiet line while upload is active.",
     };
   }
 
@@ -2295,7 +2318,7 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
       eyebrow: "Calculating",
       title: "Preparing your result",
       detail:
-        "The scorecard compares baseline ping with ping during download and upload load.",
+        "The scorecard compares quiet-line ping with ping during download and upload load.",
     };
   }
 
@@ -2425,7 +2448,9 @@ function TestProcedurePanel({
               <i aria-hidden="true" />
               <span aria-hidden="true">{complete ? "✓" : ""}</span>
               <strong>{step.label}</strong>
-              {active && <em>{stepSettling ? "warming up" : "sampling"}</em>}
+              <em aria-hidden={!active}>
+                {active ? (stepSettling ? "warming up" : "sampling") : "\u00A0"}
+              </em>
             </li>
           );
         })}
@@ -2507,7 +2532,7 @@ function ActiveMeasurementCard({
 
       <dl className="live-measurement-grid">
         <div>
-          <dt>Current median</dt>
+          <dt>Median</dt>
           <dd>{ping === null ? "waiting" : `${formatLatency(ping)} ms`}</dd>
         </div>
 
@@ -2517,12 +2542,12 @@ function ActiveMeasurementCard({
         </div>
 
         <div>
-          <dt>Phase</dt>
+          <dt>State</dt>
           <dd>{phaseState}</dd>
         </div>
 
         <div>
-          <dt>Latency variation</dt>
+          <dt>Spread</dt>
           <dd>{variation === null ? "waiting" : `${formatLatency(variation)} ms`}</dd>
         </div>
       </dl>

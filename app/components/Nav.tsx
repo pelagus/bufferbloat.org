@@ -1,19 +1,21 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Nav() {
   return (
     <nav className="site-nav">
       <Link href="/" className="site-logo">
-        <svg viewBox="0 0 64 64" aria-hidden="true" className="brand-mark">
-          <rect width="64" height="64" />
-          <path d="M10 48.5h44" />
-          <path d="M10 16v33" />
-          <path d="M15 39h6l5-5 5 5h6" />
-          <path className="brand-mark-load" d="M37 39h5l4-17 4 17h4" />
-          <path className="brand-mark-grid" d="M14 26h6M14 18h6M28 26h6M28 18h6" />
-        </svg>
+        <Image
+          src="/brand-dot.svg"
+          alt=""
+          aria-hidden="true"
+          className="brand-mark"
+          width={18}
+          height={18}
+          priority
+        />
         <span>bufferbloat.org</span>
       </Link>
 

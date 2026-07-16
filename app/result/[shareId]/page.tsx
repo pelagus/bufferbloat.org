@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { d1Query, ensureD1Columns } from "../../../lib/d1";
 import ApplicationIcon from "../../test/components/ApplicationIcon";
 import LocalMeasuredTime from "../../test/components/LocalMeasuredTime";
+import ResultPrintController from "../../test/components/ResultPrintController";
 import SharedResultActions, { SharedResultHeaderActions } from "../../test/components/SharedResultActions";
 
 export const dynamic = "force-dynamic";
@@ -188,7 +189,7 @@ function applicationCaveatFor(applications?: ApplicationScore[]) {
     .map((item) => item.name);
   const label = weakestTone === "poor" ? "poor" : "usable";
 
-  return `The bufferbloat behavior is good, but application fit is more specific: ${formatHumanList(weakestApplications)} ${weakestApplications.length === 1 ? "is" : "are"} rated ${label} for this run because baseline ping, latency variation, or throughput can still matter.`;
+  return `The bufferbloat behavior is good, but application fit is more specific: ${formatHumanList(weakestApplications)} ${weakestApplications.length === 1 ? "is" : "are"} rated ${label} for this run because baseline ping, latency spread, or throughput can still matter.`;
 }
 
 function practicalImpactFor(
@@ -344,11 +345,31 @@ function sampleMedian(samples: number[]) {
 function phaseLatencyVariation(samples: number[]) {
   if (samples.length < 2) return null;
 
-  const totalMovement = samples
-    .slice(1)
-    .reduce((total, sample, index) => total + Math.abs(sample - samples[index]), 0);
+  const median = sampleMedian(samples);
+  const p95 = samplePercentile(samples, 0.95);
 
-  return totalMovement / (samples.length - 1);
+  if (median === null || p95 === null) {
+    return null;
+  }
+
+  return Math.max(0, p95 - median);
+}
+
+function samplePercentile(samples: number[], percentile: number) {
+  if (!samples.length) return null;
+
+  const sorted = [...samples].sort((a, b) => a - b);
+  const clamped = Math.min(1, Math.max(0, percentile));
+  const position = (sorted.length - 1) * clamped;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+
+  if (lower === upper) {
+    return sorted[lower];
+  }
+
+  const weight = position - lower;
+  return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
 function chartAxisMax(value: number) {
@@ -432,7 +453,7 @@ function SharedLatencyChart({
   const variationBounds = variationBands.flatMap((item) =>
     item.median === null || item.variation === null
       ? []
-      : [Math.max(0, item.median - item.variation), item.median + item.variation]
+      : [item.median, item.median + item.variation]
   );
   const variationLabels = variationBands
     .map((band) => {
@@ -445,7 +466,7 @@ function SharedLatencyChart({
         className: band.className,
         x: band.range[0] + (band.range[1] - band.range[0]) / 2,
         y: chart.top + 18,
-        text: `latency variation ${formatLatency(band.variation)} ms`,
+        text: `latency spread ${formatLatency(band.variation)} ms`,
       };
     })
     .filter((label): label is {
@@ -481,7 +502,7 @@ function SharedLatencyChart({
     },
     {
       key: "download",
-      label: "Download load",
+      label: "Download on",
       className: "sample-download",
       range: ranges.download,
       values: samples.download,
@@ -489,7 +510,7 @@ function SharedLatencyChart({
     },
     {
       key: "upload",
-      label: "Upload load",
+      label: "Upload on",
       className: "sample-upload",
       range: ranges.upload,
       values: samples.upload,
@@ -529,8 +550,8 @@ function SharedLatencyChart({
         <strong>Latency / Ping in milliseconds</strong>
         <div className="latency-phase-legend" aria-hidden="true">
           <span className="idle">quiet line</span>
-          <span className="download">download load</span>
-          <span className="upload">upload load</span>
+          <span className="download">download on</span>
+          <span className="upload">upload on</span>
           <span className="reference">median ping</span>
         </div>
       </div>
@@ -560,13 +581,13 @@ function SharedLatencyChart({
           }
 
           const upperY = yFor(band.median + band.variation);
-          const lowerY = yFor(Math.max(0, band.median - band.variation));
+          const lowerY = yFor(band.median);
           const height = Math.max(2, lowerY - upperY);
 
           return (
             <rect
-              aria-label={`${band.key} latency variation band: ${formatLatency(band.variation)} ms`}
-              className={`latency-variation-band ${band.className}`}
+              aria-label={`${band.key} latency spread band: ${formatLatency(band.variation)} ms`}
+              className={`latency-spread-band ${band.className}`}
               key={band.key}
               x={band.range[0]}
               y={upperY}
@@ -574,14 +595,14 @@ function SharedLatencyChart({
               height={height}
             >
               <title>
-                Latency variation: average change between consecutive ping samples during this phase.
+                Latency spread: 95th percentile ping minus median ping during this phase.
               </title>
             </rect>
           );
         })}
 
         {variationLabels.map((label) => (
-          <g className={`latency-variation-label ${label.className}`} key={label.key}>
+          <g className={`latency-spread-label ${label.className}`} key={label.key}>
             <text x={label.x} y={label.y}>{label.text}</text>
           </g>
         ))}
@@ -629,9 +650,9 @@ function SharedLatencyChart({
           </g>
         ))}
 
-        <text className="chart-phase-label" x={chart.left + 10} y={354}>quiet</text>
-        <text className="chart-phase-label" x={chart.left + phaseWidth + 10} y={354}>download</text>
-        <text className="chart-phase-label" x={chart.left + phaseWidth * 2 + 10} y={354}>upload</text>
+        <text className="chart-phase-label" x={chart.left + 10} y={354}>quiet line</text>
+        <text className="chart-phase-label" x={chart.left + phaseWidth + 10} y={354}>download on</text>
+        <text className="chart-phase-label" x={chart.left + phaseWidth * 2 + 10} y={354}>upload on</text>
       </svg>
       <div className="chart-throughput" aria-label="Average throughput during load phases">
         <span className="download" aria-label={`download ${formatSpeed(downloadMbps)} Mb/s`}>
@@ -722,9 +743,9 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
   const downloadMbps = saved.downloadMbps ?? row.download_mbps;
   const uploadMbps = saved.uploadMbps ?? row.upload_mbps;
   const durationSeconds = saved.durationSeconds ?? row.duration_seconds;
-  const quietVariation = saved.quietVariationMs ?? saved.quietJitterMs ?? null;
-  const downloadVariation = saved.downloadVariationMs ?? saved.downloadJitterMs ?? null;
-  const uploadVariation = saved.uploadVariationMs ?? saved.uploadJitterMs ?? null;
+  const quietVariation = phaseLatencyVariation(samples.idle) ?? saved.quietVariationMs ?? saved.quietJitterMs ?? null;
+  const downloadVariation = phaseLatencyVariation(samples.download) ?? saved.downloadVariationMs ?? saved.downloadJitterMs ?? null;
+  const uploadVariation = phaseLatencyVariation(samples.upload) ?? saved.uploadVariationMs ?? saved.uploadJitterMs ?? null;
   const variationValues = [
     quietVariation,
     downloadVariation,
@@ -738,10 +759,10 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
     { metric: "Upload latency / ping", value: `${formatLatency(uploadLatencyMs)} ms`, unit: "ms" },
     { metric: "Download stress", value: formatDelta(downloadStressMs), unit: "ms" },
     { metric: "Upload stress", value: formatDelta(uploadStressMs), unit: "ms" },
-    { metric: "Quiet latency variation", value: `${formatLatency(quietVariation)} ms`, unit: "ms" },
-    { metric: "Download latency variation", value: `${formatLatency(downloadVariation)} ms`, unit: "ms" },
-    { metric: "Upload latency variation", value: `${formatLatency(uploadVariation)} ms`, unit: "ms" },
-    { metric: "Median latency variation", value: `${formatLatency(medianVariation)} ms`, unit: "ms" },
+    { metric: "Quiet latency spread", value: `${formatLatency(quietVariation)} ms`, unit: "ms" },
+    { metric: "Download latency spread", value: `${formatLatency(downloadVariation)} ms`, unit: "ms" },
+    { metric: "Upload latency spread", value: `${formatLatency(uploadVariation)} ms`, unit: "ms" },
+    { metric: "Median latency spread", value: `${formatLatency(medianVariation)} ms`, unit: "ms" },
     { metric: "Download speed", value: `${formatSpeed(downloadMbps)} Mbps`, unit: "Mbps" },
     { metric: "Upload speed", value: `${formatSpeed(uploadMbps)} Mbps`, unit: "Mbps" },
     { metric: "Test duration", value: formatDuration(durationSeconds), unit: "sec" },
@@ -762,6 +783,7 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
     <main className="test-shell">
       <div className="result-screen shared-result-screen">
         <section className="result-card result-scorecard terminal-card">
+          <ResultPrintController />
           <div className="result-compact-header">
             <div className="result-brand-lockup" aria-label="Bufferbloat.org">
               <strong>Bufferbloat.org</strong>

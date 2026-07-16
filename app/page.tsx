@@ -9,7 +9,7 @@ const homeStructuredData = {
   operatingSystem: "Any modern browser",
   isAccessibleForFree: true,
   description:
-    "An open-source browser-based bufferbloat test that explains why an internet connection can feel slow or unreliable even when speed tests look fast.",
+    "An open-source browser-based bufferbloat test that measures whether an internet connection stays usable when download and upload traffic are active.",
   codeRepository: "https://github.com/pelagus/bufferbloat.org",
 };
 
@@ -27,26 +27,25 @@ export default function Home() {
         <div className="home-hero-grid">
           <div className="hero-copy">
             <p className="home-project-label">
-              Open-source browser test. Public methodology. Inspectable results.
+              Free browser test. Public methodology. Inspectable results.
             </p>
 
             <h1>Bufferbloat.org</h1>
 
             <p className="hero-subtitle">
-              Your internet can be unstable even when ordinary speed tests say
-              it is fast.
+              Your internet can look fast in speed tests and still be
+              unreliable when the connection gets busy.
             </p>
 
             <p className="home-hero-description">
-              Megabits per second do not tell the whole story. Latency / ping
-              helps, but only when measured while the connection is doing real
-              work. Bufferbloat.org recreates busy conditions and gives you a
-              practical assessment of how your connection behaves in real life.
+              Bufferbloat is the hidden delay that can appear when data queues
+              up behind downloads, uploads, calls, games, or streaming.
+              We test whether your connection stays usable in real life.
             </p>
 
             <div className="home-hero-actions">
               <Link href="/test?start=1" className="hero-start-button">
-                Run test
+                Run bufferbloat test
               </Link>
 
               <div className="home-hero-links" aria-label="Project references">
@@ -98,7 +97,7 @@ export default function Home() {
                 <dd>+34 ms</dd>
               </div>
               <div>
-                <dt>Latency variation</dt>
+                <dt>Latency spread</dt>
                 <dd>12 ms</dd>
               </div>
             </dl>
@@ -192,12 +191,12 @@ export default function Home() {
             </dd>
           </div>
           <div>
-            <dt>Measures</dt>
+                <dt>Measures</dt>
             <dd>Latency under load</dd>
           </div>
           <div>
             <dt>Reports</dt>
-            <dd>Medians and throughput</dd>
+            <dd>Ping, load, and Mbps</dd>
           </div>
         </dl>
       </section>
@@ -205,31 +204,31 @@ export default function Home() {
       <section className="home-grid project-principles">
         <article>
           <span>Problem</span>
-          <h2>Throughput is not the whole story</h2>
+          <h2>Speed is a useful word, but an incomplete measurement</h2>
           <p>
-            A connection can show high Mbps and still feel unreliable if ping
-            rises when the line is busy. Calls freeze, games stutter, and pages
-            stall because responsiveness changed under real-world load.
+            Most speed tests measure throughput in Mbps. That matters, but it
+            does not show whether small, time-sensitive packets still move
+            promptly when the connection is already carrying traffic.
           </p>
         </article>
 
         <article>
           <span>Method</span>
-          <h2>Measure bufferbloat directly</h2>
+          <h2>Measure what happens when the line is busy</h2>
           <p>
-            The test samples quiet latency, then measures latency while
-            download and upload traffic are active. The goal is a practical
-            signal that users can understand and experts can inspect.
+            The test samples quiet-line ping, then repeats the measurement
+            during download load and upload load. The important signal is how
+            much latency changes under real pressure.
           </p>
         </article>
 
         <article>
           <span>Project</span>
-          <h2>A public reference for internet reliability</h2>
+          <h2>A public-interest test, not a black box</h2>
           <p>
-            Source code and methodology are public. The site keeps measurement
-            details and limitations visible so results can be checked, debated,
-            and improved.
+            Measuring connection quality should be free, transparent, and
+            accessible. Source code, methodology, and limitations are public so
+            results can be checked, debated, and improved.
           </p>
         </article>
       </section>
@@ -241,9 +240,12 @@ export default function Home() {
         </div>
 
         <p>
-          Bufferbloat.org is an independent open-source project. It documents
-          how the browser test works, links to source code, and keeps
-          limitations visible so the measurement can be evaluated and improved.
+          Bufferbloat.org exists because this kind of measurement should exist.
+          Internet connection quality is too important to be left to opaque and
+          gimmicky speed tests. The public test is free, open source, and will
+          never be supported by advertising. If the project needs funding to
+          operate at scale, funding must not compromise the methodology,
+          results, or user privacy.
         </p>
 
         <div className="home-reference-links">

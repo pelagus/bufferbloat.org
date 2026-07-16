@@ -5,9 +5,9 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export const metadata = {
-  title: "Bufferbloat Test",
+  title: "Bufferbloat Test - Measure Internet Quality Under Load",
   description:
-    "Run an open-source bufferbloat test to see whether your internet connection stays reliable when download and upload traffic are active.",
+    "Run a free open-source bufferbloat test to see whether latency / ping stays stable while download and upload traffic are active.",
   alternates: {
     canonical: "https://bufferbloat.org/test",
   },

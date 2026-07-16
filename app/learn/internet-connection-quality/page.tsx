@@ -24,7 +24,7 @@ const guide: SeoGuide = {
   calloutLabel: "real-world quality check",
   calloutTitle: "Measure how the connection behaves while it is busy.",
   calloutBody:
-    "Run the bufferbloat test to get a scorecard with quiet-line ping, loaded ping, latency variation, throughput, and application performance estimates.",
+    "Run the bufferbloat test to get a scorecard with quiet-line ping, loaded ping, latency spread, throughput, and application performance estimates.",
   cards: [
     {
       label: "Throughput",
@@ -39,10 +39,10 @@ const guide: SeoGuide = {
         "Ping shows response time. Testing it under load shows whether the line stays usable in real conditions.",
     },
     {
-      label: "Variation",
+      label: "Spread",
       title: "How consistent it feels",
       body:
-        "Large latency variation can make calls, games, and interactive work feel uneven even when averages look acceptable.",
+        "Large latency spread can make calls, games, and interactive work feel uneven even when averages look acceptable.",
     },
   ],
   notes: [

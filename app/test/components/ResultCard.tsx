@@ -5,6 +5,7 @@ import type { Grade } from "../../../lib/test-copy";
 import ApplicationIcon from "./ApplicationIcon";
 import { severityClass } from "./diagnosis";
 import LocalMeasuredTime from "./LocalMeasuredTime";
+import ResultPrintController from "./ResultPrintController";
 
 type TechnicalRow = {
   section: string;
@@ -95,6 +96,7 @@ export default function ResultCard({
 
   return (
     <section className="result-card result-scorecard terminal-card">
+      <ResultPrintController />
       <div className="result-compact-header">
         <div className="result-brand-lockup" aria-label="Bufferbloat.org">
           <strong>Bufferbloat.org</strong>

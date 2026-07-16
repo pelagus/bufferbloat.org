@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <filter id="dot-shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#111418" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <circle cx="32" cy="32" r="19" fill="#fff" stroke="#fff" stroke-width="8"/>
+  <circle cx="32" cy="32" r="14" fill="#ffe8e2" stroke="#ff5a5f" stroke-width="10" filter="url(#dot-shadow)"/>
+</svg>

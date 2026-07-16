@@ -24,7 +24,7 @@ const guide: SeoGuide = {
   calloutLabel: "stability under load",
   calloutTitle: "Measure whether the network stays steady when traffic starts.",
   calloutBody:
-    "The browser test produces a scorecard with quiet-line ping, loaded ping, throughput, latency variation, and a bufferbloat grade.",
+    "The browser test produces a scorecard with quiet-line ping, loaded ping, throughput, latency spread, and a bufferbloat grade.",
   cards: [
     {
       label: "01",

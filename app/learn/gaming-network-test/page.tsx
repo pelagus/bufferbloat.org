@@ -20,11 +20,11 @@ const guide: SeoGuide = {
   eyebrow: "gaming network test",
   title: "Gaming network test",
   intro:
-    "Online games are sensitive to latency and latency variation. Bufferbloat.org checks whether ping stays stable when download and upload traffic are active, instead of only measuring idle ping.",
+    "Online games are sensitive to latency and latency spread. Bufferbloat.org checks whether ping stays stable when download and upload traffic are active, instead of only measuring idle ping.",
   calloutLabel: "low-latency games",
   calloutTitle: "Check whether load makes your ping jump.",
   calloutBody:
-    "Run the test to see quiet-line ping, loaded ping, latency variation, and an application performance estimate for low-latency games.",
+    "Run the test to see quiet-line ping, loaded ping, latency spread, and an application performance estimate for low-latency games.",
   cards: [
     {
       label: "Ping",
@@ -39,10 +39,10 @@ const guide: SeoGuide = {
         "Games can suffer when downloads, uploads, or other devices make packets wait in queues.",
     },
     {
-      label: "Variation",
+      label: "Spread",
       title: "Consistency matters",
       body:
-        "Even when average ping looks acceptable, large variation can make movement and hit registration feel uneven.",
+        "Even when average ping looks acceptable, a large latency spread can make movement and hit registration feel uneven.",
     },
   ],
   notes: [

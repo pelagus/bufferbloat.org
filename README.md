@@ -10,7 +10,7 @@ Most internet speed tests measure **throughput**: how many megabits per second y
 
 ## Why this exists
 
-Bufferbloat.org exists because ordinary internet speed tests leave an important question unanswered:
+Bufferbloat.org exists because speed tests leave an important question unanswered:
 
 > **"Why is my internet still laggy if I have 500 Mbps?"**
 

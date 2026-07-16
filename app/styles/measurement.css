@@ -827,10 +827,11 @@
 
 .test-progress-current {
   display: grid;
-  grid-template-columns: minmax(150px, auto) minmax(0, 1fr);
-  gap: 3px 18px;
+  grid-template-columns: minmax(128px, 0.95fr) minmax(280px, 1.65fr) minmax(180px, 1fr);
+  gap: 4px 18px;
   align-items: baseline;
   color: var(--fg);
+  min-height: 46px;
 }
 
 .test-progress-current span {
@@ -842,15 +843,15 @@
 }
 
 .test-progress-current strong {
-  grid-column: 1;
-  grid-row: 2;
+  grid-column: 2;
+  grid-row: 1 / span 2;
   font-size: clamp(18px, 1.7vw, 26px);
   font-weight: 520;
   line-height: 1.05;
 }
 
 .test-progress-current p {
-  grid-column: 2;
+  grid-column: 3;
   grid-row: 1 / span 2;
   margin: 0;
   color: color-mix(in srgb, var(--fg) 76%, var(--muted));
@@ -875,18 +876,23 @@
 
 .test-progress-track {
   position: relative;
-  height: 12px;
+  height: 13px;
   overflow: hidden;
-  border-color: var(--line);
+  border: 1px solid color-mix(in srgb, var(--fg) 16%, var(--line));
+  border-radius: 999px;
   background:
     repeating-linear-gradient(
       90deg,
-      color-mix(in srgb, var(--fg) 8%, transparent) 0,
-      color-mix(in srgb, var(--fg) 8%, transparent) 1px,
+      color-mix(in srgb, var(--fg) 9%, transparent) 0,
+      color-mix(in srgb, var(--fg) 9%, transparent) 1px,
       transparent 1px,
-      transparent 12px
+      transparent 15px
     ),
-    var(--bg);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--soft) 46%, var(--bg)),
+      color-mix(in srgb, var(--bg) 88%, var(--soft))
+    );
 }
 
 .test-progress-track span {
@@ -894,39 +900,46 @@
   display: block;
   height: 100%;
   overflow: hidden;
+  border-radius: inherit;
   background:
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--fg) 92%, var(--good)),
-      color-mix(in srgb, var(--fg) 82%, var(--blue))
+      color-mix(in srgb, #184344 84%, var(--blue)),
+      color-mix(in srgb, var(--blue) 58%, #23505b)
     );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff 18%, transparent);
   transition: width 420ms ease;
 }
 
 .test-progress-track span::after {
-  content: "• • •";
+  content: "";
   position: absolute;
-  top: 50%;
-  right: 7px;
-  color: color-mix(in srgb, #ffffff 86%, var(--bg));
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 10px;
-  font-weight: 620;
-  letter-spacing: 1px;
-  line-height: 1;
-  opacity: 0.72;
-  transform: translateY(-50%);
-  animation: progressPulseDots 1200ms ease-in-out infinite;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.18) 42%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0.18) 58%,
+      transparent 100%
+    );
+  opacity: 0.55;
+  transform: translateX(-115%);
+  animation: progressRailSweep 2600ms ease-in-out infinite;
 }
 
-@keyframes progressPulseDots {
-  0%,
-  100% {
-    opacity: 0.38;
+@keyframes progressRailSweep {
+  0% {
+    transform: translateX(-115%);
   }
 
-  50% {
-    opacity: 0.9;
+  48% {
+    transform: translateX(115%);
+  }
+
+  100% {
+    transform: translateX(115%);
   }
 }
 
@@ -947,9 +960,10 @@
   }
 
   .foreground-run-notice {
-    grid-template-columns: minmax(190px, 0.34fr) minmax(0, 1fr) 74px;
+    grid-template-columns: minmax(160px, 0.72fr) minmax(320px, 1.75fr) minmax(190px, 1fr) 58px;
     gap: 7px 12px;
     align-items: end;
+    min-height: 92px;
     padding: 8px 10px 9px;
   }
 
@@ -968,7 +982,7 @@
   .foreground-run-notice .test-progress-meta strong {
     align-self: start;
     justify-self: end;
-    grid-column: 3;
+    grid-column: 4;
     grid-row: 1;
     font-size: 15px;
     font-weight: 520;
@@ -976,11 +990,12 @@
 
   .foreground-run-notice .test-progress-current {
     display: grid;
-    grid-column: 2;
+    grid-column: 2 / 4;
     grid-row: 1 / span 2;
-    grid-template-columns: minmax(170px, max-content) minmax(0, 1fr);
-    gap: 3px 14px;
+    grid-template-columns: minmax(280px, 1.45fr) minmax(190px, 1fr);
+    gap: 3px 18px;
     align-items: baseline;
+    min-height: 48px;
   }
 
   .foreground-run-notice .test-progress-current span {
@@ -999,6 +1014,7 @@
     grid-row: 1 / span 2;
     font-size: clamp(11px, 0.9vw, 13px);
     line-height: 1.28;
+    min-width: 0;
   }
 
   .foreground-run-notice .test-progress-track {
@@ -1050,8 +1066,10 @@
   isolation: isolate;
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr);
-  gap: 2px 8px;
-  min-height: 52px;
+  grid-template-rows: 1fr 12px;
+  align-items: center;
+  gap: 3px 8px;
+  min-height: 58px;
   padding: 8px 10px 9px;
   border-right: 1px solid var(--line);
   background: var(--bg);
@@ -1177,6 +1195,9 @@
 }
 
 .procedure-stage-grid li > span {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: center;
   width: 24px;
   height: 24px;
   border-radius: 0;
@@ -1288,8 +1309,23 @@
 }
 
 .procedure-stage-grid strong {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
   font-size: clamp(14px, 1.05vw, 17px);
   line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.procedure-stage-grid em {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  min-height: 12px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .procedure-auxiliary {
@@ -1716,6 +1752,20 @@
   padding: 8px 10px;
 }
 
+.active-measurement-header > div:last-child {
+  min-width: 0;
+}
+
+.active-measurement-header strong {
+  display: block;
+  color: var(--fg);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(20px, 1.9vw, 28px);
+  font-weight: 420;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+
 .active-link-load {
   display: grid;
   gap: 7px;
@@ -2093,7 +2143,7 @@
   fill: color-mix(in srgb, var(--purple) 10%, transparent);
 }
 
-.latency-phase-chart .latency-variation-band {
+.latency-phase-chart .latency-spread-band {
   opacity: 0.28;
   vector-effect: non-scaling-stroke;
 }
@@ -2110,7 +2160,7 @@
   fill: color-mix(in srgb, var(--purple) 72%, transparent);
 }
 
-.latency-phase-chart .latency-variation-label text {
+.latency-phase-chart .latency-spread-label text {
   font-family: var(--font-geist-mono), monospace;
   font-size: 10.5px;
   font-weight: 520;
@@ -2120,15 +2170,15 @@
   text-anchor: middle;
 }
 
-.latency-phase-chart .latency-variation-label.variation-idle text {
+.latency-phase-chart .latency-spread-label.variation-idle text {
   fill: color-mix(in srgb, var(--fg) 74%, var(--muted));
 }
 
-.latency-phase-chart .latency-variation-label.variation-download text {
+.latency-phase-chart .latency-spread-label.variation-download text {
   fill: color-mix(in srgb, var(--blue) 86%, var(--fg));
 }
 
-.latency-phase-chart .latency-variation-label.variation-upload text {
+.latency-phase-chart .latency-spread-label.variation-upload text {
   fill: color-mix(in srgb, var(--purple) 88%, var(--fg));
 }
 
@@ -4252,8 +4302,8 @@
   }
 
   .foreground-run-notice {
-    gap: 5px;
-    padding: 7px 8px;
+    gap: 6px;
+    padding: 9px 10px;
   }
 
   .test-progress-meta {
@@ -4266,7 +4316,7 @@
 
   .test-progress-current {
     grid-template-columns: 1fr;
-    gap: 2px;
+    gap: 3px;
   }
 
   .test-progress-current span,
@@ -4277,16 +4327,18 @@
   }
 
   .test-progress-current strong {
-    font-size: 18px;
+    font-size: clamp(16px, 4.7vw, 19px);
+    line-height: 1.12;
   }
 
   .test-progress-current p {
-    font-size: 11px;
-    line-height: 1.22;
+    max-width: 62ch;
+    font-size: 12px;
+    line-height: 1.3;
   }
 
   .test-progress-track {
-    height: 9px;
+    height: 10px;
   }
 
   .live-chart-layout {
@@ -4312,9 +4364,9 @@
   }
 
   .procedure-stage-grid li {
-    grid-template-columns: 21px minmax(0, 1fr);
+    grid-template-columns: 22px minmax(0, 1fr);
     min-height: 44px;
-    padding: 7px 7px 8px;
+    padding: 8px 8px 9px;
   }
 
   .procedure-stage-grid li > span {
@@ -4324,7 +4376,7 @@
   }
 
   .procedure-stage-grid strong {
-    font-size: 12px;
+    font-size: clamp(11px, 3.1vw, 13px);
   }
 
   .procedure-stage-grid em {
@@ -4341,15 +4393,42 @@
   }
 
   .live-chart-layout .live-measurement-strip {
-    grid-template-columns: minmax(132px, 0.45fr) minmax(0, 1fr);
+    grid-template-columns: minmax(180px, 0.52fr) minmax(0, 1fr);
     grid-template-rows: auto;
-    max-height: 124px;
+    max-height: 120px;
   }
 
   .live-chart-layout .live-measurement-strip .active-measurement-header {
     border-right: 1px solid var(--line);
     border-bottom: 0;
-    padding: 7px 8px;
+    padding: 7px 9px;
+  }
+
+  .live-chart-layout .live-measurement-strip .active-measurement-header .stage-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 19px;
+  }
+
+  .live-chart-layout .active-measurement-header span {
+    font-size: 10px;
+    line-height: 1.1;
+  }
+
+  .live-chart-layout .active-measurement-header strong {
+    font-size: clamp(17px, 4.9vw, 19px);
+    line-height: 1.06;
+    white-space: nowrap;
+  }
+
+  .live-chart-layout .active-link-load {
+    gap: 5px;
+    margin-top: 6px;
+  }
+
+  .live-chart-layout .active-link-load span {
+    gap: 6px;
+    font-size: 9px;
   }
 
   .live-chart-layout .live-measurement-grid {
@@ -4358,12 +4437,18 @@
 
   .live-chart-layout .live-measurement-grid div {
     min-height: 0;
-    padding: 6px 7px;
+    padding: 6px 8px;
+  }
+
+  .live-chart-layout .live-measurement-grid dt {
+    font-size: 9px;
+    line-height: 1.1;
   }
 
   .live-chart-layout .live-measurement-grid dd {
     margin-top: 2px;
-    font-size: 13px;
+    font-size: 12px;
+    line-height: 1.12;
   }
 
   .latency-phase-chart.result svg {
@@ -4664,8 +4749,10 @@
     width: calc(100% - 28px);
   }
 
+  .live-chart-layout .live-measurement-strip,
   .live-measurement-strip {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(180px, 0.52fr) minmax(0, 1fr);
+    max-height: 120px;
   }
 
   .live-chart-layout {
@@ -4673,9 +4760,9 @@
   }
 
   .live-measurement-strip .active-measurement-header {
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    padding: 8px 10px;
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+    padding: 7px 8px;
   }
 
   .live-measurement-grid {
@@ -4683,15 +4770,21 @@
   }
 
   .live-measurement-grid div {
-    padding: 8px 9px;
+    padding: 6px 7px;
   }
 
   .live-measurement-grid dt {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .live-measurement-grid dd {
-    font-size: clamp(15px, 4.2vw, 20px);
+    font-size: clamp(12px, 3.5vw, 15px);
+  }
+
+  .live-chart-layout .active-measurement-header strong,
+  .active-measurement-header strong {
+    font-size: clamp(17px, 4.9vw, 19px);
+    white-space: nowrap;
   }
 
   .latency-phase-chart svg {
@@ -4863,6 +4956,177 @@
   }
 }
 
+@media screen and (min-width: 1200px) {
+  .test-shell {
+    padding-top: clamp(10px, 1.15vh, 18px);
+    padding-right: max(28px, calc((100vw - 1760px) / 2));
+    padding-bottom: clamp(10px, 1.3vh, 20px);
+    padding-left: max(28px, calc((100vw - 1760px) / 2));
+    background:
+      linear-gradient(
+        90deg,
+        transparent 0,
+        transparent max(22px, calc((100vw - 1760px) / 2 + 7px)),
+        color-mix(in srgb, var(--line) 58%, transparent) max(22px, calc((100vw - 1760px) / 2 + 7px)),
+        color-mix(in srgb, var(--line) 58%, transparent) max(23px, calc((100vw - 1760px) / 2 + 8px)),
+        transparent max(23px, calc((100vw - 1760px) / 2 + 8px))
+      ),
+      radial-gradient(
+        circle at 17% 6%,
+        color-mix(in srgb, var(--good) 9%, transparent),
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 84% 10%,
+        color-mix(in srgb, var(--blue) 7%, transparent),
+        transparent 38%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--bg) 88%, var(--soft)) 0,
+        color-mix(in srgb, var(--soft) 64%, var(--bg)) 100%
+      );
+  }
+
+  .test-page-heading {
+    max-width: 1760px;
+  }
+
+  .instrument-panel {
+    gap: 10px;
+    min-height: min(760px, calc(100svh - 112px));
+    height: calc(100svh - 112px);
+    max-height: calc(100svh - 112px);
+    padding: 10px !important;
+    border-color: color-mix(in srgb, var(--fg) 18%, var(--line));
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bg) 94%, var(--quiet) 6%) 0%,
+        color-mix(in srgb, var(--bg) 93%, var(--blue) 6%) 54%,
+        color-mix(in srgb, var(--bg) 93%, var(--purple) 7%) 100%
+      ) !important;
+  }
+
+  .foreground-run-notice {
+    border-color: color-mix(in srgb, var(--fg) 18%, var(--line));
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--fg) 4%, var(--bg)) 0%,
+        color-mix(in srgb, var(--blue) 5%, var(--bg)) 56%,
+        color-mix(in srgb, var(--purple) 6%, var(--bg)) 100%
+      );
+    padding: 10px 12px 11px;
+  }
+
+  .test-progress-track {
+    height: 14px;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--fg) 10%, transparent) 0,
+        color-mix(in srgb, var(--fg) 10%, transparent) 1px,
+        transparent 1px,
+        transparent 15px
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--soft) 50%, var(--bg)),
+        color-mix(in srgb, var(--bg) 88%, var(--soft))
+      );
+  }
+
+  .procedure-stage-grid {
+    border-color: color-mix(in srgb, var(--fg) 16%, var(--line));
+  }
+
+  .procedure-stage-grid li {
+    min-height: 64px;
+    padding: 12px 14px;
+  }
+
+  .procedure-stage-grid li.idle,
+  .procedure-stage-grid li.complete.idle {
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--quiet) 22%, var(--bg)),
+        color-mix(in srgb, var(--quiet) 10%, var(--bg))
+      );
+  }
+
+  .procedure-stage-grid li.download,
+  .procedure-stage-grid li.complete.download {
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--blue) 18%, var(--bg)),
+        color-mix(in srgb, var(--blue) 8%, var(--bg))
+      );
+  }
+
+  .procedure-stage-grid li.upload,
+  .procedure-stage-grid li.complete.upload {
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--purple) 18%, var(--bg)),
+        color-mix(in srgb, var(--purple) 8%, var(--bg))
+      );
+  }
+
+  .live-chart-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.21fr);
+    gap: 10px;
+  }
+
+  .live-chart-layout .latency-phase-chart.live,
+  .live-chart-layout .live-measurement-strip {
+    border-color: color-mix(in srgb, var(--fg) 16%, var(--line));
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--bg) 96%, var(--soft)) 0%,
+        color-mix(in srgb, var(--soft) 36%, var(--bg)) 100%
+      );
+  }
+
+  .live-chart-layout .latency-phase-chart.live svg {
+    height: 100%;
+  }
+
+  .live-chart-layout .live-measurement-strip {
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 54%, transparent);
+  }
+
+  .latency-phase-chart.live .phase-zone {
+    opacity: 0.5;
+  }
+
+  .latency-phase-chart.live .latency-line {
+    opacity: 0.9;
+    stroke-width: 2;
+  }
+
+  .latency-phase-chart.live .latency-line.completed {
+    opacity: 0.58;
+    stroke-width: 1.9;
+  }
+
+  .latency-phase-chart.live .latency-sample-marker .sample-dot {
+    opacity: 0.72;
+  }
+
+  .latency-phase-chart.live .latency-sample-marker.completed .sample-dot {
+    opacity: 0.46;
+  }
+
+  .live-chart-layout .live-measurement-grid dd {
+    font-size: clamp(15px, 1.05vw, 19px);
+  }
+}
+
 @media (max-height: 620px) {
   .test-shell.interstitial-active {
     padding-top: 8px;
@@ -4964,14 +5228,14 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm;
+    margin: 0;
   }
 
   html,
   body {
     background: #ffffff !important;
-    width: 210mm;
-    min-height: 297mm;
+    width: auto !important;
+    min-height: auto !important;
   }
 
   body * {
@@ -4985,12 +5249,14 @@
   }
 
   .site-nav,
+  .result-header-actions,
   .result-print-button,
+  .result-share-button,
+  .result-share-panel,
   .result-rerun-button,
   .result-share-actions,
   .result-action-buttons,
   .result-scorecard .signup-card,
-  .result-scorecard .technical-details,
   .result-scorecard .methodology-row {
     display: none !important;
   }
@@ -4999,12 +5265,15 @@
     display: block !important;
     padding: 0 !important;
     width: 100% !important;
+    border: 0 !important;
+    background: #ffffff !important;
   }
 
   .result-screen {
     width: 100% !important;
     max-width: none !important;
     margin: 0 !important;
+    padding: 0 !important;
     transform: none !important;
   }
 
@@ -5012,8 +5281,9 @@
     position: static !important;
     width: 100% !important;
     max-width: none !important;
-    min-height: 245mm !important;
-    border: 1px solid #111111 !important;
+    min-height: 297mm !important;
+    border: 0 !important;
+    box-shadow: none !important;
     background: #ffffff !important;
     color: #111111 !important;
     print-color-adjust: exact;
@@ -5022,7 +5292,7 @@
 
   .result-compact-header {
     grid-template-columns: 1fr !important;
-    padding: 8mm 9mm 6mm !important;
+    padding: 9mm 10mm 6mm !important;
   }
 
   .result-brand-lockup strong {
@@ -5114,5 +5384,117 @@
     break-inside: avoid;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+  }
+
+  .result-scorecard .technical-details {
+    display: block !important;
+    break-before: page;
+    border-top: 1px solid #111111 !important;
+    border-bottom: 0 !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+    padding: 8mm 10mm 10mm !important;
+  }
+
+  .result-scorecard .technical-details summary {
+    display: block !important;
+    min-height: 0 !important;
+    border: 0 !important;
+    padding: 0 0 5mm !important;
+    list-style: none !important;
+    pointer-events: none !important;
+  }
+
+  .result-scorecard .technical-details summary::-webkit-details-marker {
+    display: none !important;
+  }
+
+  .result-scorecard .technical-summary-label {
+    display: block !important;
+  }
+
+  .result-scorecard .technical-summary-label::after {
+    display: none !important;
+  }
+
+  .result-scorecard .technical-summary-label strong {
+    display: block !important;
+    color: #111111 !important;
+    font-family: var(--font-geist-mono), monospace !important;
+    font-size: 16pt !important;
+    font-weight: 560 !important;
+    line-height: 1.1 !important;
+  }
+
+  .result-scorecard .technical-summary-label small {
+    display: block !important;
+    margin-top: 2mm !important;
+    color: #555555 !important;
+    font-family: var(--font-geist-mono), monospace !important;
+    font-size: 8.5pt !important;
+  }
+
+  .result-scorecard .technical-details:not([open]) > :not(summary) {
+    display: block !important;
+  }
+
+  .result-scorecard .technical-table-header {
+    display: block !important;
+    border: 0 !important;
+    padding: 0 0 4mm !important;
+  }
+
+  .result-scorecard .technical-export-button {
+    display: none !important;
+  }
+
+  .result-scorecard .technical-methodology-link {
+    color: #333333 !important;
+    font-size: 8.5pt !important;
+    text-decoration: none !important;
+  }
+
+  .result-scorecard .technical-details table {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;
+    font-size: 7.5pt !important;
+    line-height: 1.25 !important;
+  }
+
+  .result-scorecard .technical-details thead {
+    display: table-header-group !important;
+  }
+
+  .result-scorecard .technical-details tbody {
+    display: table-row-group !important;
+  }
+
+  .result-scorecard .technical-details tr {
+    display: table-row !important;
+    break-inside: avoid !important;
+  }
+
+  .result-scorecard .technical-details th,
+  .result-scorecard .technical-details td {
+    display: table-cell !important;
+    border: 1px solid #d0d4d8 !important;
+    padding: 2.1mm 2.4mm !important;
+    color: #111111 !important;
+    vertical-align: top !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .result-scorecard .technical-details th {
+    width: 34% !important;
+    background: #f2f4f6 !important;
+    font-weight: 560 !important;
+  }
+
+  .result-scorecard .technical-details td {
+    width: 66% !important;
+    background: #ffffff !important;
   }
 }

@@ -99,13 +99,20 @@ The primary latency values are:
 - download stress, calculated as download-loaded median minus quiet median
 - upload stress, calculated as upload-loaded median minus quiet median
 - worst loaded latency, calculated as the higher of the two loaded medians
+- latency spread, calculated for each phase as 95th percentile latency minus
+  median latency
 
 The result page also exposes a technical-details table with the measurement
 record used for the scorecard, including phase medians, stress deltas,
-throughput estimates, scored sample counts, raw scored latency sample lists,
-recorded sample ranges, traffic generation notes, and application-fit scoring.
-That table can be exported as a CSV file for independent inspection or
-comparison.
+latency spread, throughput estimates, scored sample counts, raw scored
+latency sample lists, recorded sample ranges, traffic generation notes, and
+application-fit scoring. That table can be exported as a CSV file for
+independent inspection or comparison.
+
+Latency spread uses a 95th-percentile spread rather than the single worst
+sample. This is intended to capture the upper-end ping instability a user is
+likely to feel while reducing the chance that one isolated browser or network
+hiccup dominates the interpretation.
 
 ## Grading
 

@@ -1,8 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="#f4f6f7"/>
-  <path d="M10 48.5h44" fill="none" stroke="#111418" stroke-width="3" stroke-linecap="square"/>
-  <path d="M10 16v33" fill="none" stroke="#111418" stroke-width="3" stroke-linecap="square"/>
-  <path d="M15 39h6l5-5 5 5h6" fill="none" stroke="#111418" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
-  <path d="M37 39h5l4-17 4 17h4" fill="none" stroke="#16803f" stroke-width="4.5" stroke-linecap="square" stroke-linejoin="miter"/>
-  <path d="M14 26h6M14 18h6M28 26h6M28 18h6" fill="none" stroke="#9aa3ad" stroke-width="2" stroke-linecap="square"/>
+  <defs>
+    <filter id="median-shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#111418" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+  <circle cx="32" cy="32" r="19" fill="#fff" stroke="#fff" stroke-width="8"/>
+  <circle cx="32" cy="32" r="14" fill="#ffe8e2" stroke="#ff5a5f" stroke-width="10" filter="url(#median-shadow)"/>
 </svg>

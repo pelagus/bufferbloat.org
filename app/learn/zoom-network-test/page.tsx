@@ -24,7 +24,7 @@ const guide: SeoGuide = {
   calloutLabel: "independent browser test",
   calloutTitle: "Measure the network behavior that affects video meetings.",
   calloutBody:
-    "Bufferbloat.org is not affiliated with Zoom. It measures quiet ping, loaded ping, throughput, and latency variation so you can see whether the line stays usable during meeting-like conditions.",
+    "Bufferbloat.org is not affiliated with Zoom. It measures quiet ping, loaded ping, throughput, and latency spread so you can see whether the line stays usable during meeting-like conditions.",
   cards: [
     {
       label: "Latency",

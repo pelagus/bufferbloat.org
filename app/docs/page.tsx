@@ -89,22 +89,22 @@ const technicalDetailFields = [
       "Higher of the download-loaded and upload-loaded median latency values.",
   },
   {
-    variable: "quiet_latency_variation_ms",
+    variable: "quiet_latency_spread_ms",
     value: "milliseconds",
     description:
-      "Average absolute change between consecutive scored latency / ping samples during the quiet phase. This helps show how consistent the connection was before intentional load.",
+      "95th percentile scored latency / ping minus the median during the quiet phase. This shows the upper-end spread of normal ping before intentional load.",
   },
   {
-    variable: "download_latency_variation_ms",
+    variable: "download_latency_spread_ms",
     value: "milliseconds",
     description:
-      "Average absolute change between consecutive scored latency / ping samples during download load. This is used as a supporting signal for application performance.",
+      "95th percentile scored latency / ping minus the median during download load. This is used as a supporting signal for application performance.",
   },
   {
-    variable: "upload_latency_variation_ms",
+    variable: "upload_latency_spread_ms",
     value: "milliseconds",
     description:
-      "Average absolute change between consecutive scored latency / ping samples during upload load. This is used as a supporting signal for application performance.",
+      "95th percentile scored latency / ping minus the median during upload load. This is used as a supporting signal for application performance.",
   },
   {
     variable: "download_throughput_mbps",
@@ -194,7 +194,7 @@ const technicalDetailFields = [
     variable: "web_browsing_score",
     value: "0-100 score",
     description:
-      "Application-fit score for web browsing, derived from loaded latency, latency movement, and a light latency-variation adjustment.",
+      "Application-fit score for web browsing, derived from loaded latency, latency movement, and a light latency-spread adjustment.",
   },
   {
     variable: "video_streaming_score",
@@ -206,19 +206,19 @@ const technicalDetailFields = [
     variable: "audio_calls_score",
     value: "0-100 score",
     description:
-      "Application-fit score for audio calls, derived from baseline latency, latency movement, latency variation, and minimum upload capacity.",
+      "Application-fit score for audio calls, derived from baseline latency, latency movement, latency spread, and minimum upload capacity.",
   },
   {
     variable: "video_calls_score",
     value: "0-100 score",
     description:
-      "Application-fit score for video calls, derived from baseline latency, latency movement, latency variation, download throughput, and upload throughput.",
+      "Application-fit score for video calls, derived from baseline latency, latency movement, latency spread, download throughput, and upload throughput.",
   },
   {
     variable: "low_latency_games_score",
     value: "0-100 score",
     description:
-      "Application-fit score for low-latency games, weighted toward low baseline latency, low added latency under load, and low latency variation.",
+      "Application-fit score for low-latency games, weighted toward low baseline latency, low added latency under load, and low latency spread.",
   },
   {
     variable: "cloud_backup_score",
@@ -305,9 +305,10 @@ export default function Page() {
           streams, and repeated 1 MB upload chunks across three streams. The
           result grade is primarily about latency stability under load; low
           throughput is reported separately and is not automatically treated as
-          bufferbloat. Latency variation is computed from the scored latency
-          samples as the average sample-to-sample change, and used as a
-          supporting signal, especially for application-performance estimates.
+          bufferbloat. Latency spread is computed from the scored latency
+          samples as 95th percentile ping minus median ping for each phase, and
+          used as a supporting signal, especially for application-performance
+          estimates.
         </p>
 
         <p>
@@ -322,15 +323,15 @@ export default function Page() {
         <p>
           Results show quiet latency, download stress, upload stress, download
           throughput, upload throughput, and test duration. The completed chart
-          uses black for quiet samples, blue for download-loaded samples, purple
-          for upload-loaded samples, and red median lines for the final
-          comparison.
+          uses orange for quiet-line samples, blue for download-loaded samples,
+          purple for upload-loaded samples, and highlighted median ping dots
+          for the final comparison.
         </p>
 
         <p>
           The technical-details drawer contains the structured measurement
           record used by the scorecard: phase medians, stress deltas,
-          latency variation, throughput estimates, scored sample counts, raw scored
+          latency spread, throughput estimates, scored sample counts, raw scored
           latency sample lists, sample ranges, method notes, and
           application-performance scoring. The same record can be exported as
           CSV for review.

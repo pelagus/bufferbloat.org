@@ -463,18 +463,23 @@
 
 .test-progress-track {
   position: relative;
-  height: 12px;
+  height: 13px;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--fg) 18%, var(--line));
+  border-radius: 999px;
   background:
     repeating-linear-gradient(
       90deg,
       color-mix(in srgb, var(--fg) 7%, transparent) 0,
       color-mix(in srgb, var(--fg) 7%, transparent) 1px,
       transparent 1px,
-      transparent 12px
+      transparent 15px
     ),
-    var(--bg);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--soft) 48%, var(--bg)),
+      color-mix(in srgb, var(--bg) 88%, var(--soft))
+    );
 }
 
 .test-progress-track span {
@@ -483,21 +488,14 @@
   height: 100%;
   min-width: 3px;
   overflow: hidden;
+  border-radius: inherit;
   background:
-    repeating-linear-gradient(
-      110deg,
-      rgba(255, 255, 255, 0.18) 0,
-      rgba(255, 255, 255, 0.18) 6px,
-      transparent 6px,
-      transparent 15px
-    ),
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--good) 72%, var(--fg)),
-      color-mix(in srgb, var(--blue) 52%, var(--good))
+      color-mix(in srgb, #184344 84%, var(--blue)),
+      color-mix(in srgb, var(--blue) 58%, #23505b)
     );
-  background-size: 28px 28px, 100% 100%;
-  animation: progressFillDrift 1600ms linear infinite;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff 18%, transparent);
   transition: width 420ms ease;
 }
 
@@ -513,7 +511,8 @@
       transparent
     );
   transform: translateX(-100%);
-  animation: progressTrustSweep 2200ms ease-in-out infinite;
+  opacity: 0.55;
+  animation: progressTrustSweep 2600ms ease-in-out infinite;
 }
 
 @keyframes progressTrustSweep {
@@ -527,16 +526,6 @@
 
   100% {
     transform: translateX(120%);
-  }
-}
-
-@keyframes progressFillDrift {
-  from {
-    background-position: 0 0, 0 0;
-  }
-
-  to {
-    background-position: 28px 0, 0 0;
   }
 }
 

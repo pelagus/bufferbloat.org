@@ -35,6 +35,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.72,
     },
     {
+      url: "https://bufferbloat.org/learn/latency-spread-vs-jitter",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
       url: "https://bufferbloat.org/learn/internet-latency-test",
       lastModified,
       changeFrequency: "monthly",
@@ -93,6 +99,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "monthly",
       priority: 0.72,
+    },
+    {
+      url: "https://bufferbloat.org/learn/what-bufferbloat-speed-test-measures",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.7,
     },
     {
       url: "https://bufferbloat.org/mission",

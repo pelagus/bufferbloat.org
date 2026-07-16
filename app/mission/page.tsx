@@ -19,28 +19,32 @@ export default function Page() {
         <h1 className="page-title compact">Why this exists</h1>
 
         <p className="mission-lede">
-          I built Bufferbloat.org because I could not find the tool I wanted.
+          Internet connection quality is too important to be left to opaque
+          and gimmicky speed tests.
         </p>
       </section>
 
       <section className="mission-prose" aria-label="Project mission">
         <p>
-          Most people are told to judge their internet connection by download
-          speed. More technical users know to look at ping. Both are useful, but
-          neither fully explains a question millions of people ask every day:
-          why is my internet still laggy if I have hundreds of megabits per
-          second?
+          Most people are told to judge their internet connection by speed.
+          More technical users know to look at ping. Both are useful, but they
+          still leave out the question people actually feel in daily life: does
+          the connection stay usable when the line is busy?
         </p>
 
         <p>
-          A connection can deliver excellent throughput while video calls
-          freeze, games stutter, websites hesitate, and remote desktops become
-          frustrating to use. The problem is often not bandwidth. It is latency
-          under load.
+          Speed tests mostly report throughput: how much data can move through
+          the connection. Ping tests report how quickly the connection responds
+          while it is quiet. Bufferbloat is the missing measurement: what
+          happens to response time when downloads, uploads, calls, games, and
+          other traffic are competing for the same connection?
         </p>
 
         <p>
-          That is the problem Bufferbloat.org measures.
+          A connection can show impressive throughput and a decent quiet ping,
+          then still make video calls freeze, games stutter, websites hesitate,
+          and remote desktops feel broken once the network gets busy. That is
+          the problem Bufferbloat.org measures.
         </p>
 
         <p>
@@ -55,22 +59,20 @@ export default function Page() {
         <p>
           Networking researchers have understood this for years, and there are
           excellent research projects and commercial products in this space. But
-          I was surprised by how few open, transparent, browser-based tools
-          existed for measuring it.
+          I could not find the tool I wanted: a fast, transparent, browser-based
+          test that anyone could use, inspect, share, and improve.
         </p>
 
         <p>
-          I wanted a tool whose methodology anyone could inspect, whose
-          implementation anyone could verify, and whose measurements anyone
-          could improve. A test that measures not just how much data your
-          connection can move, but how well it continues to respond while moving
-          it.
+          Bufferbloat.org exists to make that missing measurement accessible. It
+          measures not just how much data your connection can move, but how well
+          it continues to respond while moving it.
         </p>
 
         <p>
           Bufferbloat.org is an independent open-source project built around
           that principle. The code is open. The methodology is public. The
-          limitations are documented. The goal is to make internet reliability
+          limitations are documented. The goal is to make connection quality
           easier to measure, easier to understand, and easier to discuss.
         </p>
 
@@ -78,12 +80,13 @@ export default function Page() {
           I have spent more than two decades working on internet products and
           infrastructure, and the same pattern keeps coming back: the web gets
           better when important systems can be inspected, measured, questioned,
-          and improved in public. Bufferbloat.org is my attempt to apply that
-          idea to internet reliability.
+          and improved in public. Bufferbloat.org is an attempt to apply that
+          idea to the basic act of understanding whether a connection works well
+          in real life.
         </p>
 
         <p className="mission-closing">
-          Because internet performance is about more than megabits per second.
+          Because internet connection quality is more than speed and ping.
         </p>
       </section>
 
@@ -101,7 +104,7 @@ export default function Page() {
           <span>02</span>
           <h2>Loaded latency</h2>
           <p>
-            The test focuses on reliability while a connection is busy, not
+            The test focuses on what happens when the connection is busy, not
             only on idle ping or peak throughput.
           </p>
         </article>

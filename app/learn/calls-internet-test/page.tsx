@@ -57,7 +57,7 @@ const guide: SeoGuide = {
       title: "What the result tells you",
       body: [
         "The scorecard ranks application performance and shows the measured latency trace, so you can see whether the line stayed close to normal or became unstable under pressure.",
-        "For calls, the most important signals are loaded latency and latency variation, not only download speed.",
+        "For calls, the most important signals are loaded latency and latency spread, not only download speed.",
       ],
     },
   ],

@@ -34,9 +34,9 @@ const guide: SeoGuide = {
     },
     {
       label: "02",
-      title: "Latency variation",
+      title: "Latency spread",
       body:
-        "Variation matters because calls, games, and remote work can feel uneven when ping moves around under load.",
+        "Spread matters because calls, games, and remote work can feel uneven when the upper end of ping rises under load.",
     },
     {
       label: "03",

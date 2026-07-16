@@ -16,38 +16,8 @@
 
 .site-logo .brand-mark {
   flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-}
-
-.site-logo .brand-mark rect {
-  fill: #f4f6f7;
-}
-
-.site-logo .brand-mark path {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: square;
-  stroke-linejoin: miter;
-}
-
-.site-logo .brand-mark path:nth-of-type(1),
-.site-logo .brand-mark path:nth-of-type(2) {
-  stroke-width: 3;
-}
-
-.site-logo .brand-mark path:nth-of-type(3) {
-  stroke-width: 4;
-}
-
-.site-logo .brand-mark .brand-mark-load {
-  stroke: #16803f;
-  stroke-width: 4.5;
-}
-
-.site-logo .brand-mark .brand-mark-grid {
-  stroke: var(--muted);
-  stroke-width: 2;
+  width: 18px;
+  height: 18px;
 }
 
 .site-links {
