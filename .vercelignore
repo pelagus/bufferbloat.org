@@ -1,1 +1,16 @@
 upload-sink
+node_modules
+.next
+.env
+.env*
+.env.local
+.env*.local
+.DS_Store
+*.zip
+
+data/signups.json
+
+.wrangler
+local-only/
+START_HERE.txt
+.vercel
