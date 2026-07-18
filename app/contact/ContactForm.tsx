@@ -50,6 +50,16 @@ export default function ContactForm() {
     }
   }
 
+  if (state === "success") {
+    return (
+      <div className="contact-form-success" role="status">
+        <p className="contact-form-message good">
+          {message || "Thanks. Your message was sent."}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <form className="contact-form" onSubmit={submit}>
       <input
@@ -73,12 +83,13 @@ export default function ContactForm() {
       </label>
 
       <label>
-        <span>Email address (optional)</span>
+        <span>Email address</span>
         <input
           autoComplete="email"
           inputMode="email"
           name="email"
           placeholder="you@example.com"
+          required
           type="email"
         />
       </label>

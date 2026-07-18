@@ -15,8 +15,6 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
 }
 
 function isEmail(value: string) {
-  if (!value) return true;
-
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
@@ -268,9 +266,16 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!emailValue) {
+    return NextResponse.json(
+      { ok: false, message: "Add your email address before sending." },
+      { status: 400 }
+    );
+  }
+
   if (!isEmail(emailValue)) {
     return NextResponse.json(
-      { ok: false, message: "Use a valid email address or leave it blank." },
+      { ok: false, message: "Use a valid email address." },
       { status: 400 }
     );
   }

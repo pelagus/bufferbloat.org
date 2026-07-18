@@ -2437,6 +2437,20 @@
   font-size: 14px !important;
 }
 
+.contact-page .contact-form-success {
+  width: 100%;
+  max-width: 720px;
+  border: 1px solid color-mix(in srgb, #2f8f4e 46%, var(--line));
+  background: color-mix(in srgb, #2f8f4e 9%, var(--bg));
+  padding: 16px;
+}
+
+.contact-page .contact-form-success .contact-form-message {
+  font-size: 16px !important;
+  font-weight: 520;
+  line-height: 1.5;
+}
+
 .contact-page .contact-form-message.good {
   color: #2f8f4e !important;
 }
