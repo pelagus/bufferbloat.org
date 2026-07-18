@@ -38,10 +38,17 @@ medians:
 Warm-up and result computation still happen, but they are shown as preparation
 and calculation states rather than scored measurement phases.
 
-The result page shows these three scored phases as a latency trace. Quiet
-samples are shown in black, download-loaded samples in blue, and upload-loaded
-samples in purple. Final phase medians are overlaid in red on the completed
-chart.
+The result page shows these three scored phases as raw latency samples with a
+binned median trend. Quiet samples are shown in black, download-loaded samples
+in blue, and upload-loaded samples in purple. Final phase medians are overlaid
+in red on the completed chart.
+
+The chart uses a robust vertical scale so a one-off extreme ping does not
+flatten the main pattern. The visible scale is based on the upper end of the
+sample distribution and the median-plus-spread anchors. Samples above the
+visible scale are clipped to the top edge and marked as high spikes. Their raw
+values are still preserved in the tooltip, technical table, CSV export, and
+score calculation.
 
 For accuracy, the running test asks the user to keep the tab in the foreground.
 If the tab leaves the foreground, the run is stopped instead of silently
@@ -114,6 +121,15 @@ sample. This is intended to capture the upper-end ping instability a user is
 likely to feel while reducing the chance that one isolated browser or network
 hiccup dominates the interpretation.
 
+Because each browser phase may only contain a few dozen scored samples, p95 is
+treated as a diagnostic tail-latency signal rather than the main estimate of
+network quality. Rare stalls remain visible in the chart, raw samples, technical
+details, and CSV export, but application-fit scoring uses a more robust
+upper-tail estimate when sample counts are small. In those smaller runs the
+application layer leans closer to p90-style spread, so one or two isolated
+spikes can raise spike-risk wording without overwhelming ratings that should be
+based on sustained behavior.
+
 ## Grading
 
 The bufferbloat grade compares quiet latency with latency under download and
@@ -129,8 +145,9 @@ applications, but low bandwidth by itself is not scored as bufferbloat.
 
 The application-fit list on the result page is an interpretation layer. It ranks
 common uses of the connection using measured latency under load, latency
-movement, and relevant throughput. It is intentionally kept separate from the
-core bufferbloat grade so that the raw measurement remains inspectable.
+movement, robust tail latency, and relevant throughput. It is intentionally kept
+separate from the core bufferbloat grade so that the raw measurement remains
+inspectable.
 
 ## Privacy and exported data
 

@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Why We Don’t Show Jitter",
+  title: "Why We Use Latency Spread, not Jitter",
   description:
     "Why latency spread is a better signal than ordinary ping or jitter for real-world network reliability.",
   alternates: {
     canonical: "https://bufferbloat.org/learn/latency-spread-vs-jitter",
   },
   openGraph: {
-    title: "Why We Don’t Show Jitter",
+    title: "Why We Use Latency Spread, not Jitter",
     description:
       "Why latency spread is a better signal than ordinary ping or jitter for real-world network reliability.",
     url: "https://bufferbloat.org/learn/latency-spread-vs-jitter",
@@ -21,14 +21,15 @@ export default function Page() {
     <main className="page-shell resource-page">
       <p className="eyebrow">measurement guide</p>
 
-      <h1 className="page-title compact">Why We Don&rsquo;t Show Jitter</h1>
+      <h1 className="page-title compact">Why We Use Latency Spread, not Jitter</h1>
 
       <p className="page-copy">
-        TLDR: most speed tests ask an incomplete question. Speed matters, and
-        ordinary ping helps, but neither tells you whether the connection stays
-        reliable when it is busy. Bufferbloat.org uses latency spread because it
-        is a better signal of real-life network reliability: how far the bad
-        ping moments drift from the normal ones.
+        Bufferbloat.org does not show a generic jitter number because the
+        question we care about is more specific: how far do the high-delay ping
+        samples move away from the median during quiet, download, and upload
+        load? We call that latency spread, and it is one of the signals the
+        <Link href="/learn/what-bufferbloat-speed-test-measures"> bufferbloat
+        test measures</Link>.
       </p>
 
       <div className="resource-top-action">
@@ -37,97 +38,156 @@ export default function Page() {
       </div>
 
       <section className="resource-note">
-        <h2>Why speed and ordinary ping miss the point</h2>
+        <h2>What latency spread is measuring</h2>
         <p>
-          The common frustration is simple: a connection can look good in a
-          speed test and still feel unreliable in real life. A call is clear,
-          then someone sounds robotic. A game responds, then one action lands
-          late. A page starts loading, then pauses because someone else is using
-          the line.
+          Latency spread is the gap between the median ping and the 95th
+          percentile ping in a phase of the test. You do not need the notation
+          to read the scorecard, but for completeness the calculation is:
+        </p>
+
+        <p className="resource-formula" aria-label="Latency spread formula">
+          <span>latency spread</span>
+          <strong>=</strong>
+          <span>P<sub>95</sub>(ping)</span>
+          <strong>-</strong>
+          <span>P<sub>50</sub>(ping)</span>
         </p>
 
         <p>
-          Looking at speed alone is not enough, because speed mostly tells you
-          how much data can move. Looking at one ping number is not enough
-          either, because a typical ping can hide the moments where delay jumps
-          high enough to be felt.
+          <Link href="/learn/median-ping-vs-average-ping">Median ping</Link>{" "}
+          is the center of the measured samples. P<sub>95</sub> is near the
+          high end: high enough to reflect bad delay moments, but less fragile
+          than using the single worst ping. Latency spread is the distance
+          between those two points.
         </p>
 
         <p>
-          But connection quality is more than both of those numbers. The real
-          question is whether the connection stays predictable when the line is
-          busy. Bufferbloat is one common reason it does not: delay can build up
-          during downloads or uploads, even on a connection that looks fine when
-          it is idle.
+          Another way to read P<sub>95</sub>: sort the scored pings from lowest
+          to highest, then look near the 95% mark. About 95% of the measured
+          pings are at or below that value, so it represents the upper-delay
+          behavior without handing the result to one isolated spike.
         </p>
 
         <p>
-          That is where latency spread becomes useful. It is not asking for the
-          single worst moment. It asks how far the high-delay moments drift from
-          the normal ping during each part of the test.
+          This is deliberately different from showing a vague jitter number.
+          Jitter can mean several different calculations depending on the tool.
+          Latency spread says exactly what is being compared and why it matters
+          for a browser bufferbloat test. If you want the broader context, read
+          how <Link href="/learn/latency-under-load">latency under load</Link>{" "}
+          works.
         </p>
       </section>
 
-      <section className="resource-diagram-block" aria-labelledby="same-median-heading">
+      <section className="resource-diagram-block" aria-labelledby="model-comparison-heading">
         <div>
           <p className="eyebrow">visual model</p>
-          <h2 id="same-median-heading">Same typical ping, different experience</h2>
+          <h2 id="model-comparison-heading">Three summaries, three different answers</h2>
           <p>
-            Two connections can have the same typical ping and still feel very
-            different. The one with wider spread has more moments where packets
-            take noticeably longer than usual. Those moments are what people
-            experience as calls breaking up, games feeling late, or remote work
-            becoming uneven.
+            The same ping samples can be summarized as average jitter, worst
+            ping, or latency spread. Average jitter focuses on sample-to-sample
+            movement. Worst ping focuses on one sample. Latency spread focuses
+            on the upper-delay behavior relative to the median.
           </p>
         </div>
-        <SameMedianDiagram />
+        <LatencyModelDiagram />
       </section>
 
       <section className="resource-note">
         <h2>Why we do not call this jitter</h2>
         <p>
-          Jitter is a real networking term, but in consumer tests it often
-          becomes a vague label. Different tools calculate it differently, and
-          many speed tests do not explain which definition they are using. The
-          result can look precise while still being hard to interpret.
+          Jitter is a real networking term, but speed tests often use it as a
+          loose label for several different ideas. Sometimes it means the
+          average change from one ping sample to the next. Sometimes users read
+          the worst ping in a run as if it were the instability number. Those
+          are related signals, but they answer different questions.
+        </p>
+
+        <p>
+          Average sample-to-sample jitter can hide the problem we care about:
+          a line can look calm most of the time and still have a few
+          high-delay moments that disrupt calls or games. Worst ping has the
+          opposite problem: it can overreact to one isolated browser pause,
+          Wi-Fi hiccup, or scheduling delay. That is why this page pairs with
+          the separate explanation of <Link href="/learn/median-ping-vs-average-ping">why
+          the test uses median ping</Link>.
         </p>
 
         <p>
           Bufferbloat.org uses the more literal term latency spread because it
-          says what the scorecard is actually showing: how much room there is
-          between the normal ping and the higher-delay moments seen during
-          quiet, download, and upload phases.
+          says what the scorecard is actually showing: how much distance there
+          is between the median ping and the upper end of the measured pings
+          during quiet, download, and upload phases.
         </p>
+      </section>
+
+      <section className="metric-decision-block" aria-labelledby="latency-spread-decision-question">
+        <p className="metric-decision-question" id="latency-spread-decision-question">
+          <strong>Question:</strong> which number best captures the high-delay
+          moments users feel without letting one odd ping sample dominate the
+          result?
+        </p>
+
+        <div className="resource-grid metric-choice-grid" aria-label="Why latency spread is used instead of jitter or worst ping">
+          <article>
+            <span>Average jitter</span>
+            <h2>Can smooth over the bad moments</h2>
+            <p>
+              Usually the average change between neighboring ping samples. Useful
+              in some packet analysis, but it can hide short high-delay periods
+              that users actually feel.
+            </p>
+          </article>
+
+          <article>
+            <span>Worst ping</span>
+            <h2>Can overreact to one sample</h2>
+            <p>
+              Easy to understand, but brittle in a browser. One Wi-Fi retry,
+              browser pause, or scheduling hiccup can become the whole story.
+            </p>
+          </article>
+
+          <article>
+            <span>Latency spread</span>
+            <h2>Best fit for this test</h2>
+            <p>
+              Uses p95 minus median. It catches repeated high-delay behavior while
+              avoiding the fragility of grading the run by a single outlier.
+            </p>
+          </article>
+        </div>
       </section>
 
       <section className="resource-note">
         <h2>How the test calculates it</h2>
         <p>
           For each phase, the test records ping samples. It finds the median,
-          which is the typical ping for that phase. It also finds the 95th
-          percentile, which sits near the high end of the samples without being
-          the single worst outlier. Latency spread is the difference between
-          those two values.
+          which is the center of the sampled pings for that phase. It also
+          finds the 95th percentile, which sits near the high end of the samples
+          without being the single worst outlier. Latency spread is the
+          difference between those two values.
         </p>
 
         <p>
           This makes the number practical rather than theatrical. It still sees
           the uncomfortable upper end of the run, but it does not let one
           strange browser hiccup define the whole connection. The exact exported
-          field is documented in the <Link href="/docs#technical-detail-export-fields">technical details</Link>.
+          field is documented in the <Link href="/docs#technical-detail-export-fields">technical
+          details</Link>, and the measurement flow is described in the{" "}
+          <Link href="/docs">methodology</Link>.
         </p>
       </section>
 
       <section className="resource-diagram-block" aria-labelledby="p95-heading">
         <div>
-          <p className="eyebrow">why not worst ping</p>
-          <h2 id="p95-heading">One spike should not define the result</h2>
+          <p className="eyebrow">p95 versus maximum</p>
+          <h2 id="p95-heading">Why p95 is not the same as worst ping</h2>
           <p>
-            The maximum ping is tempting because it is dramatic. It is also
-            fragile. A single browser pause, Wi-Fi hiccup, or tab scheduling
-            delay can make the maximum look worse than the connection usually
-            behaves. The 95th percentile keeps the focus on bad moments that
-            are present in the run, not just the single tallest spike.
+            The maximum ping is the single highest sample. The 95th percentile
+            is still near the high end, but it is less exposed to one-off noise.
+            That is why latency spread uses p95 rather than the maximum: it
+            measures the upper-delay behavior of the run, not just the most
+            dramatic dot on the chart.
           </p>
         </div>
         <PercentileDiagram />
@@ -137,7 +197,7 @@ export default function Page() {
         <h2>How to read it</h2>
         <p>
           Smaller is steadier. A low latency spread means the worse moments
-          stayed close to the typical ping. A high latency spread means the
+          stayed close to the median ping. A high latency spread means the
           connection had enough delay swings to feel uneven, especially for
           calls, low-latency games, and interactive work.
         </p>
@@ -147,6 +207,8 @@ export default function Page() {
           the main question: did download or upload load add delay? Latency
           spread answers the follow-up: even if the median looks acceptable,
           did the samples stay tight enough for the connection to feel stable?
+          That is also why the result includes an <Link href="/learn/internet-connection-quality">internet
+          connection quality</Link> scorecard rather than one isolated number.
         </p>
 
         <p>
@@ -157,147 +219,225 @@ export default function Page() {
         </p>
       </section>
 
-      <div className="resource-links">
-        <Link href="/learn/latency-under-load">
-          Latency under load
-        </Link>
-        <Link href="/learn/what-bufferbloat-speed-test-measures">
-          What the test measures
-        </Link>
-        <Link href="/learn/bufferbloat-speed-test">
-          Bufferbloat speed test
-        </Link>
-        <Link href="/learn">Back to Learn</Link>
-      </div>
+      <section className="guide-test-callout" aria-label="Run the bufferbloat test">
+        <div className="guide-test-copy">
+          <span>check your own line</span>
+          <h2>See whether latency spread shows up on your connection.</h2>
+          <p>
+            Run the test and compare quiet-line ping with what happens while
+            download and upload load are active. The result shows latency
+            spread beside the measured chart, not as a vague jitter number.
+          </p>
+
+          <div className="guide-test-actions">
+            <Link href="/test?start=1" className="guide-primary-action">
+              Run the bufferbloat test
+            </Link>
+            <Link href="/docs#technical-detail-export-fields" className="guide-secondary-action">
+              Read the technical fields
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="resource-related" aria-label="Continue reading">
+        <p className="eyebrow">continue reading</p>
+        <h2>Related measurement guides</h2>
+        <div className="resource-links">
+          <Link href="/learn/median-ping-vs-average-ping">
+            Why we use median ping
+          </Link>
+          <Link href="/learn/latency-under-load">
+            Latency under load
+          </Link>
+          <Link href="/learn/what-bufferbloat-speed-test-measures">
+            What the test measures
+          </Link>
+          <Link href="/learn">Back to Learn</Link>
+        </div>
+      </section>
     </main>
   );
 }
 
-function SameMedianDiagram() {
+function LatencyModelDiagram() {
   return (
-    <figure className="latency-spread-diagram">
+    <figure className="latency-spread-diagram model-comparison-diagram">
       <svg
-        aria-labelledby="same-median-svg-title same-median-svg-desc"
+        aria-labelledby="model-comparison-svg-title model-comparison-svg-desc"
         role="img"
-        viewBox="0 0 760 320"
+        viewBox="0 0 920 430"
       >
-        <title id="same-median-svg-title">Two latency traces with the same median but different spread</title>
-        <desc id="same-median-svg-desc">
-          A steady connection and an uneven connection share the same median
-          ping line, but the uneven connection reaches a much higher 95th
-          percentile.
+        <title id="model-comparison-svg-title">Three ways to summarize the same ping samples</title>
+        <desc id="model-comparison-svg-desc">
+          A latency chart with quiet, download, and upload phases shows why
+          latency spread is measured from the median to the 95th percentile.
         </desc>
         <defs>
-          <pattern id="spread-grid" width="38" height="32" patternUnits="userSpaceOnUse">
-            <path d="M 38 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeOpacity="0.08" />
+          <pattern id="model-grid" width="36" height="32" patternUnits="userSpaceOnUse">
+            <path d="M 36 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeOpacity="0.08" />
           </pattern>
         </defs>
-        <rect className="diagram-panel" x="1" y="1" width="758" height="318" rx="0" />
-        <rect className="diagram-grid" x="32" y="34" width="696" height="230" fill="url(#spread-grid)" />
+        <rect className="diagram-panel" x="1" y="1" width="918" height="428" rx="0" />
+        <text className="diagram-card-title" x="34" y="36">same measured trace</text>
+        <text className="diagram-axis-label" x="704" y="36">Latency / Ping in milliseconds</text>
 
-        <line className="diagram-axis" x1="68" y1="246" x2="708" y2="246" />
-        <line className="diagram-axis" x1="68" y1="56" x2="68" y2="246" />
-        <text className="diagram-axis-label" x="34" y="62">ms</text>
-        <text className="diagram-axis-label" x="88" y="280">steady line</text>
-        <text className="diagram-axis-label" x="446" y="280">same median, wider spread</text>
+        <g transform="translate(62 64)">
+          <rect className="diagram-grid" x="0" y="0" width="796" height="260" fill="url(#model-grid)" />
+          <rect className="diagram-phase-quiet" x="48" y="26" width="214" height="198" />
+          <rect className="diagram-phase-download" x="262" y="26" width="252" height="198" />
+          <rect className="diagram-phase-upload" x="514" y="26" width="250" height="198" />
 
-        <line className="diagram-median" x1="82" y1="176" x2="688" y2="176" />
-        <text className="diagram-median-label" x="580" y="165">median ping</text>
+          <line className="diagram-axis" x1="48" y1="224" x2="764" y2="224" />
+          <line className="diagram-axis" x1="48" y1="26" x2="48" y2="224" />
+          <line className="diagram-section-rule" x1="262" y1="26" x2="262" y2="224" />
+          <line className="diagram-section-rule" x1="514" y1="26" x2="514" y2="224" />
 
-        <polyline
-          className="diagram-line diagram-line-steady"
-          points="88,178 118,174 148,177 178,175 208,178 238,173 268,176 298,174 328,177"
-        />
-        <circle className="diagram-dot diagram-dot-steady" cx="118" cy="174" r="4" />
-        <circle className="diagram-dot diagram-dot-steady" cx="238" cy="173" r="4" />
+          <text className="diagram-axis-label" x="16" y="32">ms</text>
+          <text className="diagram-axis-label" x="16" y="224">0</text>
+          <text className="diagram-axis-label" x="10" y="126">100</text>
+          <text className="diagram-axis-label" x="10" y="32">200</text>
 
-        <polyline
-          className="diagram-line diagram-line-spread"
-          points="418,177 448,174 478,180 508,146 538,178 568,120 598,176 628,96 658,174"
-        />
-        <circle className="diagram-dot diagram-dot-spread" cx="568" cy="120" r="4" />
-        <circle className="diagram-dot diagram-dot-spread" cx="628" cy="96" r="4" />
+          <polyline
+            className="diagram-line diagram-line-quiet"
+            points="66,162 86,156 106,164 126,158 146,166 166,154 186,160 206,118 226,166 246,158"
+          />
+          <polyline
+            className="diagram-line diagram-line-download"
+            points="284,164 304,158 324,166 344,152 364,170 384,124 404,160 424,150 444,136 464,166 494,154"
+          />
+          <polyline
+            className="diagram-line diagram-line-upload"
+            points="536,164 556,156 576,172 596,150 616,168 636,108 656,92 676,146 696,166 716,156 744,162"
+          />
 
-        <line className="diagram-p95" x1="418" y1="104" x2="674" y2="104" />
-        <text className="diagram-p95-label" x="438" y="92">95th percentile</text>
-        <path className="diagram-bracket" d="M 692 104 L 708 104 L 708 176 L 692 176" />
-        <text className="diagram-spread-label" x="606" y="145">spread</text>
+          {[
+            [66, 162], [86, 156], [106, 164], [126, 158], [146, 166],
+            [166, 154], [186, 160], [206, 118], [226, 166], [246, 158],
+          ].map(([cx, cy]) => (
+            <circle className="diagram-dot diagram-dot-quiet" cx={cx} cy={cy} key={`q-${cx}`} r="3.5" />
+          ))}
+          {[
+            [284, 164], [304, 158], [324, 166], [344, 152], [364, 170],
+            [384, 124], [404, 160], [424, 150], [444, 136], [464, 166], [494, 154],
+          ].map(([cx, cy]) => (
+            <circle className="diagram-dot diagram-dot-download" cx={cx} cy={cy} key={`d-${cx}`} r="3.5" />
+          ))}
+          {[
+            [536, 164], [556, 156], [576, 172], [596, 150], [616, 168],
+            [636, 108], [656, 92], [676, 146], [696, 166], [716, 156], [744, 162],
+          ].map(([cx, cy]) => (
+            <circle className="diagram-dot diagram-dot-upload" cx={cx} cy={cy} key={`u-${cx}`} r="3.5" />
+          ))}
+
+          <line className="diagram-median" x1="536" y1="160" x2="744" y2="160" />
+          <circle className="diagram-median-dot" cx="628" cy="160" r="9" />
+          <text className="diagram-median-label" x="596" y="150">median ping</text>
+
+          <line className="diagram-p95" x1="536" y1="110" x2="744" y2="110" />
+          <circle className="diagram-p95-dot" cx="636" cy="108" r="6" />
+          <text className="diagram-p95-label" x="546" y="100">95th percentile</text>
+
+          <path className="diagram-bracket" d="M 778 110 L 790 110 L 790 160 L 778 160" />
+          <text className="diagram-spread-label" x="644" y="132">latency spread</text>
+
+          <text className="diagram-stage-label diagram-label-quiet" x="126" y="248">quiet line</text>
+          <text className="diagram-stage-label diagram-label-download" x="348" y="248">download load</text>
+          <text className="diagram-stage-label diagram-label-upload" x="606" y="248">upload load</text>
+        </g>
+
+        <g className="diagram-legend" transform="translate(76 378)">
+          <line className="diagram-line-quiet" x1="0" y1="0" x2="34" y2="0" />
+          <text x="44" y="5">quiet line</text>
+          <line className="diagram-line-download" x1="160" y1="0" x2="194" y2="0" />
+          <text x="204" y="5">download load</text>
+          <line className="diagram-line-upload" x1="356" y1="0" x2="390" y2="0" />
+          <text x="400" y="5">upload load</text>
+          <circle className="diagram-median-dot" cx="560" cy="0" r="7" />
+          <text x="574" y="5">median ping</text>
+          <line className="diagram-p95" x1="704" y1="0" x2="738" y2="0" />
+          <text x="748" y="5">p95</text>
+        </g>
       </svg>
       <figcaption>
-        Latency spread separates a steady connection from one that is often
-        fine but has enough high-delay moments to feel unreliable.
+        Latency spread is read on the same kind of trace the test produces:
+        find the median ping, find the high-end P95 point, then measure the
+        distance between them.
       </figcaption>
     </figure>
   );
 }
 
 function PercentileDiagram() {
-  const samples = [
-    { x: 74, y: 180 },
-    { x: 114, y: 176 },
-    { x: 154, y: 178 },
-    { x: 194, y: 172 },
-    { x: 234, y: 179 },
-    { x: 274, y: 170 },
-    { x: 314, y: 176 },
-    { x: 354, y: 134 },
-    { x: 394, y: 150 },
-    { x: 434, y: 122 },
-    { x: 474, y: 158 },
-    { x: 514, y: 140 },
-    { x: 554, y: 112 },
-    { x: 594, y: 146 },
-    { x: 634, y: 74 },
-    { x: 674, y: 172 },
-  ];
-
   return (
     <figure className="latency-spread-diagram percentile-diagram">
       <svg
         aria-labelledby="percentile-svg-title percentile-svg-desc"
         role="img"
-        viewBox="0 0 760 300"
+        viewBox="0 0 860 360"
       >
         <title id="percentile-svg-title">95th percentile spread compared with worst ping</title>
         <desc id="percentile-svg-desc">
-          Ping samples cluster around a median with several high-delay samples.
-          The 95th percentile ignores the single highest outlier while still
-          representing the upper end.
+          A live-test-style ping trace shows median ping, 95th percentile ping,
+          and the single worst ping. The 95th percentile is near the high end
+          without being the isolated maximum.
         </desc>
-        <rect className="diagram-panel" x="1" y="1" width="758" height="298" rx="0" />
-        <line className="diagram-axis" x1="58" y1="236" x2="704" y2="236" />
-        <line className="diagram-axis" x1="58" y1="48" x2="58" y2="236" />
-        <text className="diagram-axis-label" x="26" y="54">ms</text>
+        <defs>
+          <pattern id="percentile-grid" width="34" height="30" patternUnits="userSpaceOnUse">
+            <path d="M 34 0 L 0 0 0 30" fill="none" stroke="currentColor" strokeOpacity="0.08" />
+          </pattern>
+        </defs>
+        <rect className="diagram-panel" x="1" y="1" width="858" height="358" rx="0" />
+        <text className="diagram-card-title" x="32" y="34">how P95 is picked</text>
+        <text className="diagram-axis-label" x="600" y="34">one scored phase of ping samples</text>
 
-        <line className="diagram-median" x1="72" y1="176" x2="692" y2="176" />
-        <text className="diagram-median-label" x="74" y="164">median</text>
-        <line className="diagram-p95" x1="72" y1="122" x2="692" y2="122" />
-        <text className="diagram-p95-label" x="74" y="110">95th percentile</text>
-        <line className="diagram-worst" x1="72" y1="74" x2="692" y2="74" />
-        <text className="diagram-worst-label" x="74" y="62">single worst sample</text>
+        <g transform="translate(54 62)">
+          <rect className="diagram-grid" x="0" y="0" width="752" height="232" fill="url(#percentile-grid)" />
+          <rect className="diagram-phase-upload" x="54" y="24" width="612" height="174" />
+          <line className="diagram-axis" x1="54" y1="198" x2="666" y2="198" />
+          <line className="diagram-axis" x1="54" y1="24" x2="54" y2="198" />
+          <text className="diagram-axis-label" x="16" y="30">ms</text>
+          <text className="diagram-axis-label" x="18" y="198">0</text>
+          <text className="diagram-axis-label" x="10" y="116">100</text>
+          <text className="diagram-axis-label" x="10" y="30">200</text>
 
-        <polyline
-          className="diagram-line diagram-line-spread"
-          points={samples.map((sample) => `${sample.x},${sample.y}`).join(" ")}
-        />
-        {samples.map((sample) => (
-          <circle
-            className={sample.y <= 78 ? "diagram-dot diagram-dot-worst" : "diagram-dot diagram-dot-spread"}
-            cx={sample.x}
-            cy={sample.y}
-            key={`${sample.x}-${sample.y}`}
-            r={sample.y <= 78 ? 5 : 3.5}
+          <polyline
+            className="diagram-line diagram-line-upload"
+            points="74,150 104,146 134,154 164,148 194,152 224,144 254,150 284,96 314,148 344,142 374,82 404,150 434,146 464,138 494,154 524,88 554,150 584,32 614,146 646,152"
           />
-        ))}
 
-        <path className="diagram-bracket" d="M 718 122 L 734 122 L 734 176 L 718 176" />
-        <text className="diagram-spread-label" x="578" y="153">reported spread</text>
-        <path className="diagram-soft-arrow" d="M 628 76 C 664 92 682 104 694 122" />
-        <text className="diagram-note" x="448" y="46">not driven by one spike</text>
+          {[
+            [74, 150], [104, 146], [134, 154], [164, 148], [194, 152],
+            [224, 144], [254, 150], [284, 96], [314, 148], [344, 142],
+            [374, 82], [404, 150], [434, 146], [464, 138], [494, 154],
+            [524, 88], [554, 150], [584, 32], [614, 146], [646, 152],
+          ].map(([cx, cy]) => (
+            <circle className="diagram-dot diagram-dot-upload" cx={cx} cy={cy} key={`p-${cx}`} r="3.8" />
+          ))}
+
+          <line className="diagram-median" x1="74" y1="148" x2="646" y2="148" />
+          <circle className="diagram-median-dot" cx="314" cy="148" r="9" />
+          <text className="diagram-median-label" x="270" y="136">median ping</text>
+
+          <line className="diagram-p95" x1="74" y1="88" x2="646" y2="88" />
+          <circle className="diagram-p95-dot" cx="524" cy="88" r="7" />
+          <text className="diagram-p95-label" x="430" y="76">P95 ping</text>
+
+          <circle className="diagram-dot diagram-dot-worst" cx="584" cy="32" r="6" />
+          <line className="diagram-worst" x1="74" y1="32" x2="646" y2="32" />
+          <text className="diagram-worst-label" x="488" y="20">single worst ping</text>
+
+          <path className="diagram-bracket" d="M 680 88 L 696 88 L 696 148 L 680 148" />
+          <text className="diagram-spread-label" x="532" y="122">latency spread</text>
+
+          <path className="diagram-soft-arrow" d="M 516 92 C 482 112 442 124 404 136" />
+          <text className="diagram-note" x="292" y="220">about 95% of samples are at or below P95</text>
+        </g>
       </svg>
       <figcaption>
-        The 95th percentile still sees the uncomfortable upper tail, but it is
-        less fragile than grading the whole connection by one worst sample.
+        P95 is not an average. It is an upper-percentile marker: most samples
+        are below it, a few are above it, and one isolated worst ping does not
+        get to define the whole phase.
       </figcaption>
     </figure>
   );

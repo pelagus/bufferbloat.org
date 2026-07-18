@@ -63,7 +63,7 @@ export function diagnosisFor(
           ? "Lag rises most sharply while receiving data."
           : "Lag rises when the connection gets busy.",
         "Calls, games, and page loads may freeze even when speed tests look acceptable.",
-        "A stronger diagnosis needs repeated runs plus device and network context.",
+        "A stronger assessment needs repeated runs plus device and network context.",
       ],
     };
   }

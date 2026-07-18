@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Bufferbloat Test Methodology",
+  title: "Bufferbloat Test Methodology Hub",
   description:
-    "Technical notes for the Bufferbloat.org browser test: warm-up, latency under load, download stress, upload stress, scoring, privacy, and CSV export.",
+    "Methodology hub for the Bufferbloat.org browser test: measurement flow, scoring, median ping, p95 latency spread, privacy, and CSV export fields.",
   alternates: {
     canonical: "https://bufferbloat.org/docs",
   },
   openGraph: {
-    title: "Bufferbloat Test Methodology",
+    title: "Bufferbloat Test Methodology Hub",
     description:
       "Inspect how Bufferbloat.org measures internet reliability and latency under load in the browser.",
     url: "https://bufferbloat.org/docs",
@@ -98,13 +99,31 @@ const technicalDetailFields = [
     variable: "download_latency_spread_ms",
     value: "milliseconds",
     description:
-      "95th percentile scored latency / ping minus the median during download load. This is used as a supporting signal for application performance.",
+      "95th percentile scored latency / ping minus the median during download load. This is shown as a diagnostic tail-latency signal.",
   },
   {
     variable: "upload_latency_spread_ms",
     value: "milliseconds",
     description:
-      "95th percentile scored latency / ping minus the median during upload load. This is used as a supporting signal for application performance.",
+      "95th percentile scored latency / ping minus the median during upload load. This is shown as a diagnostic tail-latency signal.",
+  },
+  {
+    variable: "quiet_application_tail_ms",
+    value: "milliseconds",
+    description:
+      "Robust quiet-line upper-tail estimate used for application-fit scoring. For small sample counts, this leans closer to p90-style spread so isolated spikes do not dominate the rating.",
+  },
+  {
+    variable: "download_application_tail_ms",
+    value: "milliseconds",
+    description:
+      "Robust download-load upper-tail estimate used for application-fit scoring. The visible p95 spread remains available as a diagnostic metric.",
+  },
+  {
+    variable: "upload_application_tail_ms",
+    value: "milliseconds",
+    description:
+      "Robust upload-load upper-tail estimate used for application-fit scoring. The visible p95 spread remains available as a diagnostic metric.",
   },
   {
     variable: "download_throughput_mbps",
@@ -194,7 +213,7 @@ const technicalDetailFields = [
     variable: "web_browsing_score",
     value: "0-100 score",
     description:
-      "Application-fit score for web browsing, derived from loaded latency, latency movement, and a light latency-spread adjustment.",
+      "Application-fit score for web browsing, derived from loaded latency, latency movement, and a light robust-tail adjustment.",
   },
   {
     variable: "video_streaming_score",
@@ -206,19 +225,19 @@ const technicalDetailFields = [
     variable: "audio_calls_score",
     value: "0-100 score",
     description:
-      "Application-fit score for audio calls, derived from baseline latency, latency movement, latency spread, and minimum upload capacity.",
+      "Application-fit score for audio calls, derived from baseline latency, latency movement, robust tail latency, and minimum upload capacity.",
   },
   {
     variable: "video_calls_score",
     value: "0-100 score",
     description:
-      "Application-fit score for video calls, derived from baseline latency, latency movement, latency spread, download throughput, and upload throughput.",
+      "Application-fit score for video calls, derived from baseline latency, latency movement, robust tail latency, download throughput, and upload throughput.",
   },
   {
     variable: "low_latency_games_score",
     value: "0-100 score",
     description:
-      "Application-fit score for low-latency games, weighted toward low baseline latency, low added latency under load, and low latency spread.",
+      "Application-fit score for low-latency games, weighted toward low baseline latency, low added latency under load, and robust tail latency.",
   },
   {
     variable: "cloud_backup_score",
@@ -239,15 +258,95 @@ export default function Page() {
     <main className="page-shell resource-page">
       <p className="eyebrow">documentation</p>
 
-      <h1 className="page-title compact">Methodology and technical notes</h1>
+      <h1 className="page-title compact">Methodology hub</h1>
 
       <p className="page-copy">
-        Bufferbloat.org is designed to be inspectable. This page summarizes the
-        browser measurement flow, what is scored, what is deliberately excluded,
-        and where to inspect the public source.
+        Bufferbloat.org is designed to be inspectable. This is the trust layer:
+        how the browser test runs, what is scored, why the scorecard uses
+        median ping and p95 latency spread, what can be exported, and where the
+        limits are.
       </p>
 
-      <section className="resource-grid">
+      <div className="resource-top-action">
+        <Link href="/test?start=1">Run the bufferbloat test</Link>
+        <span>Then use this page to inspect how the result was produced.</span>
+      </div>
+
+      <section className="resource-grid" aria-label="Methodology hub links">
+        <article>
+          <span>test flow</span>
+          <h2>How the browser test runs</h2>
+          <p>
+            Warm-up, quiet-line ping, download load, upload load, and result
+            computation.
+          </p>
+          <Link className="resource-card-link" href="#browser-test-flow">
+            Jump to test flow
+          </Link>
+        </article>
+
+        <article>
+          <span>reference point</span>
+          <h2>Why median ping is used</h2>
+          <p>
+            The scorecard uses the middle of the measured samples so one odd
+            browser hiccup does not become the whole story.
+          </p>
+          <Link className="resource-card-link" href="/learn/median-ping-vs-average-ping">
+            Read median guide
+          </Link>
+        </article>
+
+        <article>
+          <span>upper delay</span>
+          <h2>Why p95 latency spread is used</h2>
+          <p>
+            The test looks at repeated high-delay behavior instead of showing a
+            vague jitter number or one worst ping.
+          </p>
+          <Link className="resource-card-link" href="/learn/latency-spread-vs-jitter">
+            Read spread guide
+          </Link>
+        </article>
+
+        <article>
+          <span>export</span>
+          <h2>How to inspect and export your data</h2>
+          <p>
+            The result page includes a technical drawer and CSV export so the
+            measurement can be reviewed outside the website.
+          </p>
+          <Link className="resource-card-link" href="/learn/technical-details-export">
+            Read export guide
+          </Link>
+        </article>
+
+        <article>
+          <span>field reference</span>
+          <h2>Technical-detail export fields</h2>
+          <p>
+            Stable variable names, value types, and definitions for the CSV
+            export and technical table.
+          </p>
+          <Link className="resource-card-link" href="#technical-detail-export-fields">
+            Jump to fields
+          </Link>
+        </article>
+
+        <article>
+          <span>limits</span>
+          <h2>Limits and privacy</h2>
+          <p>
+            What a browser test can and cannot promise, what is retained, and
+            what the export deliberately excludes.
+          </p>
+          <Link className="resource-card-link" href="#limits-and-privacy">
+            Jump to limits
+          </Link>
+        </article>
+      </section>
+
+      <section className="resource-grid" id="browser-test-flow">
         <article>
           <span>phase 1</span>
           <h2>Warm-up</h2>
@@ -298,7 +397,7 @@ export default function Page() {
       </section>
 
       <section className="resource-note">
-        <h2>Current public methodology</h2>
+        <h2>Measurement method</h2>
         <p>
           The browser test uses median-style reporting, a Cloudflare Speed
           latency probe, a 100 MB download payload repeated across four
@@ -306,9 +405,11 @@ export default function Page() {
           result grade is primarily about latency stability under load; low
           throughput is reported separately and is not automatically treated as
           bufferbloat. Latency spread is computed from the scored latency
-          samples as 95th percentile ping minus median ping for each phase, and
-          used as a supporting signal, especially for application-performance
-          estimates.
+          samples as 95th percentile ping minus median ping for each phase. It
+          remains visible as a diagnostic tail-latency signal. Application
+          performance uses a more robust upper-tail estimate when sample counts
+          are small, so one or two isolated spikes can be shown without
+          dominating the rating.
         </p>
 
         <p>
@@ -331,8 +432,9 @@ export default function Page() {
         <p>
           The technical-details drawer contains the structured measurement
           record used by the scorecard: phase medians, stress deltas,
-          latency spread, throughput estimates, scored sample counts, raw scored
-          latency sample lists, sample ranges, method notes, and
+          p95 latency spread, robust application-tail estimates, throughput
+          estimates, scored sample counts, raw scored latency sample lists,
+          sample ranges, method notes, and
           application-performance scoring. The same record can be exported as
           CSV for review.
         </p>
@@ -346,6 +448,10 @@ export default function Page() {
           what each exported variable means. The CSV export uses stable
           variable names and raw values so the record can be reviewed in a
           spreadsheet or cited in a technical report.
+          For the user-facing explanation, read{" "}
+          <Link href="/learn/technical-details-export">
+            how to inspect and export your test data
+          </Link>.
         </p>
 
         <div className="technical-field-table-wrap">
@@ -370,7 +476,7 @@ export default function Page() {
         </div>
       </section>
 
-      <section className="resource-note">
+      <section className="resource-note" id="limits-and-privacy">
         <h2>Limits and privacy</h2>
         <p>
           Browser networking tests are useful but noisy. Results can be affected
@@ -401,6 +507,9 @@ export default function Page() {
         </p>
 
         <div className="resource-links">
+          <Link href="/test?start=1">
+            Run the bufferbloat test
+          </Link>
           <a
             href="https://github.com/pelagus/bufferbloat.org/blob/main/MEASUREMENT_METHODOLOGY.md"
             target="_blank"

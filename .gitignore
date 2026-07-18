@@ -15,5 +15,6 @@ upload-sink/.wrangler
 
 local-only/
 START_HERE.txt
+CONTENT_GUIDELINES.md
 
 .vercel

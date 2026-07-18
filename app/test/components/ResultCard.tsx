@@ -15,6 +15,13 @@ type TechnicalRow = {
   note: string;
 };
 
+type ContextItem = {
+  label: string;
+  value: string;
+  detail: string;
+  tone: "good" | "ok" | "warn" | "bad";
+};
+
 function csvCell(value: string) {
   return `"${value.replace(/"/g, '""')}"`;
 }
@@ -45,7 +52,7 @@ export default function ResultCard({
   grade,
   diagnosis,
   measuredAt,
-  finding,
+  contextItems,
   applicationRankings,
   chartSlot,
   headerActions,
@@ -59,7 +66,7 @@ export default function ResultCard({
     bullets: string[];
   };
   measuredAt: string;
-  finding: string;
+  contextItems: ContextItem[];
   applicationRankings: Array<{
     symbol: string;
     name: string;
@@ -99,7 +106,10 @@ export default function ResultCard({
       <ResultPrintController />
       <div className="result-compact-header">
         <div className="result-brand-lockup" aria-label="Bufferbloat.org">
-          <strong>Bufferbloat.org</strong>
+          <div className="result-brand-title">
+            <img src="/brand-dot.svg" alt="" aria-hidden="true" />
+            <strong>Bufferbloat.org</strong>
+          </div>
           <span>
             open source bufferbloat test · Measured <LocalMeasuredTime isoTime={measuredAt} />
           </span>
@@ -113,19 +123,25 @@ export default function ResultCard({
           <strong className={`${severityClass(grade)} ${grade === "A+" ? "grade-plus" : ""}`}>
             {grade}
           </strong>
-          <span>{diagnosis.label}</span>
+          <span className={severityClass(grade)}>{diagnosis.label}</span>
         </div>
 
         <div className="result-scorecard-body">
-          <p className="result-finding">{finding}</p>
+          <div className="result-diagnosis-blocks" aria-label="Result diagnosis">
+            {contextItems.map((item) => (
+              <article className={item.tone} key={item.label}>
+                <p>{item.value}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="result-evidence-row">
-        <div className="result-applications">
-          <div className="result-section-heading">
-            <span>Application performance</span>
-          </div>
+          <div className="result-applications">
+            <div className="result-section-heading">
+              <span>Network application performance</span>
+            </div>
 
           <ol className="application-ranking-list">
             {applicationRankings.map((item) => (
@@ -156,11 +172,11 @@ export default function ResultCard({
         <div className="technical-table-header">
           <a
             className="technical-methodology-link"
-            href="/docs#technical-detail-export-fields"
+            href="/learn/technical-details-export"
             rel="noopener noreferrer"
             target="_blank"
           >
-            Public methodology for these variables
+            How to inspect and export this data
           </a>
           <button
             aria-label="Export technical details as CSV"

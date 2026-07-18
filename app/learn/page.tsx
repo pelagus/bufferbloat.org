@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Learn About Bufferbloat",
+  title: "Internet Reliability Knowledge Base",
   description:
-    "Learn what bufferbloat is, why speed tests miss it, why latency under load matters, and which open-source resources explain how to fix it.",
+    "A practical knowledge base for internet reliability, bufferbloat, latency under load, p95 spread, median ping, and open network measurement.",
   alternates: {
     canonical: "https://bufferbloat.org/learn",
   },
   openGraph: {
-    title: "Learn About Bufferbloat",
+    title: "Internet Reliability Knowledge Base",
     description:
-      "A practical guide to bufferbloat, internet reliability, loaded latency, and authoritative open-source networking resources.",
+      "Guides and research references for real-life network quality, bufferbloat, loaded latency, and transparent measurement methods.",
     url: "https://bufferbloat.org/learn",
   },
 };
@@ -23,190 +23,165 @@ export default function Page() {
   };
 
   return (
-    <main className="page-shell resource-page">
-      <p className="eyebrow">education</p>
+    <main className="page-shell resource-page learn-hub">
+      <p className="eyebrow">knowledge base</p>
 
-      <h1 className="page-title compact">Learn about bufferbloat</h1>
+      <h1 className="page-title compact">Internet reliability, explained</h1>
 
       <p className="page-copy">
-        Bufferbloat is excessive latency caused by queues that grow too large
-        when a network connection is busy. It is one reason a connection can
-        look fast in a speed test but still feel slow in real use.
+        This is the learning hub for Bufferbloat.org: short guides, measurement
+        notes, and research references about what makes an internet connection
+        feel reliable in real life. Bufferbloat is the starting point, but the
+        bigger question is connection quality under actual use. For why the
+        project exists at all, read the <Link href="/mission">mission</Link>.
       </p>
 
-      <section className="guide-test-callout" aria-label="Run the bufferbloat test">
-        <div className="guide-test-copy">
-          <span>browser test</span>
-          <h2>Measure your connection before reading too far.</h2>
-          <p>
-            The test takes less than a minute and gives the examples on this
-            page a concrete reference: quiet ping, download stress, upload
-            stress, throughput, and a bufferbloat grade.
-          </p>
-
-          <div className="guide-test-actions">
-            <Link href="/test?start=1" className="guide-primary-action">
-              Run the bufferbloat test
-            </Link>
-            <Link href="/docs" className="guide-secondary-action">
-              Read methodology
-            </Link>
-          </div>
-        </div>
-
-        <div className="guide-test-micro" aria-hidden="true">
-          <div>
-            <span>quiet</span>
-            <strong>24 ms</strong>
-            <em>baseline ping</em>
-          </div>
-          <div>
-            <span>download</span>
-            <strong>+94</strong>
-            <em>stress delta</em>
-          </div>
-          <div>
-            <span>upload</span>
-            <strong>+388</strong>
-            <em>bufferbloat signal</em>
-          </div>
-        </div>
-      </section>
-
-      <section className="resource-grid">
-        <article>
-          <span>01</span>
-          <h2>Throughput is not reliability</h2>
-          <p>
-            Throughput measures how much data can move. Reliability asks
-            whether the network keeps answering quickly while that movement is
-            happening. Both matter, but they explain different user
-            experiences.
-          </p>
-        </article>
-
-        <article>
-          <span>02</span>
-          <h2>Idle ping is incomplete</h2>
-          <p>
-            A quiet connection can have excellent ping. Bufferbloat appears when
-            a download, upload, backup, or video stream fills queues and pushes
-            interactive traffic behind bulk traffic.
-          </p>
-        </article>
-
-        <article>
-          <span>03</span>
-          <h2>Loaded latency is the signal</h2>
-          <p>
-            Measuring latency while traffic is active shows whether the
-            connection remains usable under everyday pressure.
-          </p>
-        </article>
-      </section>
-
-      <section className="resource-note">
-        <h2>Why upload often matters</h2>
-        <p>
-          Many home connections have much less upload capacity than download
-          capacity. A cloud backup, video call, or large file upload can fill
-          the upstream path and make the whole connection feel delayed.
-        </p>
-      </section>
-
-      <section className="resource-note learning-directory" id="authoritative-resources">
+      <section className="learn-hub-callout" aria-label="Run the bufferbloat test">
         <div>
-          <p className="eyebrow">deep dives</p>
-          <h2>Choose the guide that matches the question</h2>
+          <span>start with your line</span>
+          <h2>Run the test, then use the guides to understand the result.</h2>
+          <p>
+            The scorecard gives the rest of this page a concrete reference:
+            quiet-line ping, ping while download and upload traffic are active,
+            throughput, p95 spread, and an overall reliability grade.
+          </p>
+        </div>
+
+        <div className="guide-test-actions">
+          <Link href="/test?start=1" className="guide-primary-action">
+            Run the bufferbloat test
+          </Link>
+          <Link href="/docs" className="guide-secondary-action">
+            Methodology
+          </Link>
+        </div>
+      </section>
+
+      <section className="resource-note learning-directory">
+        <div>
+          <p className="eyebrow">article paths</p>
+          <h2>Choose the question you are trying to answer</h2>
         </div>
 
         <p>
-          Bufferbloat.org is built around one idea, but people arrive from
-          different problems: calls breaking up, games feeling delayed, speed
-          tests that look fine, or a general sense that the connection is not
-          reliable. Start with the closest question, then follow the links from
-          there.
+          These articles are meant to be complementary. Start with the practical
+          question, then follow the links inside each guide when you need the
+          measurement details.
         </p>
 
         <div className="learning-path-label">
           <span>Start here</span>
-          <p>The core concepts behind the test.</p>
+          <p>The core reference pages behind the scorecard.</p>
         </div>
 
         <div className="learning-resource-list">
           <article>
-            <span>Core concept</span>
-            <h3>
-              <Link href="/learn/bufferbloat-speed-test">
-                Bufferbloat speed test
-              </Link>
-            </h3>
-            <p>
-              Why a normal speed test can look excellent while calls, games,
-              and browsing still degrade when the line is busy.
-            </p>
-          </article>
-
-          <article>
-            <span>Measurement reference</span>
+            <span>Scorecard reference</span>
             <h3>
               <Link href="/learn/what-bufferbloat-speed-test-measures">
-                What the test measures
+                What a bufferbloat test actually measures
               </Link>
             </h3>
             <p>
-              The plain-language reference for throughput, quiet ping, loaded
-              ping, latency spread, and what each value means.
+              The best first read after running the test: throughput,
+              quiet-line ping, loaded ping, p95 spread, and why this is not
+              just another speed test.
             </p>
           </article>
 
           <article>
-            <span>Technical signal</span>
+            <span>Connection quality</span>
+            <h3>
+              <Link href="/learn/internet-connection-quality">
+                What internet connection quality really means
+              </Link>
+            </h3>
+            <p>
+              A broader guide to why one number cannot explain whether a line
+              feels usable, unreliable, stable, or frustrating in daily use.
+            </p>
+          </article>
+
+          <article>
+            <span>Core signal</span>
             <h3>
               <Link href="/learn/latency-under-load">
-                Latency under load
+                Why latency under load matters
               </Link>
             </h3>
             <p>
-              What loaded latency means, how it differs from idle ping, and why
-              it is the core signal in a bufferbloat test.
+              The central bufferbloat concept: ping can look fine when the line
+              is quiet, then change when download or upload traffic starts.
             </p>
           </article>
 
           <article>
-            <span>Technical signal</span>
+            <span>Data export</span>
             <h3>
-              <Link href="/learn/latency-spread-vs-jitter">
-                Why we don’t show jitter
+              <Link href="/learn/technical-details-export">
+                How to inspect and export your test data
               </Link>
             </h3>
             <p>
-              Why changing ping can matter as much as the average ping number,
-              and why this test uses latency spread as a practical stability
-              signal.
+              What the technical details drawer contains, what the CSV export is
+              for, and where the exact field definitions live.
             </p>
           </article>
         </div>
 
         <div className="learning-path-label">
-          <span>If you are judging the connection</span>
-          <p>Use these when the question is broader than one app.</p>
+          <span>Measurement concepts</span>
+          <p>Why the scorecard uses these specific measurement choices.</p>
         </div>
 
         <div className="learning-resource-list">
           <article>
-            <span>Connection quality</span>
+            <span>Reliability metric</span>
             <h3>
-              <Link href="/learn/internet-connection-quality">
-                Internet connection quality
+              <Link href="/learn/latency-spread-vs-jitter">
+                Why we use latency spread, not jitter
               </Link>
             </h3>
             <p>
-              Why connection quality combines throughput, latency, loaded ping,
-              and variation instead of relying on Mbps alone.
+              Why p95 spread is more useful than average jitter or worst ping
+              for spotting repeated high-delay moments during real load.
             </p>
           </article>
 
+          <article>
+            <span>Reference point</span>
+            <h3>
+              <Link href="/learn/median-ping-vs-average-ping">
+                Why we use median ping, not average ping
+              </Link>
+            </h3>
+            <p>
+              Why the middle of the measured samples is a better reference
+              point for a browser-based reliability test than the arithmetic
+              average.
+            </p>
+          </article>
+
+          <article>
+            <span>Planned deep dives</span>
+            <h3>Topics this knowledge base should cover next</h3>
+            <p>
+              I want to cover the topics people actually run into: why
+              throughput is not the whole meaning of speed, why fast internet
+              can feel slow, why slower connections can still feel usable, how
+              Wi-Fi and routers change the result, and what fixes are realistic
+              at home.
+            </p>
+          </article>
+
+        </div>
+
+        <div className="learning-path-label">
+          <span>Real-life use cases</span>
+          <p>Use these when the problem is how the connection feels.</p>
+        </div>
+
+        <div className="learning-resource-list">
           <article>
             <span>Reliability</span>
             <h3>
@@ -215,21 +190,8 @@ export default function Page() {
               </Link>
             </h3>
             <p>
-              How to check whether a fast-looking connection stays usable when
-              calls, browsing, uploads, and shared use are active.
-            </p>
-          </article>
-
-          <article>
-            <span>Latency</span>
-            <h3>
-              <Link href="/learn/internet-latency-test">
-                Internet latency test
-              </Link>
-            </h3>
-            <p>
-              Why useful latency testing compares normal ping with ping during
-              download and upload load.
+              Start here if the line feels unpredictable and ordinary tests do
+              not explain why calls, browsing, or shared use still suffer.
             </p>
           </article>
 
@@ -241,41 +203,35 @@ export default function Page() {
               </Link>
             </h3>
             <p>
-              What connection stability means when latency changes under real
-              download and upload pressure.
+              Use this when the connection feels jumpy: fine one moment, then
+              suddenly delayed, spiky, or inconsistent under normal use.
             </p>
           </article>
 
           <article>
-            <span>Whole network</span>
+            <span>Latency</span>
             <h3>
-              <Link href="/learn/network-stability-test">
-                Network stability test
+              <Link href="/learn/internet-latency-test">
+                Internet latency test
               </Link>
             </h3>
             <p>
-              How to measure whether a network stays steady when download and
-              upload traffic are active.
+              A guide to ping, response time, and why a quiet latency number is
+              not enough to judge real-life network quality.
             </p>
           </article>
-        </div>
 
-        <div className="learning-path-label">
-          <span>If a specific app is suffering</span>
-          <p>Use these when the symptom is calls, meetings, games, or streaming.</p>
-        </div>
-
-        <div className="learning-resource-list">
           <article>
-            <span>Calls</span>
+            <span>Calls and meetings</span>
             <h3>
               <Link href="/learn/calls-internet-test">
                 Calls internet test
               </Link>
             </h3>
             <p>
-              Why video and audio calls depend on stable latency under load,
-              especially on shared connections.
+              Why video and audio calls can fail on connections that have
+              enough throughput, especially while uploads or other devices are
+              active.
             </p>
           </article>
 
@@ -283,25 +239,26 @@ export default function Page() {
             <span>Video meetings</span>
             <h3>
               <Link href="/learn/zoom-internet-test">
-                Zoom internet test
+                Zoom is right: “Your internet connection is unstable”
               </Link>
             </h3>
             <p>
-              An independent guide to the connection behavior that affects
-              video meetings when the line is busy.
+              Bufferbloat.org is not affiliated with Zoom; this explains the
+              network behavior that makes meeting-like traffic degrade under
+              load.
             </p>
           </article>
 
           <article>
-            <span>Video meetings</span>
+            <span>Video meeting results</span>
             <h3>
-              <Link href="/learn/zoom-network-test">
-                Zoom network test
+              <Link href="/learn/video-meeting-test-results">
+                How to read video-meeting test results
               </Link>
             </h3>
             <p>
-              How to test latency, upload behavior, and queueing delay for
-              meeting-like network conditions.
+              After running the test, use upload load, download load, quiet
+              ping, and latency spread to understand meeting reliability.
             </p>
           </article>
 
@@ -313,18 +270,8 @@ export default function Page() {
               </Link>
             </h3>
             <p>
-              Why low-latency games need stable ping under load, not only a
-              good idle ping number.
-            </p>
-          </article>
-
-          <article>
-            <span>Planned deep dives</span>
-            <h3>Speed, throughput, and perceived quality</h3>
-            <p>
-              Next planned guides: why throughput is not the whole meaning of
-              speed, why fast internet can feel slow, and why slower
-              connections can still feel usable when latency stays stable.
+              Low-latency games expose delay and ping spread quickly, even when
+              the connection looks fast in a conventional test.
             </p>
           </article>
         </div>
@@ -332,14 +279,15 @@ export default function Page() {
 
       <section className="resource-note learning-directory">
         <div>
-          <p className="eyebrow">further reading</p>
-          <h2>Authoritative resources</h2>
+          <p className="eyebrow">bibliography</p>
+          <h2>Technical references and further reading</h2>
         </div>
 
         <p>
-          These projects, papers, standards, and tools are useful starting
-          points for understanding bufferbloat, measuring loaded latency more
-          deeply, and fixing it in real networks.
+          These are sources I respect and consider foundational to this work:
+          community projects, standards, algorithms, and tools that shaped how
+          Bufferbloat.org thinks about bufferbloat, queue management, loaded
+          latency measurement, and practical fixes in real networks.
         </p>
 
         <div className="learning-resource-list">

@@ -128,9 +128,15 @@ export default function Page() {
           usable while it is busy.
         </p>
 
+        <p>
+          If you want to see this on your own connection, start with the browser
+          test. If you want to inspect how the numbers are produced, the
+          methodology and source code are public.
+        </p>
+
         <div className="resource-links">
           <Link href="/test?start=1">Run the bufferbloat test</Link>
-          <Link href="/docs">Read the methodology</Link>
+          <Link href="/docs">Read how the test works</Link>
           <a
             href="https://github.com/pelagus/bufferbloat.org"
             target="_blank"
@@ -142,17 +148,18 @@ export default function Page() {
       </section>
 
       <section className="resource-note">
-        <h2>Related guide</h2>
+        <h2>Where to go next</h2>
         <p>
-          If you arrived here from a speed-test comparison, the next useful
-          explanation is why ordinary speed tests can miss bufferbloat.
+          The next useful step is usually the scorecard reference. It explains
+          what the test measures, how loaded ping appears in the result, and why
+          this is more than a throughput check.
         </p>
 
         <div className="resource-links">
-          <Link href="/learn/bufferbloat-speed-test">
-            Bufferbloat speed test
+          <Link href="/learn/what-bufferbloat-speed-test-measures">
+            Read what the bufferbloat test measures
           </Link>
-          <Link href="/learn">Back to Learn</Link>
+          <Link href="/learn">Browse the learning path</Link>
         </div>
       </section>
     </main>

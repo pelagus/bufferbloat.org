@@ -46,21 +46,25 @@ const LATENCY_URL = "https://speed.cloudflare.com/__down?bytes=1";
 const UPLOAD_URL = "https://speed.cloudflare.com/__up";
 
 const IDLE_DURATION_MS = 8000;
-const LOADED_DURATION_MS = 18000;
-const MIN_PHASE_WARMUP_MS = 3000;
+const IDLE_MAX_RECORDING_MS = 20000;
+const LOADED_DURATION_MS = 22000;
+const MIN_PHASE_WARMUP_MS = 4000;
 const IDLE_SETTLE_MS = MIN_PHASE_WARMUP_MS;
-const LOADED_SETTLE_MS = Math.max(6000, MIN_PHASE_WARMUP_MS);
+const LOADED_SETTLE_MS = Math.max(8000, MIN_PHASE_WARMUP_MS);
 const LOADED_RECORDING_MS = LOADED_DURATION_MS - LOADED_SETTLE_MS;
+const LOADED_MAX_RECORDING_MS = 26000;
 const SAMPLE_DELAY_MS = 250;
 const FREEZE_FINAL_MS = 900;
-const WARMUP_MIN_VISIBLE_MS = 5500;
+const WARMUP_MIN_VISIBLE_MS = 10000;
 const WARMUP_SETTLE_MS = 500;
 const WARMUP_DOWNLOAD_BYTES = 256 * 1024;
 const WARMUP_UPLOAD_BYTES = 64 * 1024;
 const DOWNLOAD_STREAMS = 4;
 const UPLOAD_STREAMS = 3;
 const UPLOAD_STREAM_PAYLOAD_BYTES = 1024 * 1024;
-const MIN_LATENCY_SAMPLES = 3;
+const MIN_LATENCY_SAMPLES = 8;
+const IDLE_TARGET_LATENCY_SAMPLES = 20;
+const LOADED_TARGET_LATENCY_SAMPLES = 28;
 const VISIBILITY_ABORT_MESSAGE =
   "Test stopped because this tab left the foreground. To protect accuracy, keep Bufferbloat.org visible until the run finishes.";
 
@@ -134,12 +138,19 @@ async function probeLatency() {
 async function sampleLatency(
   durationMs: number,
   onSample: (sample: number) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  targetSamples = MIN_LATENCY_SAMPLES,
+  maxDurationMs = durationMs
 ) {
   const samples: number[] = [];
-  const end = performance.now() + durationMs;
+  const started = performance.now();
+  const minimumEnd = started + durationMs;
+  const hardEnd = started + Math.max(durationMs, maxDurationMs);
 
-  while (performance.now() < end) {
+  while (
+    performance.now() < hardEnd &&
+    (performance.now() < minimumEnd || samples.length < targetSamples)
+  ) {
     throwIfAborted(signal);
 
     try {
@@ -151,7 +162,12 @@ async function sampleLatency(
       if (isAbortError(error)) throw error;
     }
 
-    await wait(SAMPLE_DELAY_MS, signal);
+    if (
+      performance.now() < hardEnd &&
+      (performance.now() < minimumEnd || samples.length < targetSamples)
+    ) {
+      await wait(SAMPLE_DELAY_MS, signal);
+    }
   }
 
   if (samples.length < MIN_LATENCY_SAMPLES) {
@@ -522,14 +538,20 @@ export async function runBufferbloatTest(
 
   emit("idle", "quiet measuring", "Measuring baseline response time.", 12);
 
-  const idleSamples = await sampleLatency(IDLE_DURATION_MS, (sample) => {
-    idle = sample;
-    latencySamples.idle = [...latencySamples.idle, sample];
-    recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
-    latencySampleCount += 1;
+  const idleSamples = await sampleLatency(
+    IDLE_DURATION_MS,
+    (sample) => {
+      idle = sample;
+      latencySamples.idle = [...latencySamples.idle, sample];
+      recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
+      latencySampleCount += 1;
 
-    emit("idle", "quiet measuring", "Sampling quiet-line ping.", 24);
-  }, signal);
+      emit("idle", "quiet measuring", "Sampling quiet-line ping.", 24);
+    },
+    signal,
+    IDLE_TARGET_LATENCY_SAMPLES,
+    IDLE_MAX_RECORDING_MS
+  );
 
   idle = trimmedMedian(idleSamples);
 
@@ -556,14 +578,20 @@ export async function runBufferbloatTest(
 
     emit("download", "download measuring", "Sampling ping under established download pressure.", 58);
 
-    downloadSamples = await sampleLatency(LOADED_RECORDING_MS, (sample) => {
-      downloadLatency = sample;
-      latencySamples.download = [...latencySamples.download, sample];
-      recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
-      latencySampleCount += 1;
+    downloadSamples = await sampleLatency(
+      LOADED_RECORDING_MS,
+      (sample) => {
+        downloadLatency = sample;
+        latencySamples.download = [...latencySamples.download, sample];
+        recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
+        latencySampleCount += 1;
 
-      emit("download", "download measuring", "Sampling ping under established download pressure.", 58);
-    }, signal);
+        emit("download", "download measuring", "Sampling ping under established download pressure.", 58);
+      },
+      signal,
+      LOADED_TARGET_LATENCY_SAMPLES,
+      LOADED_MAX_RECORDING_MS
+    );
   } finally {
     signal?.removeEventListener("abort", stopDownloadOnAbort);
     downloadPressure.stop();
@@ -595,14 +623,20 @@ export async function runBufferbloatTest(
 
     emit("upload", "upload measuring", "Sampling ping under established upload pressure.", 88);
 
-    uploadSamples = await sampleLatency(LOADED_RECORDING_MS, (sample) => {
-      uploadLatency = sample;
-      latencySamples.upload = [...latencySamples.upload, sample];
-      recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
-      latencySampleCount += 1;
+    uploadSamples = await sampleLatency(
+      LOADED_RECORDING_MS,
+      (sample) => {
+        uploadLatency = sample;
+        latencySamples.upload = [...latencySamples.upload, sample];
+        recentLatencySamples = [...recentLatencySamples, sample].slice(-5);
+        latencySampleCount += 1;
 
-      emit("upload", "upload measuring", "Sampling ping under established upload pressure.", 88);
-    }, signal);
+        emit("upload", "upload measuring", "Sampling ping under established upload pressure.", 88);
+      },
+      signal,
+      LOADED_TARGET_LATENCY_SAMPLES,
+      LOADED_MAX_RECORDING_MS
+    );
   } finally {
     signal?.removeEventListener("abort", stopUploadOnAbort);
     uploadPressure.stop();
@@ -611,7 +645,7 @@ export async function runBufferbloatTest(
 
   uploadLatency = trimmedMedian(uploadSamples);
 
-  emit("analysis", "analysis", "Computing diagnosis from stable median samples.", 96);
+  emit("analysis", "analysis", "Computing assessment from stable median samples.", 96);
 
   await wait(FREEZE_FINAL_MS, signal);
 

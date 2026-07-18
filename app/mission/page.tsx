@@ -22,72 +22,99 @@ export default function Page() {
           Internet connection quality is too important to be left to opaque
           and gimmicky speed tests.
         </p>
+
       </section>
 
       <section className="mission-prose" aria-label="Project mission">
         <p>
-          Most people are told to judge their internet connection by speed.
-          More technical users know to look at ping. Both are useful, but they
-          still leave out the question people actually feel in daily life: does
-          the connection stay usable when the line is busy?
+          I studied telecommunications and networking twenty years ago.
+          Bufferbloat did not have its current name yet, but the underlying
+          problem was already known: queues filling up, latency rising, and
+          connections becoming less usable under load. It is still with us now
+          partly because the market learned to optimize for the wrong visible
+          number.
         </p>
 
         <p>
-          Speed tests mostly report throughput: how much data can move through
-          the connection. Ping tests report how quickly the connection responds
-          while it is quiet. Bufferbloat is the missing measurement: what
-          happens to response time when downloads, uploads, calls, games, and
-          other traffic are competing for the same connection?
+          Speed tests made throughput easy to compare. ISPs turned Mbps into
+          the backbone of internet marketing. Consumers learned to ask
+          &quot;how fast is it?&quot; instead of &quot;does it stay usable when
+          the connection is busy?&quot;
         </p>
 
         <p>
-          A connection can show impressive throughput and a decent quiet ping,
-          then still make video calls freeze, games stutter, websites hesitate,
-          and remote desktops feel broken once the network gets busy. That is
-          the problem Bufferbloat.org measures.
+          The same pattern is now easy to feel on mobile. A phone can show 5G,
+          report impressive download speed, and still feel less responsive when
+          the radio link is busy, signal conditions change, or uploads fill the
+          queue. Faster headline throughput has not removed the need to measure
+          whether the connection stays usable in real life.
         </p>
 
         <p>
-          This gap has been known for years. In a 2011 ACM Queue discussion,
-          Vint Cerf, Van Jacobson, Nick Weaver, and Jim Gettys discussed
-          bufferbloat as a real weakness in how the internet is experienced and
-          measured. The core lesson still matters: if you test only bandwidth
-          or only idle latency, you miss how the network behaves when it is
-          actually busy.
+          That incentive structure leaves bufferbloat mostly invisible. A line
+          can look fast in a speed test and still become unreliable during
+          calls, games, streaming, backups, or ordinary household use. The
+          problem is not just technical. It is educational.
         </p>
 
         <p>
-          Networking researchers have understood this for years, and there are
-          excellent research projects and commercial products in this space. But
-          I could not find the tool I wanted: a fast, transparent, browser-based
-          test that anyone could use, inspect, share, and improve.
+          For years, people have been given incomplete language for connection
+          quality. Speed matters. Ping matters. But neither explains whether
+          small, time-sensitive packets still move promptly while the connection
+          is already carrying traffic. That is the part people feel when a call
+          freezes, a game spikes, or a page hangs while someone else is using
+          the same line.
         </p>
 
         <p>
-          Bufferbloat.org exists to make that missing measurement accessible. It
-          measures not just how much data your connection can move, but how well
-          it continues to respond while moving it.
+          Bufferbloat.org exists to make that missing part visible. It measures
+          quiet-line ping, then measures what happens when download and upload
+          load are active. It also reports throughput, because throughput still
+          matters. The point is to stop treating one number as the whole story.
         </p>
 
         <p>
-          Bufferbloat.org is an independent open-source project built around
-          that principle. The code is open. The methodology is public. The
-          limitations are documented. The goal is to make connection quality
-          easier to measure, easier to understand, and easier to discuss.
+          This is also why the project has to be public. If the test is another
+          black box, it only replaces one opaque measurement with another. The
+          code is open. The methodology is public. The limitations are
+          documented. The assumptions can be inspected, challenged, and
+          improved.
         </p>
 
         <p>
-          I have spent more than two decades working on internet products and
-          infrastructure, and the same pattern keeps coming back: the web gets
-          better when important systems can be inspected, measured, questioned,
-          and improved in public. Bufferbloat.org is an attempt to apply that
-          idea to the basic act of understanding whether a connection works well
-          in real life.
+          I want Bufferbloat.org to be both a test and a public resource: a
+          place that helps people understand why connection quality is more than
+          advertised Mbps, why latency changes under load, how routers and Wi-Fi
+          affect the result, and which fixes are realistic outside a lab.
+        </p>
+
+        <p>
+          Cloudflare infrastructure is a major reason this can exist as a free
+          public tool. A test like this needs server resources that can absorb
+          real browser traffic from real users; without that infrastructure, the
+          cost of running it would have made the project unrealistic. The cost
+          is still not zero, though. If Bufferbloat.org grows, I would rather
+          keep maintenance sustainable through donations or community support
+          than through ads, tracking, or commercial influence over the test.
         </p>
 
         <p className="mission-closing">
-          Because internet connection quality is more than speed and ping.
+          Because internet connection quality is more than speed and ping. The
+          simplest way to see that difference is to{" "}
+          <Link href="/test?start=1">run the bufferbloat test</Link> and compare
+          your quiet-line ping with what happens when download and upload load
+          are active.
         </p>
+      </section>
+
+      <section className="mission-test-action" aria-label="Run the bufferbloat test">
+        <div className="resource-top-action">
+          <Link href="/test?start=1">See the measurement for yourself</Link>
+          <span>
+            Run the open bufferbloat test and compare quiet-line ping with a
+            busy connection.
+          </span>
+        </div>
       </section>
 
       <section className="mission-principles" aria-label="Project principles">
@@ -134,6 +161,9 @@ export default function Page() {
           </li>
           <li>
             <Link href="/docs">Measurement methodology and technical docs</Link>
+          </li>
+          <li>
+            <Link href="/test?start=1">Run the bufferbloat test</Link>
           </li>
           <li>
             <a

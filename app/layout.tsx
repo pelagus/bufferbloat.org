@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import Nav from "./components/Nav";
 
-const geistSans = Geist({
+const interSans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
@@ -61,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${interSans.variable} ${geistMono.variable}`}>
       <body>
         <Nav />
         {children}

@@ -108,7 +108,7 @@ Examples include:
 - Median latency reporting
 - Real-time visualisation
 - Mobile-friendly interface
-- Light and dark mode
+- Consistent light interface
 - Public measurement methodology
 
 ---
@@ -206,4 +206,8 @@ I've spent more than two decades working on internet products and infrastructure
 
 ## License
 
-MIT
+Business Source License 1.1 (`BUSL-1.1`).
+
+Non-commercial use is permitted. Commercial products, hosted services, managed
+services, SaaS offerings, or materially similar commercial internet measurement
+services require a separate commercial license. See [LICENSE](LICENSE).

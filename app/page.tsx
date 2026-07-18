@@ -27,20 +27,21 @@ export default function Home() {
         <div className="home-hero-grid">
           <div className="hero-copy">
             <p className="home-project-label">
-              Free browser test. Public methodology. Inspectable results.
+              Free and open source. Public methodology. Inspectable results.
             </p>
 
-            <h1>Bufferbloat.org</h1>
+            <h1>The real-life test for your internet connection</h1>
 
             <p className="hero-subtitle">
-              Your internet can look fast in speed tests and still be
-              unreliable when the connection gets busy.
+              Speed tests can say everything is fine while games lag, pages
+              stall, and video calls drop in real life.
             </p>
 
             <p className="home-hero-description">
-              Bufferbloat is the hidden delay that can appear when data queues
-              up behind downloads, uploads, calls, games, or streaming.
-              We test whether your connection stays usable in real life.
+              Bufferbloat.org measures the hidden delay that appears when data
+              queues behind real download and upload traffic. The result shows
+              whether your connection stays usable in real life, not just how
+              many megabits it can move in ideal conditions.
             </p>
 
             <div className="home-hero-actions">
@@ -204,21 +205,21 @@ export default function Home() {
       <section className="home-grid project-principles">
         <article>
           <span>Problem</span>
-          <h2>Speed is a useful word, but an incomplete measurement</h2>
+          <h2>Connection quality is more than speed and ping</h2>
           <p>
-            Most speed tests measure throughput in Mbps. That matters, but it
-            does not show whether small, time-sensitive packets still move
-            promptly when the connection is already carrying traffic.
+            Most speed tests report throughput in Mbps. That matters, but it
+            does not show whether calls, games, browsing, and streaming stay
+            responsive while the connection is already carrying traffic.
           </p>
         </article>
 
         <article>
           <span>Method</span>
-          <h2>Measure what happens when the line is busy</h2>
+          <h2>Test the line while it is under pressure</h2>
           <p>
             The test samples quiet-line ping, then repeats the measurement
-            during download load and upload load. The important signal is how
-            much latency changes under real pressure.
+            while download and upload traffic are active. The important signal
+            is how much responsiveness changes when the line is busy.
           </p>
         </article>
 

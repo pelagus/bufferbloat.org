@@ -6,18 +6,19 @@
 .site-logo {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   flex: 0 0 auto;
   max-width: 190px;
   overflow: hidden;
+  min-height: 36px;
   font-weight: 520;
   white-space: nowrap;
 }
 
 .site-logo .brand-mark {
   flex: 0 0 auto;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 .site-links {
@@ -25,6 +26,13 @@
   gap: 9px;
   min-width: 0;
   font-weight: 380;
+}
+
+.site-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 4px;
 }
 
 .github-link {
@@ -54,11 +62,18 @@
     font-size: 13px;
   }
 
-  .github-link {
-    gap: 0;
+  .site-logo {
+    gap: 7px;
+    max-width: 160px;
   }
 
-  .github-link span {
-    display: none;
+  .site-logo .brand-mark {
+    width: 17px;
+    height: 17px;
   }
+
+  .github-link {
+    gap: 5px;
+  }
+
 }

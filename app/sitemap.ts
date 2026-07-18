@@ -41,6 +41,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
+      url: "https://bufferbloat.org/learn/median-ping-vs-average-ping",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.68,
+    },
+    {
+      url: "https://bufferbloat.org/learn/technical-details-export",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.66,
+    },
+    {
       url: "https://bufferbloat.org/learn/internet-latency-test",
       lastModified,
       changeFrequency: "monthly",
@@ -59,19 +71,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.72,
     },
     {
-      url: "https://bufferbloat.org/learn/network-stability-test",
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.72,
-    },
-    {
       url: "https://bufferbloat.org/learn/calls-internet-test",
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.72,
-    },
-    {
-      url: "https://bufferbloat.org/learn/zoom-network-test",
       lastModified,
       changeFrequency: "monthly",
       priority: 0.72,
@@ -89,13 +89,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.72,
     },
     {
-      url: "https://bufferbloat.org/learn/internet-connection-quality",
+      url: "https://bufferbloat.org/learn/video-meeting-test-results",
       lastModified,
       changeFrequency: "monthly",
-      priority: 0.72,
+      priority: 0.68,
     },
     {
-      url: "https://bufferbloat.org/learn/bufferbloat-speed-test",
+      url: "https://bufferbloat.org/learn/internet-connection-quality",
       lastModified,
       changeFrequency: "monthly",
       priority: 0.72,
@@ -104,7 +104,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: "https://bufferbloat.org/learn/what-bufferbloat-speed-test-measures",
       lastModified,
       changeFrequency: "monthly",
-      priority: 0.7,
+      priority: 0.72,
     },
     {
       url: "https://bufferbloat.org/mission",
