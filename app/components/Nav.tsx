@@ -2,8 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Nav() {
+  const pathname = usePathname();
+  const showTestLink = pathname !== "/test";
+
   return (
     <nav className="site-nav">
       <Link href="/" className="site-logo">
@@ -20,7 +24,7 @@ export default function Nav() {
       </Link>
 
       <div className="site-links">
-        <Link href="/mission">mission</Link>
+        {showTestLink && <Link href="/test">test</Link>}
         <Link href="/learn">learn</Link>
         <Link href="/contact">contact</Link>
       </div>
