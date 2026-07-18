@@ -9,11 +9,20 @@ Additional Use Grant: You may use, copy, modify, and redistribute the Licensed
 Work for non-commercial purposes, including personal use, research, education,
 development, testing, evaluation, and contributing changes back to the project.
 
+Attribution Requirement: Any public use, copy, modification, distribution,
+publication, hosted version, or derivative work must give clear credit to
+Emanuele Brandi and include a visible link to https://bufferbloat.org in the
+project documentation or user-facing interface, as appropriate for the form of
+use.
+
 The Additional Use Grant does not permit using the Licensed Work, modified or
 unmodified, to provide a paid product, paid service, hosted service, software as
 a service, managed service, commercial network testing product, or materially
 similar commercial internet measurement service without a separate commercial
-license from the Licensor.
+license from the Licensor. This includes ad-supported, affiliate-funded,
+lead-generation, data-brokering, or otherwise monetized speed test, latency
+test, network quality test, or bufferbloat test services that copy, adapt, host,
+or materially reuse the Licensed Work.
 
 Change Date: 2030-07-18
 

@@ -98,6 +98,14 @@ export default function Page() {
           than through ads, tracking, or commercial influence over the test.
         </p>
 
+        <p>
+          The source is licensed for non-commercial use so people can inspect,
+          learn from, and contribute to the test without making it easy for a
+          commercial speed-test clone to copy the work and wrap it in ads.
+          Commercial hosted tests and monetized measurement products need a
+          separate license.
+        </p>
+
         <p className="mission-closing">
           Because internet connection quality is more than speed and ping. The
           simplest way to see that difference is to{" "}

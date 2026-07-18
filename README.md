@@ -208,6 +208,20 @@ I've spent more than two decades working on internet products and infrastructure
 
 Business Source License 1.1 (`BUSL-1.1`).
 
-Non-commercial use is permitted. Commercial products, hosted services, managed
-services, SaaS offerings, or materially similar commercial internet measurement
-services require a separate commercial license. See [LICENSE](LICENSE).
+Non-commercial use is permitted, including personal use, research, education,
+development, testing, evaluation, and contributing changes back to the project.
+
+Public uses, copies, modifications, distributions, hosted versions, and
+derivative works must give clear credit to **Emanuele Brandi** and include a
+visible link to https://bufferbloat.org in the project documentation or
+user-facing interface, as appropriate.
+
+Commercial products, hosted services, managed services, SaaS offerings, or
+materially similar commercial internet measurement services require a separate
+commercial license. This includes ad-supported, affiliate-funded,
+lead-generation, data-brokering, or otherwise monetized speed test, latency
+test, network quality test, or bufferbloat test services that copy, adapt, host,
+or materially reuse this project.
+
+The license converts to Apache License 2.0 on the Change Date listed in
+[LICENSE](LICENSE).
