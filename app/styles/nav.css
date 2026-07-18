@@ -56,6 +56,35 @@
   color: var(--muted);
 }
 
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 20px;
+  width: min(1320px, calc(100% - 48px));
+  margin: clamp(42px, 6vw, 76px) auto 0;
+  padding: 22px 0 28px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+}
+
+.site-footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  color: var(--fg);
+}
+
 @media (max-width: 767px) {
   .site-nav {
     width: calc(100% - 24px);
@@ -74,6 +103,12 @@
 
   .github-link {
     gap: 5px;
+  }
+
+  .site-footer {
+    width: calc(100% - 24px);
+    margin-top: 36px;
+    padding-bottom: 22px;
   }
 
 }

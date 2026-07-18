@@ -191,6 +191,18 @@ Optional email signup data is stored separately and should never be committed:
 data/signups.json
 ```
 
+Contact and feedback form forwarding uses Cloudflare Email Service when
+configured:
+
+```
+CLOUDFLARE_EMAIL_SENDING_TOKEN=...
+CONTACT_EMAIL_FROM=contact@your-onboarded-domain
+CONTACT_EMAIL_TO=...
+```
+
+Messages are sent to the configured recipient and also stored in Cloudflare D1
+as a backup record.
+
 ---
 
 ## About the author

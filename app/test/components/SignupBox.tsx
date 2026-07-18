@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 type SignupResponse = {
@@ -119,7 +120,10 @@ export default function SignupBox({ testCount }: { testCount: number }) {
           {state === "loading" ? "Saving..." : "Subscribe"}
         </button>
 
-        <small>No spam. We store your email, rough location, and completed-test count.</small>
+        <small>
+          No spam. We store your email, rough location, and completed-test
+          count. <Link href="/privacy">Privacy</Link>
+        </small>
       </form>
 
       {message && (

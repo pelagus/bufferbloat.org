@@ -23,6 +23,7 @@ export default function Nav() {
         <Link href="/mission">mission</Link>
         <Link href="/learn">learn</Link>
         <Link href="/docs">docs</Link>
+        <Link href="/contact">contact</Link>
         <a
           href="https://github.com/pelagus/bufferbloat.org"
           className="github-link"

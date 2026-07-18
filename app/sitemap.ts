@@ -113,6 +113,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
+      url: "https://bufferbloat.org/privacy",
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.45,
+    },
+    {
+      url: "https://bufferbloat.org/contact",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.45,
+    },
+    {
       url: "https://bufferbloat.org/cli",
       lastModified,
       changeFrequency: "monthly",

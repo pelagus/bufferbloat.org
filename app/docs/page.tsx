@@ -255,7 +255,7 @@ const technicalDetailFields = [
 
 export default function Page() {
   return (
-    <main className="page-shell resource-page">
+    <main className="page-shell resource-page docs-page">
       <p className="eyebrow">documentation</p>
 
       <h1 className="page-title compact">Methodology hub</h1>
@@ -509,6 +509,9 @@ export default function Page() {
         <div className="resource-links">
           <Link href="/test?start=1">
             Run the bufferbloat test
+          </Link>
+          <Link href="/privacy">
+            Privacy policy
           </Link>
           <a
             href="https://github.com/pelagus/bufferbloat.org/blob/main/MEASUREMENT_METHODOLOGY.md"
