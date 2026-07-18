@@ -48,7 +48,7 @@ export default function Page() {
         </div>
 
         <div className="guide-test-actions">
-          <Link href="/test?start=1" className="guide-primary-action">
+          <Link href="/test" className="guide-primary-action">
             Run the bufferbloat test
           </Link>
           <Link href="/docs" className="guide-secondary-action">
@@ -75,6 +75,20 @@ export default function Page() {
         </div>
 
         <div className="learning-resource-list">
+          <article>
+            <span>Methodology</span>
+            <h3>
+              <Link href="/docs">
+                Measurement methodology and technical docs
+              </Link>
+            </h3>
+            <p>
+              The full reference for how the browser test runs, what is scored,
+              what is exported, and what the result page deliberately leaves
+              out.
+            </p>
+          </article>
+
           <article>
             <span>Scorecard reference</span>
             <h3>

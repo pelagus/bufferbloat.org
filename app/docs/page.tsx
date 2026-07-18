@@ -268,7 +268,7 @@ export default function Page() {
       </p>
 
       <div className="resource-top-action">
-        <Link href="/test?start=1">Run the bufferbloat test</Link>
+        <Link href="/test">Run the bufferbloat test</Link>
         <span>Then use this page to inspect how the result was produced.</span>
       </div>
 
@@ -507,7 +507,7 @@ export default function Page() {
         </p>
 
         <div className="resource-links">
-          <Link href="/test?start=1">
+          <Link href="/test">
             Run the bufferbloat test
           </Link>
           <Link href="/privacy">

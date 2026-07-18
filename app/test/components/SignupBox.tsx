@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 type SignupResponse = {
   ok?: boolean;
@@ -17,16 +17,6 @@ export default function SignupBox({ testCount }: { testCount: number }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    if (hidden || state !== "idle") return;
-
-    const timer = window.setTimeout(() => {
-      inputRef.current?.focus({ preventScroll: true });
-    }, 300);
-
-    return () => window.clearTimeout(timer);
-  }, [hidden, state]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();

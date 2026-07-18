@@ -45,8 +45,8 @@ export default function Home() {
             </p>
 
             <div className="home-hero-actions">
-              <Link href="/test?start=1" className="hero-start-button">
-                Run bufferbloat test
+              <Link href="/test" className="home-test-link">
+                Open the browser test
               </Link>
 
               <div className="home-hero-links" aria-label="Project references">

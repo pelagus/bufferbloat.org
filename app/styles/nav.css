@@ -6,19 +6,21 @@
 .site-logo {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 12px;
   flex: 0 0 auto;
-  max-width: 190px;
+  max-width: 260px;
   overflow: hidden;
   min-height: 36px;
-  font-weight: 520;
+  font-size: clamp(21px, 2vw, 29px);
+  font-weight: 620;
+  line-height: 1;
   white-space: nowrap;
 }
 
 .site-logo .brand-mark {
   flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
+  width: 27px;
+  height: 27px;
 }
 
 .site-links {
@@ -92,13 +94,14 @@
   }
 
   .site-logo {
-    gap: 7px;
-    max-width: 160px;
+    gap: 9px;
+    max-width: 220px;
+    font-size: clamp(20px, 5.8vw, 25px);
   }
 
   .site-logo .brand-mark {
-    width: 17px;
-    height: 17px;
+    width: 24px;
+    height: 24px;
   }
 
   .github-link {

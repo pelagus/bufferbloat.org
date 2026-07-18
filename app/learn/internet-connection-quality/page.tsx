@@ -32,7 +32,7 @@ export default function Page() {
       </p>
 
       <div className="resource-top-action">
-        <Link href="/test?start=1">Run the bufferbloat test</Link>
+        <Link href="/test">Run the bufferbloat test</Link>
         <span>Check whether your connection stays usable in real life.</span>
       </div>
 
@@ -194,7 +194,7 @@ export default function Page() {
           </p>
 
           <div className="guide-test-actions">
-            <Link href="/test?start=1" className="guide-primary-action">
+            <Link href="/test" className="guide-primary-action">
               Run the bufferbloat test
             </Link>
             <Link href="/docs" className="guide-secondary-action">

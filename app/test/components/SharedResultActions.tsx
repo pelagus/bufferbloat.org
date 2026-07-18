@@ -78,7 +78,7 @@ export default function SharedResultActions() {
   return (
     <div className="result-share-actions">
       <div className="result-action-buttons">
-        <Link className="result-rerun-button" href="/test?start=1">
+        <Link className="result-rerun-button" href="/test">
           Run bufferbloat test
         </Link>
       </div>

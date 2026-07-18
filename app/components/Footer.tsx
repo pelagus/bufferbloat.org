@@ -7,8 +7,8 @@ export default function Footer() {
       <nav aria-label="Legal and contact links">
         <Link href="/privacy">privacy</Link>
         <Link href="/contact">contact</Link>
-        <a href="https://github.com/pelagus/bufferbloat.org/blob/main/LICENSE">
-          license
+        <a href="https://github.com/pelagus/bufferbloat.org">
+          source
         </a>
       </nav>
     </footer>

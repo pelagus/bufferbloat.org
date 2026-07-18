@@ -87,7 +87,7 @@ export function LearnArticlePage({ guide }: { guide: LearnGuide }) {
           <p>{guide.calloutBody}</p>
 
           <div className="guide-test-actions">
-            <Link href="/test?start=1" className="guide-primary-action">
+            <Link href="/test" className="guide-primary-action">
               Run the bufferbloat test
             </Link>
             <Link href="/docs" className="guide-secondary-action">

@@ -35,7 +35,7 @@ export default function Page() {
         </p>
 
         <div className="resource-links">
-          <a href="/test?start=1">Run the browser test</a>
+          <a href="/test">Run the browser test</a>
           <a
             href="https://github.com/pelagus/bufferbloat.org"
             target="_blank"

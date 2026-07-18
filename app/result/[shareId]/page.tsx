@@ -1106,7 +1106,7 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
 
           <div className="result-scorecard-grid">
             <div className="result-grade">
-              <p>grade</p>
+              <p>Network assessment</p>
               <strong className={`${severityClass(grade)} ${grade === "A+" ? "grade-plus" : ""}`}>{grade}</strong>
               <span className={severityClass(grade)}>{qualityLabelForGrade(grade)}</span>
             </div>

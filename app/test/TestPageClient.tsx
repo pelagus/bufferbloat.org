@@ -120,6 +120,13 @@ function formatLatencySampleList(samples: number[]) {
   return samples.map((sample) => formatLatency(sample)).join(", ");
 }
 
+function formatReadableList(items: string[]) {
+  if (items.length <= 1) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
 function readStoredTestCount() {
   if (typeof window === "undefined") return 0;
 
@@ -317,39 +324,54 @@ async function storeCompletedAnalyticsEvent(payload: AnalyticsEventPayload) {
   }
 }
 
-function smoothPath(points: Array<{ x: number; y: number }>) {
+function connectedPointPath(points: Array<{ x: number; y: number }>) {
   if (points.length === 0) return "";
   if (points.length === 1) {
     const point = points[0];
-    return `M ${point.x.toFixed(2)} ${point.y.toFixed(2)}`;
-  }
-  if (points.length === 2) {
-    return `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)} L ${points[1].x.toFixed(2)} ${points[1].y.toFixed(2)}`;
+
+    return `M ${point.x.toFixed(2)} ${point.y.toFixed(2)} L ${(point.x + 8).toFixed(2)} ${point.y.toFixed(2)}`;
   }
 
-  const commands = [`M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`];
-
-  for (let index = 0; index < points.length - 1; index += 1) {
-    const p0 = points[Math.max(0, index - 1)];
-    const p1 = points[index];
-    const p2 = points[index + 1];
-    const p3 = points[Math.min(points.length - 1, index + 2)];
-    const cp1 = {
-      x: p1.x + (p2.x - p0.x) / 6,
-      y: p1.y + (p2.y - p0.y) / 6,
-    };
-    const cp2 = {
-      x: p2.x - (p3.x - p1.x) / 6,
-      y: p2.y - (p3.y - p1.y) / 6,
-    };
-
-    commands.push(
-      `C ${cp1.x.toFixed(2)} ${cp1.y.toFixed(2)}, ${cp2.x.toFixed(2)} ${cp2.y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
-    );
-  }
-
-  return commands.join(" ");
+  return points
+    .map((point, index) =>
+      `${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`
+    )
+    .join(" ");
 }
+
+function robustTrendValues(values: number[], windowSize = 5) {
+  if (values.length === 0) return [];
+  if (values.length <= 2) return values;
+
+  const radius = Math.floor(windowSize / 2);
+  const alpha = 0.26;
+  const medians = values.map((_, index) => {
+    const start = Math.max(0, index - radius);
+    const end = Math.min(values.length, index + radius + 1);
+    const median = sampleMedian(values.slice(start, end));
+
+    return median ?? values[index];
+  });
+  const forward = medians.reduce<number[]>((trend, value, index) => {
+    trend.push(index === 0 ? value : trend[index - 1] + alpha * (value - trend[index - 1]));
+
+    return trend;
+  }, []);
+  const backward = new Array<number>(medians.length);
+
+  for (let index = medians.length - 1; index >= 0; index -= 1) {
+    const value = medians[index];
+    backward[index] =
+      index === medians.length - 1
+        ? value
+        : backward[index + 1] + alpha * (value - backward[index + 1]);
+  }
+
+  return medians.map((_, index) => (forward[index] + backward[index]) / 2);
+}
+
+const RESULT_TREND_WINDOW = 9;
+const LIVE_TREND_WINDOW = 15;
 
 function rollingMedianTrendPoints(
   values: number[],
@@ -523,6 +545,12 @@ function contextItemsForResult({
   const up = uploadMbps ?? 0;
   const loaded = loadedLatency(downloadLatency, uploadLatency);
   const weakestApp = [...applications].sort((a, b) => a.score - b.score)[0];
+  const strainedApps = applications.filter(
+    (app) => app.tone === "poor" || app.tone === "fair"
+  );
+  const topAppNames = applications
+    .slice(0, 3)
+    .map((app) => app.name.toLowerCase());
   const strongestSpike = [
     { label: "quiet line", risk: phaseSpikeRisk(samples.idle) },
     { label: "download load", risk: phaseSpikeRisk(samples.download) },
@@ -544,35 +572,35 @@ function contextItemsForResult({
         ? "warn"
         : "bad";
   const stressSource = uploadDominates
-    ? "maxing out the upload link"
+    ? "Upload load added more delay than download load"
     : downloadDominates
-      ? "maxing out the download link"
-      : "maxing out the connection";
+      ? "Download load added more delay than upload load"
+      : "Download and upload load behaved similarly";
   const stressEffect =
     movement <= 12
-      ? "did not meaningfully change network stability"
-      : "disrupted network stability";
-  const verification =
-    movement <= 12
-      ? "this is a strong result"
-      : "repeat the test at different times to verify this persists";
+      ? "the busy-line medians stayed close to the quiet-line median"
+      : movement <= 40
+        ? "there was a small but visible change from the quiet-line median"
+        : movement <= 120
+          ? "loaded ping moved far enough to affect some interactive use"
+          : "loaded ping moved sharply away from the quiet-line median";
   const spikePhrase =
     spikeValue >= 300
-      ? ` A ${formatLatency(spikeValue)} ms spike was also seen during ${strongestSpike?.label}.`
+      ? ` One high ${formatLatency(spikeValue)} ms sample appeared during ${strongestSpike?.label}; repeat the test if that spike seems surprising.`
       : "";
+  const loadedPhrase =
+    loaded !== null
+      ? `Worst loaded median: ${formatLatency(loaded)} ms.`
+      : "Loaded median was not available.";
   const practicalImpact =
-    uploadDominates && (weakestApp?.tone === "poor" || weakestApp?.tone === "fair")
-      ? "In practical terms, video calls or games with live streaming could stutter when your camera is on, especially above 720p."
-      : weakestApp?.tone === "poor" || weakestApp?.tone === "fair"
-        ? `In practical terms, this could show up as ${weakestApp.name.toLowerCase()} becoming unstable while the line is busy.`
-        : loaded !== null
-          ? `In practical terms, everyday apps should remain steady, with loaded ping around ${formatLatency(loaded)} ms.`
-          : "In practical terms, everyday apps should remain steady.";
+    strainedApps.length > 0
+      ? `Most likely pressure point: ${weakestApp.name.toLowerCase()}. Other uses may still be fine, so compare the application ratings rather than reading the grade alone.`
+      : `The application ratings suggest the connection should remain steady for ${formatReadableList(topAppNames) || "everyday use"} while the line is busy.`;
   const assessment = capacityLimited
-    ? `The link speed looked limited at ${formatSpeed(downloadMbps)} down / ${formatSpeed(uploadMbps)} up.\n\n${practicalImpact}`
+    ? `Capacity is the main limitation in this run: ${formatSpeed(downloadMbps)} down / ${formatSpeed(uploadMbps)} up. Bufferbloat can still matter, but low throughput may be what users notice first.\n\n${practicalImpact}`
     : baselineLimited
-      ? `The quiet-line ping was already high at ${formatLatency(idle)} ms.\n\n${practicalImpact}`
-      : `${stressSource} ${stressEffect} in this run; ${verification}.${spikePhrase}\n\n${practicalImpact}`;
+      ? `The quiet-line median was already high at ${formatLatency(idle)} ms before the connection was loaded. That points to baseline path delay as well as any bufferbloat under load.\n\n${practicalImpact}`
+      : `${stressSource}: ${stressEffect}. ${loadedPhrase}${spikePhrase}\n\n${practicalImpact}`;
 
   return [
     {
@@ -1194,6 +1222,8 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
     },
   ] as const;
   const activeLiveStage = liveStages.find((item) => item.stage === automaticStage) ?? null;
+  const latestVisibleLiveStage =
+    activeLiveStage ?? [...liveStages].reverse().find((item) => item.done) ?? null;
   const completedLiveStages = liveStages.filter(
     (item) => item.done && item.stage !== automaticStage
   );
@@ -1540,6 +1570,63 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
     0,
     PREPARATION_VISIBLE_SECONDS - preparationElapsedSeconds
   );
+  const renderMeasurementSurface = ({
+    noticePhase = phase,
+    noticeDetail = phaseDetail,
+    chartPhase = phase,
+    stage = activeLiveStage,
+    phaseState,
+    showChart = true,
+  }: {
+    noticePhase?: TestPhase | "ready" | "stopped";
+    noticeDetail?: ReturnType<typeof getPhaseDetail>;
+    chartPhase?: TestPhase | "ready";
+    stage?: (typeof liveStages)[number] | null;
+    phaseState: "settling" | "starting" | "recording";
+    showChart?: boolean;
+  }) => (
+    <section className="instrument-panel">
+      <div className="live-context-row">
+        <ForegroundRunNotice
+          progress={testProgress}
+          phase={noticePhase}
+          phaseDetail={noticeDetail}
+        />
+
+        {stage && (
+          <ActiveMeasurementCard
+            title={stage.title}
+            icon={stage.icon}
+            theme={stage.theme}
+            ping={stage.ping}
+            quietBaseline={idle}
+            sampleCount={stage.sampleCount}
+            phaseState={phaseState}
+          />
+        )}
+      </div>
+
+      <TestProcedurePanel
+        phase={chartPhase === "ready" ? "warmup" : chartPhase}
+        downloadMbps={downloadMbps}
+        uploadMbps={uploadMbps}
+        downloadPeakMbps={downloadPeakMbps}
+        uploadPeakMbps={uploadPeakMbps}
+      />
+
+      {showChart && (
+        <div className="live-chart-layout">
+          <LatencyPhaseChart
+            samples={latencySamples}
+            mode="live"
+            grade={grade}
+            activePhase={chartPhase}
+            excludedSamples={excludedLatencySamples}
+          />
+        </div>
+      )}
+    </section>
+  );
 
   return (
     <main className={`test-shell ${interstitialActive ? "interstitial-active" : ""}`}>
@@ -1566,11 +1653,11 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
               </p>
 
               <button
-                className="hero-start-button"
+                className="hero-start-button test-primary-cta"
                 onClick={runTest}
                 disabled={running || analyzing}
               >
-                Run bufferbloat test
+                Start the browser test
               </button>
               <p className="hero-fullscreen-note">Opens in fullscreen while the test runs.</p>
 
@@ -1649,47 +1736,14 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
       {preparationActive && (
         <section className="test-stop-stage preflight-stage measurement-prep-stage">
           <div className={`stopped-test-underlay preflight-underlay ${preparationOverlayVisible ? "" : "ready"}`}>
-            <section className="instrument-panel">
-              <ForegroundRunNotice
-                progress={testProgress}
-                phase={phase}
-                phaseDetail={{
-                  eyebrow: "Preparing",
-                  title: "Warming up your connection",
-                  detail: "Starting timing checks and unscored pings so the browser, DNS path, and first network hops settle before measurement.",
-                }}
-              />
-
-              <TestProcedurePanel
-                phase={phase}
-                downloadMbps={downloadMbps}
-                uploadMbps={uploadMbps}
-                downloadPeakMbps={downloadPeakMbps}
-                uploadPeakMbps={uploadPeakMbps}
-              />
-
-              <div className="live-chart-layout">
-                <LatencyPhaseChart
-                  samples={latencySamples}
-                  mode="live"
-                  grade={grade}
-                  activePhase={phase}
-                  excludedSamples={excludedLatencySamples}
-                />
-
-                {activeLiveStage && (
-                  <ActiveMeasurementCard
-                    title={activeLiveStage.title}
-                    icon={activeLiveStage.icon}
-                    theme={activeLiveStage.theme}
-                    ping={activeLiveStage.ping}
-                    quietBaseline={idle}
-                    sampleCount={activeLiveStage.sampleCount}
-                    phaseState="settling"
-                  />
-                )}
-              </div>
-            </section>
+            {renderMeasurementSurface({
+              noticeDetail: {
+                eyebrow: "Preparing",
+                title: "Warming up your connection",
+                detail: "Running unscored pings before measurement starts.",
+              },
+              phaseState: "settling",
+            })}
           </div>
 
           <section
@@ -1707,9 +1761,6 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
               <div className="measurement-prep-instructions">
                 {!preparationHeld ? (
                   <p>Keep this tab visible and in focus while the test runs.</p>
-                ) : null}
-                {!preparationHeld ? (
-                  <p className="measurement-prep-fullscreen-note">The test opens in fullscreen.</p>
                 ) : null}
                 <p>For a more accurate result stop VPNs, proxies or background online applications.</p>
                 {preparationHeld ? (
@@ -1761,43 +1812,16 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
       {error && (
         <section className="test-stop-stage">
           <div className="stopped-test-underlay" aria-hidden="true">
-            <section className="instrument-panel">
-              <ForegroundRunNotice
-                progress={testProgress}
-                phase="stopped"
-                phaseDetail={{
-                  eyebrow: "Stopped",
-                  title: "Test stopped",
-                  detail: "The measurement stopped because the tab lost focus.",
-                }}
-              />
-
-                <TestProcedurePanel
-                  phase={phase}
-                  downloadMbps={downloadMbps}
-                  uploadMbps={uploadMbps}
-                  downloadPeakMbps={downloadPeakMbps}
-                uploadPeakMbps={uploadPeakMbps}
-              />
-
-              {phase !== "warmup" && (
-                <div className="live-chart-layout">
-                  <LatencyPhaseChart samples={latencySamples} mode="live" grade={grade} activePhase={phase} />
-
-                  {activeLiveStage && (
-                    <ActiveMeasurementCard
-                      title={activeLiveStage.title}
-                      icon={activeLiveStage.icon}
-                      theme={activeLiveStage.theme}
-                      ping={activeLiveStage.ping}
-                      quietBaseline={idle}
-                      sampleCount={activeLiveStage.sampleCount}
-                      phaseState="settling"
-                    />
-                  )}
-                </div>
-              )}
-            </section>
+            {renderMeasurementSurface({
+              noticePhase: "stopped",
+              noticeDetail: {
+                eyebrow: "Stopped",
+                title: "Test stopped",
+                detail: "The measurement stopped because the tab lost focus.",
+              },
+              phaseState: "settling",
+              showChart: phase !== "warmup",
+            })}
           </div>
 
           <section className="test-stop-overlay" aria-live="assertive">
@@ -1819,54 +1843,32 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
 
       {analyzing && (
         <section className="test-stop-stage analysis-stage">
-          <div className="stopped-test-underlay" aria-hidden="true" />
+          <div className="stopped-test-underlay" aria-hidden="true">
+            {renderMeasurementSurface({
+              noticePhase: "analysis",
+              chartPhase: "analysis",
+              stage: latestVisibleLiveStage,
+              phaseState: "recording",
+            })}
+          </div>
 
           <section className="test-stop-overlay analysis-overlay" aria-live="polite">
-            <div className="terminal-card test-stop-card test-stop-screen analysis-interstitial">
-              <div className="analysis-copy">
-                <span>Preparing your scorecard</span>
-                <strong>Turning the measurements into a result</strong>
-                <p>
-                  Comparing quiet ping with the busy-line phases, checking for
-                  sustained delay, and separating rare stalls from the main
-                  bufferbloat signal.
+            <div className="terminal-card preflight-card test-stop-card test-stop-screen analysis-interstitial">
+              <span>Checking measurements</span>
+              <strong>Building the network assessment</strong>
+              <p>
+                Comparing quiet, download, and upload ping before showing the
+                assessment.
+              </p>
+              <div className="measurement-prep-activity analysis-activity">
+                <div className="measurement-prep-probes" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+                <p className="measurement-prep-background" aria-live="polite">
+                  {ANALYSIS_STATUS_LABELS[analysisStatusIndex]}
                 </p>
-              </div>
-
-              <div className="analysis-progress-panel">
-                <div className="analysis-status-activity">
-                  <div className="analysis-progress-mark" aria-hidden="true">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                  <p className="analysis-status-message" aria-live="polite">
-                    {ANALYSIS_STATUS_LABELS[analysisStatusIndex]}
-                  </p>
-                </div>
-
-                <div className="analysis-progress-track" aria-hidden="true">
-                  <span style={{ width: `${Math.min(100, 38 + analysisStatusIndex * 15)}%` }} />
-                </div>
-              </div>
-
-              <div className="analysis-summary-steps" aria-hidden="true">
-                <div className="complete">
-                  <span>Quiet line</span>
-                  <strong>{formatLatency(idle)} ms</strong>
-                </div>
-                <div className="complete">
-                  <span>Download load</span>
-                  <strong>{formatLatency(downloadLatency)} ms</strong>
-                </div>
-                <div className="complete">
-                  <span>Upload load</span>
-                  <strong>{formatLatency(uploadLatency)} ms</strong>
-                </div>
-                <div className="active">
-                  <span>Result</span>
-                  <strong>Almost ready</strong>
-                </div>
               </div>
             </div>
           </section>
@@ -1946,44 +1948,15 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
   )}
 
       {running && !preparationActive && (
-        <section className="instrument-panel">
-          <ForegroundRunNotice progress={testProgress} phase={phase} phaseDetail={phaseDetail} />
-
-            <TestProcedurePanel
-              phase={phase}
-              downloadMbps={downloadMbps}
-              uploadMbps={uploadMbps}
-              downloadPeakMbps={downloadPeakMbps}
-            uploadPeakMbps={uploadPeakMbps}
-          />
-
-          <div className="live-chart-layout">
-            <LatencyPhaseChart
-              samples={latencySamples}
-              mode="live"
-              grade={grade}
-              activePhase={phase}
-              excludedSamples={excludedLatencySamples}
-            />
-
-            {activeLiveStage && (
-              <ActiveMeasurementCard
-                title={activeLiveStage.title}
-                icon={activeLiveStage.icon}
-                theme={activeLiveStage.theme}
-                ping={activeLiveStage.ping}
-                quietBaseline={idle}
-                sampleCount={activeLiveStage.sampleCount}
-                phaseState={
-                  status.includes("settling") || status.includes("starting")
-                    ? "settling"
-                    : activeLiveStage.sampleCount === 0
-                      ? "starting"
-                      : "recording"
-                }
-              />
-            )}
-          </div>
+        <>
+          {renderMeasurementSurface({
+            phaseState:
+              status.includes("settling") || status.includes("starting")
+                ? "settling"
+                : activeLiveStage?.sampleCount === 0
+                  ? "starting"
+                  : "recording",
+          })}
 
           {completedLiveStages.length > 0 && (
             <div className="completed-stage-strip" aria-label="Completed measurements">
@@ -2001,13 +1974,13 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
               ))}
             </div>
           )}
-        </section>
+        </>
       )}
 
       {finished && (
         <div className="result-share-actions">
           <div className="result-action-buttons">
-            <a className="result-rerun-button" href="/test?start=1">
+            <a className="result-rerun-button" href="/test">
               Run bufferbloat test
             </a>
           </div>
@@ -2035,6 +2008,7 @@ function LatencyPhaseChart({
   excludedSamples?: LatencySamplesByPhase | null;
 }) {
   const displaySamples = samples;
+  const liveAxisMaxRef = useRef<number | null>(null);
   const allSamples = [...samples.idle, ...samples.download, ...samples.upload];
   const plottedSamples = [
     ...displaySamples.idle,
@@ -2073,26 +2047,38 @@ function LatencyPhaseChart({
     ...medianValues,
     ...variationBounds,
   ];
-  const resultTrendValues =
-    mode === "result"
-      ? [
-          ...rollingMedianTrendValues(displaySamples.idle),
-          ...rollingMedianTrendValues(displaySamples.download),
-          ...rollingMedianTrendValues(displaySamples.upload),
-          ...medianValues,
-        ]
-      : [];
+  const resultTrendValues = [
+    ...robustTrendValues(displaySamples.idle, RESULT_TREND_WINDOW),
+    ...robustTrendValues(displaySamples.download, RESULT_TREND_WINDOW),
+    ...robustTrendValues(displaySamples.upload, RESULT_TREND_WINDOW),
+  ];
   const resultAxisBounds = scorecardAxisBounds([
     ...resultTrendValues,
+    ...medianValues,
     ...variationBounds,
   ]);
+  const liveTrendValues = [
+    ...robustTrendValues(displaySamples.idle, LIVE_TREND_WINDOW),
+    ...robustTrendValues(displaySamples.download, LIVE_TREND_WINDOW),
+    ...robustTrendValues(displaySamples.upload, LIVE_TREND_WINDOW),
+  ];
+  const liveAxisCandidateMax = chartAxisMax(
+    Math.max(
+      100,
+      ...(liveTrendValues.length ? liveTrendValues.map((sample) => sample * 1.12) : [0]),
+      ...(medianValues.length ? medianValues.map((value) => value * 1.08) : [0]),
+      ...(variationBounds.length ? variationBounds.map((value) => value * 1.08) : [0])
+    )
+  );
+  if (mode !== "live" || valuesPlottedForScale.length === 0) {
+    liveAxisMaxRef.current = null;
+  } else {
+    liveAxisMaxRef.current = Math.max(liveAxisMaxRef.current ?? 0, liveAxisCandidateMax);
+  }
   const axisMax =
     mode === "result"
       ? resultAxisBounds.max
-      : robustChartAxisMax(
-          [...plottedSamples, ...activeExcludedSamples],
-          [...medianValues, ...variationBounds]
-        );
+      : liveAxisMaxRef.current ?? liveAxisCandidateMax;
   const axisMin = mode === "result" ? resultAxisBounds.min : 0;
   const maxPlottedSample = valuesPlottedForScale.length
     ? Math.max(...valuesPlottedForScale)
@@ -2127,42 +2113,30 @@ function LatencyPhaseChart({
     totalCount <= 1
       ? range[0]
       : range[0] + (index / (totalCount - 1)) * (range[1] - range[0]);
-  const samplePathWithOffset = (
+  const smoothedSamplePathWithOffset = (
     values: number[],
     range: readonly [number, number],
     offset: number,
-    totalCount: number
+    totalCount: number,
+    windowSize: number
   ) => {
-    if (values.length === 0) return "";
+    const trendValues = robustTrendValues(values, windowSize);
 
-    if (values.length === 1) {
+    if (trendValues.length === 0) return "";
+
+    if (trendValues.length === 1) {
       const x = xForPhaseIndex(range, offset, totalCount);
-      const y = yFor(values[0]);
+      const y = yFor(trendValues[0]);
 
-      return `M ${x.toFixed(2)} ${y.toFixed(2)} L ${(x + 8).toFixed(2)} ${y.toFixed(2)}`;
+      return connectedPointPath([{ x, y }]);
     }
 
-    const trendPoints = rollingMedianTrendPoints(
-      values,
-      (index) => xForPhaseIndex(range, offset + index, totalCount),
-      yFor
+    return connectedPointPath(
+      trendValues.map((sample, index) => ({
+        x: xForPhaseIndex(range, offset + index, totalCount),
+        y: yFor(sample),
+      }))
     );
-
-    return smoothPath(trendPoints);
-  };
-  const trendPathWithOffset = (
-    values: number[],
-    range: readonly [number, number],
-    offset: number,
-    totalCount: number
-  ) => {
-    const trendPoints = rollingMedianTrendPoints(
-      values,
-      (index) => xForPhaseIndex(range, offset + index, totalCount),
-      yFor
-    );
-
-    return smoothPath(trendPoints);
   };
   const pathForPhase = (
     phaseKey: "idle" | "download" | "upload",
@@ -2172,41 +2146,17 @@ function LatencyPhaseChart({
     const excludedOffset = phaseKey === excludedPhase ? activeExcludedSamples.length : 0;
     const totalCount = Math.max(2, phaseSampleCount(phaseKey));
 
-    return samplePathWithOffset(values, range, excludedOffset, totalCount);
-  };
-  const resultTrendPathForPhase = (
-    phaseKey: "idle" | "download" | "upload",
-    values: number[]
-  ) => {
-    const range = phaseRanges[phaseKey];
-    const excludedOffset = phaseKey === excludedPhase ? activeExcludedSamples.length : 0;
-    const totalCount = Math.max(2, phaseSampleCount(phaseKey));
-
-    return trendPathWithOffset(values, range, excludedOffset, totalCount);
+    return smoothedSamplePathWithOffset(
+      values,
+      range,
+      excludedOffset,
+      totalCount,
+      mode === "live" ? LIVE_TREND_WINDOW : RESULT_TREND_WINDOW
+    );
   };
   const idlePath = pathForPhase("idle", displaySamples.idle);
   const downloadPath = pathForPhase("download", displaySamples.download);
   const uploadPath = pathForPhase("upload", displaySamples.upload);
-  const resultTrendPaths =
-    mode === "result"
-      ? [
-          {
-            key: "idle",
-            className: "line-idle",
-            d: resultTrendPathForPhase("idle", displaySamples.idle),
-          },
-          {
-            key: "download",
-            className: "line-download",
-            d: resultTrendPathForPhase("download", displaySamples.download),
-          },
-          {
-            key: "upload",
-            className: "line-upload",
-            d: resultTrendPathForPhase("upload", displaySamples.upload),
-          },
-        ].filter((path) => path.d)
-      : [];
   const variationBands = [
     {
       key: "idle",
@@ -2449,7 +2399,7 @@ function LatencyPhaseChart({
       <div className="latency-phase-chart-header">
         <strong>Latency / Ping in milliseconds</strong>
         {mode === "live" && (
-          <span className="latency-trend-note">dots are raw pings; line is rolling median trend</span>
+          <span className="latency-trend-note">dots are raw pings; line shows a smoothed trend</span>
         )}
         {mode === "result" && (
           <div className="latency-phase-legend" aria-hidden="true">
@@ -2518,7 +2468,6 @@ function LatencyPhaseChart({
             const upperY = yFor(band.median + band.variation);
             const lowerY = yFor(band.median);
             const height = Math.max(2, lowerY - upperY);
-
             const labelHeight = 14;
             const labelX = band.range[1] - 10;
             const labelY = Math.max(
@@ -2528,12 +2477,12 @@ function LatencyPhaseChart({
 
             return (
               <g
-                aria-label={`${band.key} latency spread band: ${formatLatency(band.variation)} ms`}
+                aria-label={`${band.key} p95 latency band: ${formatLatency(band.variation)} ms above median`}
                 className={`latency-spread-label ${band.className}`}
                 key={band.key}
               >
                 <title>
-                  Latency spread: 95th percentile ping minus median ping during this phase.
+                  p95 latency band: 95th percentile ping minus median ping during this phase.
                 </title>
                 <rect
                   className="latency-spread-band"
@@ -2550,30 +2499,19 @@ function LatencyPhaseChart({
             );
           })}
 
-        {mode === "result" && resultTrendPaths.length > 0 && (
-          <g className="latency-median-trend" aria-label="Smoothed binned median latency trend">
-            {resultTrendPaths.map((path) => (
-              <path
-                key={path.key}
-                className={`latency-line latency-median-trend-line ${path.className}`}
-                d={path.d}
-              />
-            ))}
-          </g>
-        )}
-        {mode !== "result" && idlePath && (
+        {idlePath && (
           <path
-            className={`latency-line line-idle ${idleCompletedInLive ? "completed" : ""}`}
+            className={`latency-line latency-raw-line line-idle ${idleCompletedInLive ? "completed" : ""}`}
             d={idlePath}
           />
         )}
-        {mode !== "result" && revealDownload && downloadPath && (
+        {revealDownload && downloadPath && (
           <path
-            className={`latency-line line-download ${downloadCompletedInLive ? "completed" : ""}`}
+            className={`latency-line latency-raw-line line-download ${downloadCompletedInLive ? "completed" : ""}`}
             d={downloadPath}
           />
         )}
-        {mode !== "result" && revealUpload && uploadPath && <path className="latency-line line-upload" d={uploadPath} />}
+        {revealUpload && uploadPath && <path className="latency-line latency-raw-line line-upload" d={uploadPath} />}
 
         {excludedSampleMarkers.length > 0 && (
           <g className="latency-excluded-samples" aria-label="Warmup pings excluded from the result">
@@ -2621,29 +2559,25 @@ function LatencyPhaseChart({
 
             const measuredOffset = median.key === excludedPhase ? activeExcludedSamples.length : 0;
             const totalCount = Math.max(2, phaseSampleCount(median.key));
-            const point = medianPointForPhase(
-              median.values,
-              median.value,
-              median.range,
-              measuredOffset,
-              totalCount
-            );
-
-            if (point === null) {
-              return null;
-            }
-
-            const { x, y } = point;
+            const x = median.range[0] + (median.range[1] - median.range[0]) / 2;
+            const y = yFor(median.value);
             const labelY = y < chart.top + 38 ? y + 31 : y - 22;
             const labelText = `${formatLatency(median.value)} ms`;
 
             return (
               <g
-                aria-label={`median ping ${formatLatency(median.value)} ms, nearest measured sample ${formatLatency(point.sample)} ms`}
+                aria-label={`${median.key} median ping ${formatLatency(median.value)} ms`}
                 key={median.key}
                 className={`latency-median-marker ${median.className}`}
               >
-                <title>{`median ping ${formatLatency(median.value)} ms; nearest measured sample ${formatLatency(point.sample)} ms`}</title>
+                <title>{`median ping ${formatLatency(median.value)} ms`}</title>
+                <line
+                  className="median-reference-line"
+                  x1={median.range[0]}
+                  y1={y}
+                  x2={median.range[1]}
+                  y2={y}
+                />
                 <circle className="median-halo" cx={x} cy={y} r={11} />
                 <circle className="median-ring" cx={x} cy={y} r={8} />
                 <text x={x} y={labelY}>{labelText}</text>
@@ -2689,7 +2623,7 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
     return {
       eyebrow: "Preparing",
       title: "Warming up your connection",
-      detail: "Early pings are excluded while the browser and network path settle.",
+      detail: "Getting the browser and connection ready before scoring starts.",
     };
   }
 
@@ -2700,8 +2634,8 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
       eyebrow: "Step 1 of 3",
       title: "Measuring quiet line",
       detail: settling
-        ? "Early pings are excluded until the baseline is stable."
-        : "Raw pings establish the no-load baseline; the line shows a rolling median trend.",
+        ? "Getting a clean baseline before the connection is loaded."
+        : "Checking normal ping before download or upload pressure starts.",
     };
   }
 
@@ -2710,10 +2644,10 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
 
     return {
       eyebrow: "Step 2 of 3",
-      title: "Measuring latency during download pressure",
+      title: "Measuring download pressure",
       detail: settling
-        ? "Download load is filling the link before loaded pings are scored."
-        : "Raw pings are recorded under download pressure; the line shows a rolling median trend.",
+        ? "Filling the download link before scoring loaded pings."
+        : "Watching how ping changes while the download link is busy.",
     };
   }
 
@@ -2722,18 +2656,18 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
 
     return {
       eyebrow: "Step 3 of 3",
-      title: "Measuring latency during upload pressure",
+      title: "Measuring upload pressure",
       detail: settling
-        ? "Upload load is filling the link before loaded pings are scored."
-        : "Raw pings are recorded under upload pressure; the line shows a rolling median trend.",
+        ? "Filling the upload link before scoring loaded pings."
+        : "Watching how ping changes while the upload link is busy.",
     };
   }
 
   if (phase === "analysis") {
     return {
       eyebrow: "Calculating",
-      title: "Building your scorecard",
-      detail: "Calculating latency spread, total score, application ratings, and network assessment.",
+      title: "Building the network assessment",
+      detail: "Comparing quiet, download, and upload measurements.",
     };
   }
 
@@ -2832,14 +2766,13 @@ function ForegroundRunNotice({
 
   return (
     <div className={`foreground-run-notice ${phase}`} role="status" aria-live="polite">
-      <div className="test-progress-current">
-        <span className="live-status-step">{phaseDetail.eyebrow}</span>
-        <strong>{phaseDetail.title}</strong>
-      </div>
       <div className="test-progress-track" aria-hidden="true">
         <span style={{ width: `${displayProgress}%` }} />
       </div>
-      <p className="test-progress-explanation">{phaseDetail.detail}</p>
+      <p className="test-progress-status">
+        <strong>{phaseDetail.title}</strong>
+        <span>{phaseDetail.detail}</span>
+      </p>
     </div>
   );
 }
@@ -2989,10 +2922,8 @@ function ActiveMeasurementCard({
 }) {
   const readableState =
     phaseState === "recording"
-      ? "scoring pings"
-      : phaseState === "starting"
-        ? "starting pings"
-        : "not scoring yet";
+      ? "scoring"
+      : "warming";
   const scoredPings = phaseState === "recording" ? sampleCount : 0;
 
   return (
@@ -3003,7 +2934,7 @@ function ActiveMeasurementCard({
       </div>
       <dl className="live-measurement-grid">
         <div>
-          <dt>{theme === "baseline" ? "Phase" : "Quiet baseline"}</dt>
+          <dt>{theme === "baseline" ? "Status" : "Quiet baseline"}</dt>
           <dd>{theme === "baseline" ? readableState : quietBaseline === null ? "measuring" : `${formatLatency(quietBaseline)} ms`}</dd>
         </div>
 

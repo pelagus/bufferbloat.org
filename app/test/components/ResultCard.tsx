@@ -119,7 +119,7 @@ export default function ResultCard({
 
       <div className="result-scorecard-grid">
         <div className="result-grade">
-          <p>grade</p>
+          <p>Network assessment</p>
           <strong className={`${severityClass(grade)} ${grade === "A+" ? "grade-plus" : ""}`}>
             {grade}
           </strong>

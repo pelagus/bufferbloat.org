@@ -109,7 +109,7 @@ export default function Page() {
         <p className="mission-closing">
           Because internet connection quality is more than speed and ping. The
           simplest way to see that difference is to{" "}
-          <Link href="/test?start=1">run the bufferbloat test</Link> and compare
+          <Link href="/test">run the bufferbloat test</Link> and compare
           your quiet-line ping with what happens when download and upload load
           are active.
         </p>
@@ -117,7 +117,7 @@ export default function Page() {
 
       <section className="mission-test-action" aria-label="Run the bufferbloat test">
         <div className="resource-top-action">
-          <Link href="/test?start=1">See the measurement for yourself</Link>
+          <Link href="/test">See the measurement for yourself</Link>
           <span>
             Run the open bufferbloat test and compare quiet-line ping with a
             busy connection.
@@ -171,7 +171,7 @@ export default function Page() {
             <Link href="/docs">Measurement methodology and technical docs</Link>
           </li>
           <li>
-            <Link href="/test?start=1">Run the bufferbloat test</Link>
+            <Link href="/test">Run the bufferbloat test</Link>
           </li>
           <li>
             <a
