@@ -6605,6 +6605,20 @@
     --measurement-body-size: clamp(14px, 3.75vw, 17px);
     --measurement-chart-size: clamp(10.5px, 2.85vw, 12px);
   }
+
+  .latency-phase-chart.result .chart-throughput span {
+    grid-template-columns: 1fr;
+    gap: 5px;
+    align-content: center;
+    padding: 8px 10px;
+    white-space: normal;
+  }
+
+  .latency-phase-chart.result .chart-throughput strong {
+    grid-column: 1;
+    grid-row: 2;
+    font-size: clamp(15px, 4vw, 18px);
+  }
 }
 
 .test-shell .test-primary-cta {
