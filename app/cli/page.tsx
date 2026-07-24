@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Command-Line Bufferbloat Testing",
+  title: "Command-Line Bufferbloat Test Tooling",
   description:
     "Status page for planned command-line bufferbloat testing. The current public Bufferbloat.org test runs in the browser.",
   alternates: {
     canonical: "https://bufferbloat.org/cli",
   },
   openGraph: {
-    title: "Command-Line Bufferbloat Testing",
+    title: "Command-Line Bufferbloat Test Tooling",
     description:
       "Planned repeatable diagnostics outside the browser for Bufferbloat.org.",
     url: "https://bufferbloat.org/cli",

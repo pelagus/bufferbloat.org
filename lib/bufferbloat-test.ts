@@ -49,7 +49,7 @@ const IDLE_DURATION_MS = 8000;
 const IDLE_MAX_RECORDING_MS = 20000;
 const LOADED_DURATION_MS = 22000;
 const MIN_PHASE_WARMUP_MS = 4000;
-const IDLE_SETTLE_MS = MIN_PHASE_WARMUP_MS;
+const IDLE_SETTLE_MS = 500;
 const LOADED_SETTLE_MS = Math.max(8000, MIN_PHASE_WARMUP_MS);
 const LOADED_RECORDING_MS = LOADED_DURATION_MS - LOADED_SETTLE_MS;
 const LOADED_MAX_RECORDING_MS = 26000;
@@ -199,9 +199,11 @@ async function warmUpLatencyPath(
   }
 }
 
-async function warmUpDownload() {
+async function warmUpDownload(onMbps: (mbps: number) => void = () => {}) {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 1800);
+  const started = performance.now();
+  let bytes = 0;
 
   try {
     const response = await fetch(`${DOWNLOAD_URL}?bloat=${crypto.randomUUID()}&warmup=1`, {
@@ -224,6 +226,11 @@ async function warmUpDownload() {
       if (done) break;
 
       bytes += value.byteLength;
+      const elapsed = (performance.now() - started) / 1000;
+
+      if (elapsed > 0) {
+        onMbps((bytes * 8) / elapsed / 1_000_000);
+      }
     }
 
     await reader.cancel().catch(() => {});
@@ -233,25 +240,38 @@ async function warmUpDownload() {
   }
 }
 
-async function warmUpUpload() {
+async function warmUpUpload(onMbps: (mbps: number) => void = () => {}) {
+  const started = performance.now();
+
   try {
-    await fetch(UPLOAD_URL, {
+    const response = await fetch(UPLOAD_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/octet-stream",
       },
       body: randomPayload(WARMUP_UPLOAD_BYTES),
     });
+
+    const elapsed = (performance.now() - started) / 1000;
+
+    if (response.ok && elapsed > 0) {
+      onMbps((WARMUP_UPLOAD_BYTES * 8) / elapsed / 1_000_000);
+    }
   } catch {}
 }
 
-async function warmUpSession(signal?: AbortSignal) {
+async function warmUpSession(
+  signal?: AbortSignal,
+  onLatencySample: (sample: number) => void = () => {},
+  onDownloadMbps: (mbps: number) => void = () => {},
+  onUploadMbps: (mbps: number) => void = () => {}
+) {
   throwIfAborted(signal);
 
   await Promise.allSettled([
-    probeLatency(),
-    warmUpDownload(),
-    warmUpUpload(),
+    warmUpLatencyPath(Math.max(500, WARMUP_MIN_VISIBLE_MS - WARMUP_SETTLE_MS), onLatencySample, signal),
+    warmUpDownload(onDownloadMbps),
+    warmUpUpload(onUploadMbps),
   ]);
 
   await wait(WARMUP_SETTLE_MS, signal);
@@ -522,12 +542,26 @@ export async function runBufferbloatTest(
 
   throwIfAborted(signal);
 
-  await Promise.all([
-    warmUpSession(signal),
-    wait(WARMUP_MIN_VISIBLE_MS, signal),
-  ]);
+  await warmUpSession(
+    signal,
+    (sample) => {
+      excludedLatencySamples.idle = [...excludedLatencySamples.idle, sample];
+      emitCurrent();
+    },
+    (mbps) => {
+      downloadMbps = mbps;
+      emitCurrent();
+    },
+    (mbps) => {
+      uploadMbps = mbps;
+      emitCurrent();
+    }
+  );
 
   throwIfAborted(signal);
+
+  downloadMbps = null;
+  uploadMbps = null;
 
   emit("idle", "quiet settling", "Warming quiet-line ping before recording baseline samples.", 8);
 

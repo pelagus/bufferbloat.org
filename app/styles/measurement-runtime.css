@@ -166,8 +166,9 @@
 
 
 .ping.active .sample-row span {
-  animation: pingSampleFly 1100ms ease-in-out infinite;
-  animation-delay: calc(var(--sample-index) * 110ms);
+  animation: pingSampleFly 1900ms linear infinite;
+  animation-delay: calc(var(--sample-index) * 145ms);
+  will-change: transform, opacity;
 }
 
 
@@ -229,8 +230,9 @@
   font-style: normal;
   font-size: 13px;
   opacity: 0;
-  animation: visiblePingFly 1250ms ease-in-out infinite;
-  animation-delay: calc(var(--sample-index) * 120ms);
+  animation: visiblePingFly 2400ms linear infinite;
+  animation-delay: calc(var(--sample-index) * 170ms);
+  will-change: transform, opacity;
 }
 
 
@@ -271,8 +273,8 @@
 
 
 .stage-panel.active-now .ping-flyout em {
-  animation: visiblePingFly 1250ms ease-in-out infinite;
-  animation-delay: calc(var(--sample-index) * 120ms);
+  animation: visiblePingFly 2400ms linear infinite;
+  animation-delay: calc(var(--sample-index) * 170ms);
 }
 
 
@@ -290,8 +292,8 @@
 .stage-panel.active-now.baseline .ping-flyout em,
 .stage-panel.active-now.download .ping-flyout em,
 .stage-panel.active-now.upload .ping-flyout em {
-  animation: visiblePingFly 1250ms ease-in-out infinite;
-  animation-delay: calc(var(--sample-index) * 120ms);
+  animation: visiblePingFly 2400ms linear infinite;
+  animation-delay: calc(var(--sample-index) * 170ms);
 }
 
 

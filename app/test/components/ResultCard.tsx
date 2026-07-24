@@ -17,6 +17,7 @@ type TechnicalRow = {
 
 type ContextItem = {
   label: string;
+  headline: string;
   value: string;
   detail: string;
   tone: "good" | "ok" | "warn" | "bad";
@@ -105,13 +106,13 @@ export default function ResultCard({
     <section className="result-card result-scorecard terminal-card">
       <ResultPrintController />
       <div className="result-compact-header">
-        <div className="result-brand-lockup" aria-label="Bufferbloat.org">
+        <div className="result-brand-lockup" aria-label="Internet quality assessment">
           <div className="result-brand-title">
-            <img src="/brand-dot.svg" alt="" aria-hidden="true" />
-            <strong>Bufferbloat.org</strong>
+            <strong>Internet quality assessment</strong>
           </div>
-          <span>
-            open source bufferbloat test · Measured <LocalMeasuredTime isoTime={measuredAt} />
+          <span className="result-powered-by">
+            Powered by <img src="/brand-dot.svg" alt="" aria-hidden="true" /> bufferbloat.org ·{" "}
+            <LocalMeasuredTime isoTime={measuredAt} />
           </span>
         </div>
         {headerActions}
@@ -119,7 +120,6 @@ export default function ResultCard({
 
       <div className="result-scorecard-grid">
         <div className="result-grade">
-          <p>Network assessment</p>
           <strong className={`${severityClass(grade)} ${grade === "A+" ? "grade-plus" : ""}`}>
             {grade}
           </strong>
@@ -130,7 +130,12 @@ export default function ResultCard({
           <div className="result-diagnosis-blocks" aria-label="Result diagnosis">
             {contextItems.map((item) => (
               <article className={item.tone} key={item.label}>
-                <p>{item.value}</p>
+                <strong className="result-diagnosis-headline">{item.headline}</strong>
+                <ul>
+                  {item.value.split("\n").map((line, index) => (
+                    <li key={`${item.label}-${index}`}>{line}</li>
+                  ))}
+                </ul>
               </article>
             ))}
           </div>

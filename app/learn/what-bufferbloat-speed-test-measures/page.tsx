@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "What a Bufferbloat Speed Test Measures",
+  title: "What a Bufferbloat Test Measures Beyond Speed",
   description:
     "A plain-language guide to the signals measured by Bufferbloat.org: throughput, quiet-line ping, loaded ping, and p95 spread.",
   alternates: {
     canonical: "https://bufferbloat.org/learn/what-bufferbloat-speed-test-measures",
   },
   openGraph: {
-    title: "What a Bufferbloat Speed Test Measures",
+    title: "What a Bufferbloat Test Measures Beyond Speed",
     description:
       "Learn what the Bufferbloat.org test measures and why each signal matters for real-world connection quality.",
     url: "https://bufferbloat.org/learn/what-bufferbloat-speed-test-measures",

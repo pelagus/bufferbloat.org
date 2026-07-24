@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy",
+  title: "Privacy Policy for the Bufferbloat Test",
   description:
     "Privacy policy for Bufferbloat.org, including test measurements, analytics, shared results, signup emails, local storage, and contact requests.",
   alternates: {

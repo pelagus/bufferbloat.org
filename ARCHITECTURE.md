@@ -7,9 +7,10 @@ browser-based bufferbloat test.
 
 The browser performs:
 
-1. Quiet-line latency measurement
-2. Download pressure latency measurement
-3. Upload pressure latency measurement
+1. Session warm-up with unscored ping, download, and upload preparation
+2. Quiet-line latency measurement
+3. Download pressure latency measurement
+4. Upload pressure latency measurement
 
 The final result combines:
 - baseline latency
@@ -17,6 +18,9 @@ The final result combines:
 - throughput
 - bufferbloat grade
 - diagnosis text
+
+Warm-up latency samples can be visualized during the live run, but they are not
+included in the reported medians, result chart, or grade.
 
 ## Important files
 
@@ -31,7 +35,7 @@ Responsible for:
 - median calculations
 - live updates
 
-### app/test/page.tsx
+### app/test/TestPageClient.tsx
 
 Main orchestration UI.
 
@@ -40,15 +44,26 @@ Responsible for:
 - rendering test phases
 - diagnosis rendering
 - adaptive layout behavior
+- live and result chart rendering
+
+### app/test/page.tsx
+
+Route-level metadata and server entry point for the public `/test` page.
 
 ### app/styles/
 
 CSS split by concern:
+- admin.css
 - legacy.css
+- layout.css
 - home.css
 - test.css
-- responsive.css for adaptive layout rules
+- measurement.css
+- measurement-runtime.css
+- measurement-results.css
+- measurement-signup.css
 - nav.css
+- responsive.css
 
 ## UX constraints
 

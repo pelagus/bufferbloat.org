@@ -167,29 +167,28 @@
   font-style: normal;
   font-size: 13px;
   opacity: 0;
-  animation: visiblePingFly 1250ms ease-in-out infinite;
-  animation-delay: calc(var(--sample-index) * 120ms);
+  animation: visiblePingFly 2400ms linear infinite;
+  animation-delay: calc(var(--sample-index) * 170ms);
+  will-change: transform, opacity;
 }
 
 @keyframes visiblePingFly {
   0% {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translate3d(0, 22px, 0);
   }
 
-  25% {
-    opacity: 0.9;
-    transform: translateY(0);
+  14% {
+    opacity: 0.86;
   }
 
-  75% {
-    opacity: 0.45;
-    transform: translateY(-12px);
+  74% {
+    opacity: 0.82;
   }
 
   100% {
     opacity: 0;
-    transform: translateY(-24px);
+    transform: translate3d(0, -26px, 0);
   }
 }
 

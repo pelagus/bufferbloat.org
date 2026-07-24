@@ -16,8 +16,9 @@ In practical terms, the test asks a narrow question:
 
 Before recording samples, the browser performs a short session warm-up. This
 warms DNS/TLS/CORS/fetch paths with small ping, download, and upload requests,
-then gives the connection a brief moment to settle. Warm-up samples are not
-included in the reported medians.
+then gives the connection a brief moment to settle. Warm-up latency samples are
+shown during the live run as unscored context, but they are not included in the
+reported medians or grade.
 
 Immediately before quiet-line scoring, the browser also sends a short series of
 unscored latency probes. These warm the baseline ping path without adding
@@ -36,12 +37,15 @@ medians:
 3. Upload latency under load
 
 Warm-up and result computation still happen, but they are shown as preparation
-and calculation states rather than scored measurement phases.
+and calculation states rather than scored measurement phases. The warm-up
+download and upload checks are real network requests used to prepare the fetch
+paths; they are not part of the scored throughput result.
 
-The result page shows these three scored phases as raw latency samples with a
-binned median trend. Quiet samples are shown in black, download-loaded samples
-in blue, and upload-loaded samples in purple. Final phase medians are overlaid
-in red on the completed chart.
+The result page shows these three scored phases as rolling median trend lines,
+with final phase median markers and upper-tail latency-spread bands overlaid on
+the completed chart. The live chart shows raw ping dots while the run is in
+progress, including grey warm-up pings that are explicitly excluded from the
+result.
 
 The chart uses a robust vertical scale so a one-off extreme ping does not
 flatten the main pattern. The visible scale is based on the upper end of the

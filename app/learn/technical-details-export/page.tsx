@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "How to Inspect and Export Your Bufferbloat Test Data",
+  title: "Bufferbloat Test Data Export and Technical Details",
   description:
     "How Bufferbloat.org exposes raw ping samples, medians, p95 latency spread, throughput, and CSV export data for each test result.",
   alternates: {
     canonical: "https://bufferbloat.org/learn/technical-details-export",
   },
   openGraph: {
-    title: "How to Inspect and Export Your Bufferbloat Test Data",
+    title: "Bufferbloat Test Data Export and Technical Details",
     description:
       "Open the technical details drawer, inspect the measurement record, and export the result as CSV.",
     url: "https://bufferbloat.org/learn/technical-details-export",

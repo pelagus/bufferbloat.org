@@ -42,6 +42,7 @@ type ApplicationScore = {
 
 type ResultContextItem = {
   label: string;
+  headline: string;
   value: string;
   detail: string;
   tone: "good" | "ok" | "warn" | "bad";
@@ -346,7 +347,6 @@ function contextItemsForSharedResult({
   downloadMbps,
   uploadMbps,
   samples,
-  applications,
 }: {
   grade: Grade;
   idle: number | null;
@@ -357,14 +357,12 @@ function contextItemsForSharedResult({
   downloadMbps: number | null;
   uploadMbps: number | null;
   samples: LatencySamples;
-  applications: ApplicationScore[];
 }): ResultContextItem[] {
   const movement = Math.max(0, downloadStress ?? 0, uploadStress ?? 0);
   const baseline = idle ?? 0;
   const down = downloadMbps ?? 0;
   const up = uploadMbps ?? 0;
   const loaded = loadedLatency(downloadLatency, uploadLatency);
-  const weakestApp = [...applications].sort((a, b) => a.score - b.score)[0];
   const strongestSpike = [
     { label: "quiet line", risk: phaseSpikeRisk(samples.idle) },
     { label: "download load", risk: phaseSpikeRisk(samples.download) },
@@ -375,50 +373,95 @@ function contextItemsForSharedResult({
   const spikeValue = strongestSpike?.risk?.highest ?? 0;
   const uploadDominates = (uploadStress ?? 0) > Math.max(25, (downloadStress ?? 0) * 1.35);
   const downloadDominates = (downloadStress ?? 0) > Math.max(25, (uploadStress ?? 0) * 1.35);
-  const pressureTone =
-    movement <= 30 ? "good" : movement <= 80 ? "warn" : movement <= 180 ? "warn" : "bad";
   const capacityLimited = down > 0 && up > 0 && (down < 8 || up < 2);
+  const moderateThroughput = down > 0 && up > 0 && !capacityLimited && (down < 50 || up < 15);
   const baselineLimited = baseline >= 100;
+  const unstablePing = spikeValue >= 300;
+  const cleanBufferbloat = movement <= 12;
+  const mildBufferbloat = movement > 12 && movement <= 40;
+  const noticeableBufferbloat = movement > 40 && movement <= 120;
+  const severeBufferbloat = movement > 120;
   const gradeTone =
     grade === "A+" || grade === "A" || grade === "B"
       ? "good"
       : grade === "C"
         ? "warn"
         : "bad";
-  const stressSource = uploadDominates
-    ? "maxing out the upload link"
-    : downloadDominates
-      ? "maxing out the download link"
-      : "maxing out the connection";
-  const stressEffect =
-    movement <= 12
-      ? "did not meaningfully change network stability"
-      : "disrupted network stability";
-  const verification =
-    movement <= 12
-      ? "this is a strong result"
-      : "repeat the test at different times to verify this persists";
-  const spikePhrase =
-    spikeValue >= 300
-      ? ` A ${formatLatency(spikeValue)} ms spike was also seen during ${strongestSpike?.label}.`
-      : "";
-  const practicalImpact =
-    uploadDominates && (weakestApp?.tone === "poor" || weakestApp?.tone === "fair")
-      ? "In practical terms, video calls or games with live streaming could stutter when your camera is on, especially above 720p."
-      : weakestApp?.tone === "poor" || weakestApp?.tone === "fair"
-        ? `In practical terms, this could show up as ${weakestApp.name.toLowerCase()} becoming unstable while the line is busy.`
-        : loaded !== null
-          ? `In practical terms, everyday apps should remain steady, with loaded ping around ${formatLatency(loaded)} ms.`
-          : "In practical terms, everyday apps should remain steady.";
-  const assessment = capacityLimited
-    ? `The link speed looked limited at ${formatSpeed(downloadMbps)} down / ${formatSpeed(uploadMbps)} up.\n\n${practicalImpact}`
-    : baselineLimited
-      ? `The quiet-line ping was already high at ${formatLatency(idle)} ms.\n\n${practicalImpact}`
-      : `${stressSource} ${stressEffect} in this run; ${verification}.${spikePhrase}\n\n${practicalImpact}`;
+  const stableGrade = grade === "A+" || grade === "A";
+  const consistencyNote = stableGrade
+    ? ""
+    : unstablePing
+      ? " Ping stability looked uneven in this run; repeat the test to see if that keeps happening."
+      : " Repeat the test if this does not match what you feel day to day.";
+  const busyApp =
+    uploadDominates
+      ? "video calls, screen sharing, cloud backup, and sending files"
+      : downloadDominates
+        ? "streaming, large downloads, browsing while other devices are active, and game updates"
+        : "video calls, low-latency games, streaming, and browsing while the line is busy";
+  const cleanResultIntro =
+    grade === "A+" || grade === "A"
+      ? "Congratulations: your connection remained impressively stable in this test run, and should feel reliable for all main applications."
+      : "Your connection should feel stable in everyday use, and should be reliable for the main applications most people care about.";
+  let headline: string;
+  let assessment: string;
+
+  if (capacityLimited && cleanBufferbloat && !baselineLimited) {
+    headline = "Limited speed, responsive ping";
+    assessment = `Your connection should still feel responsive for light everyday use, and bufferbloat does not look like the main issue.\nThe speed limit will show up first with downloads, updates, streaming quality, cloud sync, or several busy devices.${consistencyNote}`;
+  } else if (capacityLimited && (noticeableBufferbloat || severeBufferbloat)) {
+    headline = "Limited speed, busy-line lag";
+    assessment = `Your connection is likely to feel constrained by both limited bandwidth and bufferbloat when it gets busy.\nExpect slow transfers plus lag or dropouts first in ${busyApp}.${consistencyNote}`;
+  } else if (capacityLimited) {
+    headline = "Limited speed, little headroom";
+    assessment = `Everyday use may be usable, but the connection has little room when anything large starts moving.\nCalls and games may hold up when quiet; downloads, streams, updates, and backups can crowd the line quickly.${consistencyNote}`;
+  } else if (baselineLimited && cleanBufferbloat) {
+    headline = "High ping, clean under load";
+    assessment = `Your connection may feel a little delayed even when it is not busy, but it did not add much extra delay under load.\nBrowsing and streaming should be steadier than low-latency games or fast back-and-forth calls.${consistencyNote}`;
+  } else if (baselineLimited && (noticeableBufferbloat || severeBufferbloat)) {
+    headline = "High ping, added bufferbloat";
+    assessment = `Your connection may feel delayed when quiet and worse when busy.\nLow-latency games, calls, and screen sharing are the most likely to feel heavy or inconsistent.${consistencyNote}`;
+  } else if (baselineLimited) {
+    headline = "High ping, some slowdown";
+    assessment = `Your connection may feel slightly delayed before the line is busy, with some extra slowdown under load.\nBrowsing and streaming should cope better than calls or low-latency games.${consistencyNote}`;
+  } else if (cleanBufferbloat && moderateThroughput) {
+    headline = "Moderate speed, clean bufferbloat";
+    assessment = `${cleanResultIntro}\nSpeed is not huge, but latency and bufferbloat look healthy; the connection should feel responsive unless large transfers or many devices fill the line.`;
+  } else if (cleanBufferbloat) {
+    headline = "Fast speed, clean bufferbloat";
+    assessment = `${cleanResultIntro}\nLatency and bufferbloat look clean, so calls, browsing, streaming, and low-latency games should mostly stay responsive.`;
+  } else if (mildBufferbloat && moderateThroughput) {
+    headline = "Moderate speed, mild bufferbloat";
+    assessment = `Your connection should feel responsive most of the time, with small slowdowns when the line is busy.\nLarge downloads, uploads, updates, or cloud sync are the most likely moments to notice it.${consistencyNote}`;
+  } else if (mildBufferbloat) {
+    headline = "Fast speed, mild bufferbloat";
+    assessment = `Your connection should feel good most of the time, with only mild slowdown under load.\nCalls and games should usually hold up, though heavy uploads or downloads may be noticeable.${consistencyNote}`;
+  } else if (noticeableBufferbloat && moderateThroughput) {
+    headline = uploadDominates
+      ? "Moderate speed, upload bufferbloat"
+      : downloadDominates
+        ? "Moderate speed, download bufferbloat"
+        : "Moderate speed, visible bufferbloat";
+    assessment = `Your connection may feel fine when quiet, but busy periods can expose bufferbloat and limited headroom.\nExpect trouble first in ${busyApp}.${consistencyNote}`;
+  } else if (noticeableBufferbloat) {
+    headline = uploadDominates
+      ? "Fast speed, upload bufferbloat"
+      : downloadDominates
+        ? "Fast speed, download bufferbloat"
+        : "Fast speed, visible bufferbloat";
+    assessment = `Your connection may feel fine when quiet, then get uneven when the line is busy because bufferbloat looks noticeable.\nExpect trouble first in ${busyApp}.${consistencyNote}`;
+  } else if (severeBufferbloat && moderateThroughput) {
+    headline = "Moderate speed, heavy bufferbloat";
+    assessment = `Your connection may feel responsive when quiet, but it is likely to struggle when busy.\nExpect lag, freezes, or delayed speech first in ${busyApp} and during large transfers.${consistencyNote}`;
+  } else {
+    headline = "Fast speed, heavy bufferbloat";
+    assessment = `Your connection is likely to feel unreliable whenever the line is busy because bufferbloat looks bad.\nExpect lag, freezes, delayed speech, or buffering first in ${busyApp}.${consistencyNote}`;
+  }
 
   return [
     {
-      label: "Network assessment",
+      label: "Internet assessment",
+      headline,
       value: assessment,
       detail: "",
       tone: gradeTone,
@@ -451,16 +494,28 @@ function chartAxisMax(value: number, minimum = 100) {
   return Math.ceil(value / 100) * 100;
 }
 
+function bufferbloatChartClass(movement: number | null) {
+  if (movement === null || movement <= 12) {
+    return "bufferbloat-clean";
+  }
+  if (movement <= 40) {
+    return "bufferbloat-mild";
+  }
+  if (movement <= 120) {
+    return "bufferbloat-noticeable";
+  }
+  return "bufferbloat-severe";
+}
+
 function scorecardAxisBounds(values: number[]) {
   const finiteValues = values.filter(Number.isFinite);
   if (!finiteValues.length) return { min: 0, max: 100 };
 
-  const minValue = Math.min(...finiteValues);
   const maxValue = Math.max(...finiteValues);
-  const baseMin = Math.max(0, minValue * 0.9);
+  const baseMin = 0;
   const baseMax = Math.max(maxValue * 1.06, baseMin + 10);
   const padding = Math.max(4, (baseMax - baseMin) * 0.04);
-  const min = Math.max(0, baseMin - padding);
+  const min = 0;
   const max = baseMax + padding;
 
   return { min, max };
@@ -612,28 +667,27 @@ function SharedLatencyChart({
     download: [chart.left + phaseWidth + 10, chart.left + phaseWidth * 2 - 10],
     upload: [chart.left + phaseWidth * 2 + 10, chart.left + phaseWidth * 3],
   } as const;
-  const values = [...samples.idle, ...samples.download, ...samples.upload].filter(Number.isFinite);
   const variationBands = [
     {
       key: "idle",
       className: "variation-idle",
       range: ranges.idle,
       median: sampleMedian(samples.idle),
-      variation: phaseLatencyVariation(samples.idle),
+      variation: phaseAppTailVariation(samples.idle),
     },
     {
       key: "download",
       className: "variation-download",
       range: ranges.download,
       median: sampleMedian(samples.download),
-      variation: phaseLatencyVariation(samples.download),
+      variation: phaseAppTailVariation(samples.download),
     },
     {
       key: "upload",
       className: "variation-upload",
       range: ranges.upload,
       median: sampleMedian(samples.upload),
-      variation: phaseLatencyVariation(samples.upload),
+      variation: phaseAppTailVariation(samples.upload),
     },
   ] as const;
   const variationBounds = variationBands.flatMap((item) =>
@@ -644,7 +698,6 @@ function SharedLatencyChart({
   const medianValues = variationBands
     .map((item) => item.median)
     .filter((value): value is number => value !== null);
-  const valuesForScale = [...values, ...variationBounds, ...medianValues];
   const medianTrendValues = [
     ...medianBucketTrendValues(samples.idle),
     ...medianBucketTrendValues(samples.download),
@@ -656,8 +709,6 @@ function SharedLatencyChart({
     ...variationBounds,
   ]);
   const axisMax = axisBounds.max;
-  const maxPlottedSample = valuesForScale.length ? Math.max(...valuesForScale) : axisMax;
-  const hasClippedSamples = maxPlottedSample > axisMax;
   const axisMin = axisBounds.min;
   const axisMid = axisMin + (axisMax - axisMin) / 2;
   const yFor = (sample: number) => {
@@ -669,6 +720,16 @@ function SharedLatencyChart({
     { key: "download", value: sampleMedian(samples.download), range: ranges.download, values: samples.download },
     { key: "upload", value: sampleMedian(samples.upload), range: ranges.upload, values: samples.upload },
   ] as const;
+  const quietMedian = medians[0].value;
+  const downloadDelta =
+    quietMedian === null || medians[1].value === null ? null : Math.max(0, medians[1].value - quietMedian);
+  const uploadDelta =
+    quietMedian === null || medians[2].value === null ? null : Math.max(0, medians[2].value - quietMedian);
+  const bufferbloatMovement =
+    downloadDelta === null && uploadDelta === null
+      ? null
+      : Math.max(downloadDelta ?? 0, uploadDelta ?? 0);
+  const bufferbloatClass = bufferbloatChartClass(bufferbloatMovement);
   const medianPointForPhase = (
     values: readonly number[],
     medianValue: number | null,
@@ -708,63 +769,6 @@ function SharedLatencyChart({
       y: yFor(values[bestIndex]),
     };
   };
-  const sampleMarkers = [
-    {
-      key: "idle",
-      label: "Quiet line",
-      className: "sample-idle",
-      range: ranges.idle,
-      values: samples.idle,
-      median: sampleMedian(samples.idle),
-    },
-    {
-      key: "download",
-      label: "Download on",
-      className: "sample-download",
-      range: ranges.download,
-      values: samples.download,
-      median: sampleMedian(samples.download),
-    },
-    {
-      key: "upload",
-      label: "Upload on",
-      className: "sample-upload",
-      range: ranges.upload,
-      values: samples.upload,
-      median: sampleMedian(samples.upload),
-    },
-  ].flatMap((phase) =>
-    phase.values.map((sample, index) => {
-      const x =
-        phase.values.length === 1
-          ? phase.range[0]
-          : phase.range[0] + (index / (phase.values.length - 1)) * (phase.range[1] - phase.range[0]);
-      const y = yFor(sample);
-      const labelAboveMedian = phase.median === null || sample >= phase.median;
-      const preferredLabelY = labelAboveMedian ? y - 18 : y + 26;
-      const labelY =
-        preferredLabelY < chart.top + 12
-          ? y + 26
-          : preferredLabelY > chart.bottom - 8
-            ? y - 18
-            : preferredLabelY;
-
-      return {
-        key: `${phase.key}-${index}`,
-        className: `${phase.className}${sample > axisMax ? " clipped" : ""}`,
-        label: `${phase.label} ping ${index + 1}: ${formatLatency(sample)} ms`,
-        tooltip:
-          sample > axisMax
-            ? `ping ${formatLatency(sample)} ms, clipped at top of chart`
-            : `ping ${formatLatency(sample)} ms`,
-        value: `ping ${formatLatency(sample)} ms`,
-        x,
-        y,
-        labelY,
-        clipped: sample > axisMax,
-      };
-    })
-  );
   const medianTrendPaths = [
     {
       key: "idle",
@@ -786,18 +790,15 @@ function SharedLatencyChart({
   ].filter((path) => path.d);
 
   return (
-    <section className="latency-phase-chart result" aria-label="Shared latency / ping chart">
+    <section className={`latency-phase-chart result ${bufferbloatClass}`} aria-label="Shared latency trend and spread chart">
       <div className="latency-phase-chart-header">
-        <strong>Latency / Ping in milliseconds</strong>
+        <strong>Latency trend and spread in milliseconds</strong>
         <div className="latency-phase-legend" aria-hidden="true">
-          <span className="idle">quiet line</span>
-          <span className="download">download on</span>
-          <span className="upload">upload on</span>
-          <span className="reference">median ping</span>
-          <span className="spread">p95 latency</span>
+          <span className="rolling">rolling median</span>
+          <span className="spread">upper-tail latency spread</span>
         </div>
       </div>
-      <svg viewBox="0 0 720 360" role="img" aria-label="Latency samples by phase">
+      <svg viewBox="0 0 720 360" role="img" aria-label="Latency trend and spread by phase">
         <rect className="phase-zone phase-zone-idle" x={chart.left} y={chart.top} width={phaseWidth} height={chart.height} />
         <rect className="phase-zone phase-zone-download" x={chart.left + phaseWidth} y={chart.top} width={phaseWidth} height={chart.height} />
         <rect className="phase-zone phase-zone-upload" x={chart.left + phaseWidth * 2} y={chart.top} width={phaseWidth} height={chart.height} />
@@ -814,11 +815,6 @@ function SharedLatencyChart({
           );
         })}
         <text className="chart-axis-label" x={11} y={18}>ms</text>
-        {hasClippedSamples && (
-          <text className="chart-axis-label chart-clipped-note" x={chart.left + chart.width - 6} y={18}>
-            high spikes clipped
-          </text>
-        )}
         <line className="phase-break" x1={chart.left + phaseWidth} y1={chart.top} x2={chart.left + phaseWidth} y2={chart.bottom} />
         <line className="phase-break" x1={chart.left + phaseWidth * 2} y1={chart.top} x2={chart.left + phaseWidth * 2} y2={chart.bottom} />
 
@@ -840,12 +836,12 @@ function SharedLatencyChart({
 
           return (
             <g
-              aria-label={`${band.key} latency spread band: ${formatLatency(band.variation)} ms`}
+              aria-label={`${band.key} latency spread: ${formatLatency(band.variation)} ms`}
               className={`latency-spread-label ${band.className}`}
               key={band.key}
             >
               <title>
-                Latency spread: 95th percentile ping minus median ping during this phase.
+                {formatLatency(band.variation)} ms
               </title>
               <rect
                 className="latency-spread-band"
@@ -855,9 +851,6 @@ function SharedLatencyChart({
                 height={height}
               />
               <text x={labelX} y={labelY}>{formatLatency(band.variation)} ms</text>
-              <text className="chart-hover-tooltip" x={labelX} y={labelY - 16}>
-                p95 latency
-              </text>
             </g>
           );
         })}
@@ -873,25 +866,6 @@ function SharedLatencyChart({
             ))}
           </g>
         )}
-
-        {sampleMarkers.map((point) => (
-          <g
-            aria-label={point.label}
-            className={`latency-sample-marker ${point.className}`}
-            key={point.key}
-          >
-            <title>{point.tooltip}</title>
-            <circle className="sample-hit" cx={point.x} cy={point.y} r={12} />
-            {point.clipped && (
-              <path
-                className="sample-clipped-marker"
-                d={`M ${point.x.toFixed(2)} ${(point.y - 8).toFixed(2)} L ${(point.x - 4).toFixed(2)} ${(point.y - 2).toFixed(2)} L ${(point.x + 4).toFixed(2)} ${(point.y - 2).toFixed(2)} Z`}
-              />
-            )}
-            <circle className="sample-dot" cx={point.x} cy={point.y} r={3.2} />
-            <text className="sample-label" x={point.x} y={point.labelY}>{point.value}</text>
-          </g>
-        ))}
 
         {medians.map((median) => {
           if (median.value === null) {
@@ -1048,7 +1022,6 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
     downloadMbps,
     uploadMbps,
     samples,
-    applications,
   });
   const variationValues = [
     quietVariation,
@@ -1092,13 +1065,13 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
         <section className="result-card result-scorecard terminal-card">
           <ResultPrintController />
           <div className="result-compact-header">
-            <div className="result-brand-lockup" aria-label="Bufferbloat.org">
+            <div className="result-brand-lockup" aria-label="Network quality assessment">
               <div className="result-brand-title">
-                <img src="/brand-dot.svg" alt="" aria-hidden="true" />
-                <strong>Bufferbloat.org</strong>
+                <strong>Network quality assessment</strong>
               </div>
-              <span>
-                bufferbloat test result · Measured <LocalMeasuredTime isoTime={row.created_at} />
+              <span className="result-powered-by">
+                Powered by <img src="/brand-dot.svg" alt="" aria-hidden="true" /> bufferbloat.org ·{" "}
+                <LocalMeasuredTime isoTime={row.created_at} />
               </span>
             </div>
             <SharedResultHeaderActions sharePath={`/test?result=${shareId}`} />
@@ -1106,7 +1079,7 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
 
           <div className="result-scorecard-grid">
             <div className="result-grade">
-              <p>Network assessment</p>
+              <p>Quality grade</p>
               <strong className={`${severityClass(grade)} ${grade === "A+" ? "grade-plus" : ""}`}>{grade}</strong>
               <span className={severityClass(grade)}>{qualityLabelForGrade(grade)}</span>
             </div>
@@ -1115,7 +1088,12 @@ export async function SharedResultContent({ shareId }: { shareId: string }) {
               <div className="result-diagnosis-blocks" aria-label="Result diagnosis">
                 {contextItems.map((item) => (
                   <article className={item.tone} key={item.label}>
-                    <p>{item.value}</p>
+                    <strong className="result-diagnosis-headline">{item.headline}</strong>
+                    <ul>
+                      {item.value.split("\n").map((line, index) => (
+                        <li key={`${item.label}-${index}`}>{line}</li>
+                      ))}
+                    </ul>
                   </article>
                 ))}
               </div>

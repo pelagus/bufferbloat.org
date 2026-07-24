@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Latency Under Load",
+  title: "Latency Under Load Explained for Bufferbloat Tests",
   description:
     "Latency under load explains whether ping stays low while download or upload traffic is active. It is the core signal behind the Bufferbloat.org test.",
   alternates: {
     canonical: "https://bufferbloat.org/learn/latency-under-load",
   },
   openGraph: {
-    title: "Latency Under Load",
+    title: "Latency Under Load Explained for Bufferbloat Tests",
     description:
       "Learn why idle ping is incomplete and why loaded latency matters for internet reliability.",
     url: "https://bufferbloat.org/learn/latency-under-load",

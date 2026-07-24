@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Why Bufferbloat.org Exists",
+  title: "Why Bufferbloat.org Exists as an Internet Quality Test",
   description:
     "Why Bufferbloat.org exists: an independent open-source bufferbloat test for measuring internet reliability and latency under load.",
   alternates: {
@@ -19,8 +19,8 @@ export default function Page() {
         <h1 className="page-title compact">Why this exists</h1>
 
         <p className="mission-lede">
-          Internet connection quality is too important to be left to opaque
-          and gimmicky speed tests.
+          Everyone should be able to understand whether their internet
+          connection is stable, reliable, and ready for everyday life.
         </p>
 
       </section>

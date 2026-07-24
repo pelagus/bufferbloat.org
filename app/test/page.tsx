@@ -1,15 +1,24 @@
+import type { Metadata } from "next";
 import { SharedResultContent } from "../result/[shareId]/page";
 import TestPageClient from "./TestPageClient";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export const metadata = {
-  title: "Bufferbloat Test - Measure Internet Quality Under Load",
+export const metadata: Metadata = {
+  title: {
+    absolute: "Test Internet Reliability: Speed, Latency, and Bufferbloat",
+  },
   description:
-    "Run a free open-source bufferbloat test to see whether latency / ping stays stable while download and upload traffic are active.",
+    "Run a free internet reliability test for speed, latency, and bufferbloat. This browser-based internet stability test and internet quality test shows whether ping stays stable under download and upload load.",
   alternates: {
     canonical: "https://bufferbloat.org/test",
+  },
+  openGraph: {
+    title: "Test Internet Reliability: Speed, Latency, and Bufferbloat",
+    description:
+      "Run a free internet reliability test for speed, latency, and bufferbloat. See whether ping stays stable under download and upload load.",
+    url: "https://bufferbloat.org/test",
   },
 };
 

@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://bufferbloat.org"),
   title: {
-    default: "Bufferbloat.org | Open Source Internet Reliability Test",
+    default: "Bufferbloat Test for Internet Reliability and Quality",
     template: "%s | Bufferbloat.org",
   },
   description:
@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   keywords: [
     "bufferbloat test",
     "internet reliability test",
+    "internet stability test",
+    "internet quality test",
     "latency under load",
     "ping test",
     "upload latency",
@@ -33,7 +35,7 @@ export const metadata: Metadata = {
     "internet lag test",
   ],
   openGraph: {
-    title: "Bufferbloat.org",
+    title: "Bufferbloat Test for Internet Reliability and Quality",
     description:
       "An open-source bufferbloat test for internet reliability, latency / ping under load, and connection quality beyond Mbps.",
     url: "https://bufferbloat.org",
@@ -42,7 +44,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Bufferbloat.org",
+    title: "Bufferbloat Test for Internet Reliability and Quality",
     description:
       "An open-source bufferbloat test for internet reliability, latency / ping under load, and connection quality beyond Mbps.",
   },

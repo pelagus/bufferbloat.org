@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Internet Connection Quality",
+  title: "Internet Connection Quality: Speed, Ping, and Bufferbloat",
   description:
     "Internet connection quality is more than speed. Learn what matters for real-life reliability: throughput, ping, bufferbloat, latency under load, and latency spread.",
   alternates: {
     canonical: "https://bufferbloat.org/learn/internet-connection-quality",
   },
   openGraph: {
-    title: "Internet Connection Quality",
+    title: "Internet Connection Quality: Speed, Ping, and Bufferbloat",
     description:
       "A practical explanation of what makes an internet connection feel reliable in real life, beyond a single speed-test number.",
     url: "https://bufferbloat.org/learn/internet-connection-quality",

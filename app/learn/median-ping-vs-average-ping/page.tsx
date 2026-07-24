@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Why We Use Median Ping, not Average Ping",
+  title: "Median Ping vs Average Ping for Bufferbloat Tests",
   description:
     "Why Bufferbloat.org uses median ping instead of average ping as the center of each measured phase.",
   alternates: {
     canonical: "https://bufferbloat.org/learn/median-ping-vs-average-ping",
   },
   openGraph: {
-    title: "Why We Use Median Ping, not Average Ping",
+    title: "Median Ping vs Average Ping for Bufferbloat Tests",
     description:
       "Why median ping is a better baseline than average ping for a browser bufferbloat test.",
     url: "https://bufferbloat.org/learn/median-ping-vs-average-ping",

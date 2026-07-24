@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Internet Reliability Knowledge Base",
+  title: "Internet Reliability, Stability, and Bufferbloat Guides",
   description:
     "A practical knowledge base for internet reliability, bufferbloat, latency under load, p95 spread, median ping, and open network measurement.",
   alternates: {
     canonical: "https://bufferbloat.org/learn",
   },
   openGraph: {
-    title: "Internet Reliability Knowledge Base",
+    title: "Internet Reliability, Stability, and Bufferbloat Guides",
     description:
       "Guides and research references for real-life network quality, bufferbloat, loaded latency, and transparent measurement methods.",
     url: "https://bufferbloat.org/learn",

@@ -49,10 +49,10 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "internet-reliability-test",
     metadata: {
-      title: "Internet Reliability Is More Than Speed - Internet Reliability Test",
+      title: "Internet Reliability Test: More Than Speed",
       description:
         "An internet reliability test should answer whether your connection stays usable in real life, not only how many Mbps it can report.",
-      openGraphTitle: "Internet Reliability Is More Than Speed",
+      openGraphTitle: "Internet Reliability Test: More Than Speed",
     },
     guide: {
       eyebrow: "internet reliability test",
@@ -117,10 +117,10 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "internet-stability-test",
     metadata: {
-      title: "How Do You Test the Stability of an Internet Connection? - Internet Stability Test",
+      title: "Internet Stability Test: Check Connection Spikes Under Load",
       description:
         "An internet stability test should show whether your connection stays consistent under real use, including bufferbloat and latency spikes under load.",
-      openGraphTitle: "How Do You Test the Stability of an Internet Connection?",
+      openGraphTitle: "Internet Stability Test: Check Connection Spikes Under Load",
     },
     guide: {
       eyebrow: "internet stability test",
@@ -185,7 +185,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "internet-latency-test",
     metadata: {
-      title: "Internet Latency Test",
+      title: "Internet Latency Test: Check Ping Under Load",
       description:
         "Run an internet latency test that checks ping in normal conditions and under download and upload load, so you can see whether the connection stays usable when busy.",
     },
@@ -244,7 +244,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "calls-internet-test",
     metadata: {
-      title: "Calls Internet Test",
+      title: "Calls Internet Test for Audio and Video Reliability",
       description:
         "Run a calls internet test that checks whether ping stays stable during download and upload load, the condition that affects video and audio calls.",
     },
@@ -303,7 +303,7 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "gaming-network-test",
     metadata: {
-      title: "Gaming Network Test",
+      title: "Gaming Network Test for Ping, Lag, and Bufferbloat",
       description:
         "Run a gaming network test that checks ping stability, latency under load, and bufferbloat behavior while download and upload traffic are active.",
     },
@@ -362,10 +362,10 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "video-meeting-test-results",
     metadata: {
-      title: "How to Read Video-Meeting Test Results",
+      title: "Video Meeting Test Results: Read Loaded Latency",
       description:
         "How to read a Bufferbloat.org result for Zoom, video calls, screen sharing, and meeting reliability.",
-      openGraphTitle: "How to Read Video-Meeting Test Results",
+      openGraphTitle: "Video Meeting Test Results: Read Loaded Latency",
     },
     guide: {
       eyebrow: "video meeting results",
@@ -456,10 +456,10 @@ export const learnArticles: LearnArticle[] = [
   {
     slug: "zoom-internet-test",
     metadata: {
-      title: 'Why Zoom Says "Your Internet Connection Is Unstable"',
+      title: 'Zoom Internet Test: Why Your Connection Is Unstable',
       description:
         "Why Zoom can report an unstable internet connection even when speed tests look fine, and how Bufferbloat.org tests the network behavior behind it.",
-      openGraphTitle: 'Why Zoom Says "Your Internet Connection Is Unstable"',
+      openGraphTitle: 'Zoom Internet Test: Why Your Connection Is Unstable',
     },
     guide: {
       eyebrow: "video meeting reliability",

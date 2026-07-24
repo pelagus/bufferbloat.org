@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Why We Use Latency Spread, not Jitter",
+  title: "Latency Spread vs Jitter for Internet Reliability Tests",
   description:
     "Why latency spread is a better signal than ordinary ping or jitter for real-world network reliability.",
   alternates: {
     canonical: "https://bufferbloat.org/learn/latency-spread-vs-jitter",
   },
   openGraph: {
-    title: "Why We Use Latency Spread, not Jitter",
+    title: "Latency Spread vs Jitter for Internet Reliability Tests",
     description:
       "Why latency spread is a better signal than ordinary ping or jitter for real-world network reliability.",
     url: "https://bufferbloat.org/learn/latency-spread-vs-jitter",

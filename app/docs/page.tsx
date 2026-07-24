@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Bufferbloat Test Methodology Hub",
+  title: "Bufferbloat Test Methodology and Measurement Details",
   description:
     "Methodology hub for the Bufferbloat.org browser test: measurement flow, scoring, median ping, p95 latency spread, privacy, and CSV export fields.",
   alternates: {
     canonical: "https://bufferbloat.org/docs",
   },
   openGraph: {
-    title: "Bufferbloat Test Methodology Hub",
+    title: "Bufferbloat Test Methodology and Measurement Details",
     description:
       "Inspect how Bufferbloat.org measures internet reliability and latency under load in the browser.",
     url: "https://bufferbloat.org/docs",

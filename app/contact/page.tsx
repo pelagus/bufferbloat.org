@@ -3,7 +3,7 @@ import Link from "next/link";
 import ContactForm from "./ContactForm";
 
 export const metadata: Metadata = {
-  title: "Contact and Feedback",
+  title: "Contact Bufferbloat.org About the Internet Quality Test",
   description:
     "Contact Bufferbloat.org, send privacy requests, report bugs, or suggest improvements to the internet quality test.",
   alternates: {
