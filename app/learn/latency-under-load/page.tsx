@@ -138,6 +138,13 @@ export default function Page() {
           <Link href="/test">Run the bufferbloat test</Link>
           <Link href="/docs">Read how the test works</Link>
           <a
+            href="https://www.bufferbloat.net/projects/bloat/wiki/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Read the Bufferbloat Project wiki
+          </a>
+          <a
             href="https://github.com/pelagus/bufferbloat.org"
             target="_blank"
             rel="noopener noreferrer"

@@ -1186,6 +1186,7 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
       window.localStorage.setItem(TEST_COUNT_STORAGE_KEY, String(nextCount));
       setCompletedTestCount(nextCount);
       setAnalyzing(false);
+      exitTestFullscreen();
       setFinished(true);
       setShareUrl(
         storedShareId && typeof window !== "undefined"
@@ -2043,8 +2044,8 @@ export default function Page({ autoStart = false }: { autoStart?: boolean }) {
               noticePhase: "upload",
               noticeDetail: {
                 eyebrow: "Step 3 of 3",
-                title: "Measuring upload pressure",
-                detail: "Upload measurements are complete.",
+                title: "Results",
+                detail: "Preparing your results",
               },
               chartPhase: "upload",
               stage: latestVisibleLiveStage,
@@ -2936,20 +2937,16 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
   if (phase === "warmup") {
     return {
       eyebrow: "Preparing",
-      title: "Preparing the test",
-      detail: "Keep this tab visible.",
+      title: "Preparing",
+      detail: "Getting the test ready",
     };
   }
 
   if (phase === "idle") {
-    const settling = status.includes("settling") || status.includes("starting");
-
     return {
       eyebrow: "Step 1 of 3",
-      title: "Measuring quiet line",
-      detail: settling
-        ? "Getting a clean baseline."
-        : "Checking normal ping before load.",
+      title: "Quiet line",
+      detail: "Measuring ping while the line is quiet",
     };
   }
 
@@ -2958,10 +2955,10 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
 
     return {
       eyebrow: "Step 2 of 3",
-      title: "Measuring download pressure",
+      title: "Download",
       detail: settling
-        ? "Filling the download link first."
-        : "Scoring ping while download is busy.",
+        ? "Pushing your download speed to the max"
+        : "Watching how that affects ping latency",
     };
   }
 
@@ -2970,25 +2967,25 @@ function getPhaseDetail(phase: TestPhase | "ready", status: string) {
 
     return {
       eyebrow: "Step 3 of 3",
-      title: "Measuring upload pressure",
+      title: "Upload",
       detail: settling
-        ? "Filling the upload link first."
-        : "Scoring ping while upload is busy.",
+        ? "Pushing your upload speed to the max"
+        : "Watching how that affects ping latency",
     };
   }
 
   if (phase === "analysis") {
     return {
       eyebrow: "Calculating",
-      title: "Building the network assessment",
-      detail: "Comparing the three phases.",
+      title: "Results",
+      detail: "Preparing your results",
     };
   }
 
   return {
     eyebrow: "Ready",
-    title: "Ready to test",
-    detail: "Ping stability will be checked under load.",
+    title: "Ready",
+    detail: "Start the test when you are ready",
   };
 }
 
@@ -3078,7 +3075,7 @@ function ForegroundRunNotice({
     };
   }, [targetProgress, phase]);
   const statusPercent = `${Math.max(1, Math.round(displayProgress))}%`;
-  const statusText = `${phaseDetail.title}: ${phaseDetail.detail}`;
+  const statusText = phaseDetail.detail;
 
   return (
     <div className={`foreground-run-notice ${phase}`} role="status" aria-live="polite">
@@ -3087,7 +3084,7 @@ function ForegroundRunNotice({
       </div>
       <p className="test-progress-kicker">Test is running, {statusPercent}</p>
       <p className="test-progress-status">
-        <span>{statusText}</span>
+        <span key={statusText}>{statusText}</span>
       </p>
     </div>
   );

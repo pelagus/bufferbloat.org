@@ -322,6 +322,19 @@ export default function Page() {
           </article>
 
           <article>
+            <span>Community site</span>
+            <h3>
+              <a href="https://www.bufferbloat.net/" {...linkProps}>
+                Bufferbloat.net
+              </a>
+            </h3>
+            <p>
+              The long-running community home for bufferbloat research,
+              projects, documentation, and practical deployment notes.
+            </p>
+          </article>
+
+          <article>
             <span>Historical reference</span>
             <h3>
               <a href="https://queue.acm.org/detail.cfm?id=2076798" {...linkProps}>

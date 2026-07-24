@@ -91,6 +91,18 @@ body.test-interstitial-open {
   box-shadow: none;
 }
 
+.test-shell:has(.hero-panel) {
+  min-height: calc(100svh - 61px);
+}
+
+@media (min-width: 1401px) and (min-height: 960px) {
+  .test-shell:has(.hero-panel) {
+    display: grid;
+    align-items: center;
+    align-content: center;
+  }
+}
+
 .test-shell .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.14fr) minmax(300px, 0.62fr);
@@ -6095,6 +6107,32 @@ body.test-interstitial-open {
     text-align: left;
   }
 
+  .pre-test-warning-card .measurement-prep-actions:has(.recorder-pause-button) {
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+    row-gap: 10px !important;
+    column-gap: 10px !important;
+  }
+
+  .pre-test-warning-card .measurement-prep-countdown {
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+  }
+
+  .pre-test-warning-card .recorder-pause-button {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+  }
+
+  .pre-test-warning-card .preflight-start-now-button {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
   .procedure-stage-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -7667,6 +7705,32 @@ body.test-interstitial-open .site-footer {
   .preflight-start-now-button {
     grid-column: 1 / -1;
   }
+
+  .pre-test-warning-card .measurement-prep-actions:has(.recorder-pause-button) {
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+    row-gap: 10px !important;
+    column-gap: 10px !important;
+  }
+
+  .pre-test-warning-card .measurement-prep-countdown {
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+  }
+
+  .pre-test-warning-card .recorder-pause-button {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+  }
+
+  .pre-test-warning-card .preflight-start-now-button {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
 }
 
 .foreground-run-notice.ready,
@@ -7694,8 +7758,9 @@ body.test-interstitial-open .site-footer {
 
 .foreground-run-notice .test-progress-status {
   display: block !important;
-  overflow: visible !important;
-  white-space: normal !important;
+  min-height: 1.35em !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
 }
 
 .foreground-run-notice .test-progress-status span {
@@ -7704,9 +7769,22 @@ body.test-interstitial-open .site-footer {
   font-size: clamp(17px, 1.2vw, 22px) !important;
   font-weight: 650 !important;
   line-height: 1.18 !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-  white-space: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  animation: testStatusTextIn 280ms ease-out both;
+}
+
+@keyframes testStatusTextIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media screen and (max-width: 899px) {

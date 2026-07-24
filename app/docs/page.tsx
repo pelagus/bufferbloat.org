@@ -530,6 +530,13 @@ export default function Page() {
           <a href="/learn#authoritative-resources">
             Further reading and external resources
           </a>
+          <a
+            href="https://www.bufferbloat.net/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Bufferbloat.net community site
+          </a>
         </div>
       </section>
     </main>
