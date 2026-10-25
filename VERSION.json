@@ -1,11 +1,11 @@
 {
   "files": {
-    ".agents/skills/bufferbloat/SKILL.md": "5cd8a8bfbad8227797458eec325c0c9975ce91f3b93766c64c14f77c409eb228",
-    "AGENTS.md": "1f4fdc5a67ac6a2cdb5a5c07f44620c7332cec1d2483c18b6773a5e76ba67511"
+    ".agents/skills/bufferbloat/SKILL.md": "88422052e4869427c1d67b41ccd318977df3ebccdb10dee92507300c6b335d8f",
+    "AGENTS.md": "615d7f970497eba8a3ece630a67ce1b777c0b440f5c486a2d799c8a6cf22189b"
   },
   "profile": "bufferbloat.org",
   "schema": 1,
-  "source_commit": "44a83e0deb87be08ca3d2b91a46ed76aa03548ad",
+  "source_commit": "e3c1b8a690d0a4a163f438f2447430bce9ed3464",
   "source_dirty": false,
   "source_repository": "pelagus/monolith"
 }
