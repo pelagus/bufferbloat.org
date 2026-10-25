@@ -1,0 +1,11 @@
+{
+  "files": {
+    ".agents/skills/bufferbloat/SKILL.md": "5cd8a8bfbad8227797458eec325c0c9975ce91f3b93766c64c14f77c409eb228",
+    "AGENTS.md": "1f4fdc5a67ac6a2cdb5a5c07f44620c7332cec1d2483c18b6773a5e76ba67511"
+  },
+  "profile": "bufferbloat.org",
+  "schema": 1,
+  "source_commit": "036a98c484fbaf3f4ab28a0f000e2d8551023483",
+  "source_dirty": false,
+  "source_repository": "pelagus/monolith"
+}
